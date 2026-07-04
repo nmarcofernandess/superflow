@@ -32,7 +32,7 @@ existing-code risk, a thin analysis is a failed analysis.
   issue body for inbox-only work.
 - No `TBD`, no "definir depois" as a central decision. Either ask one precise
   question or record an explicit assumption with risk.
-- Use Mermaid only. No PlantUML.
+- Use Mermaid only.
 - Every code/system claim must be backed by `path:line` or marked `UNPROVEN`.
 - If the request names an existing module, schema, action, service, component,
   or doc set, run code recon before verdict.

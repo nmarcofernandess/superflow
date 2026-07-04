@@ -7,6 +7,8 @@ description: "Create the Superflow technical blueprint/spec for architecture, sc
 
 Build turns a mature PRD or `analysis.md` into an implementation-safe technical
 blueprint. It is not a generic brainstorm and it does not replace execution.
+It is also not Plan: Build closes architecture, contracts, boundaries, risks,
+and validation strategy. Plan later turns those decisions into executable tasks.
 
 ## Required Reading
 
@@ -32,6 +34,8 @@ Read these completely before producing or updating a blueprint:
 7. Run a grill pass before declaring the blueprint ready.
 8. Update `status.json`: `phases.build = "complete"` and
    `artifacts.blueprint = "technical_blueprint.md"`.
+9. Leave granular task ownership to Plan. Do not duplicate the final task
+   tracker inside the blueprint.
 
 ## Required Blueprint
 
@@ -56,6 +60,7 @@ Build is not ready if:
 - validation is vague;
 - human decision can still change architecture;
 - the implementation is too large for one slice and has not been split.
+- the blueprint contains task status/progress instead of architecture decisions.
 
 ## Mermaid
 

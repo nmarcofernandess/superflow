@@ -39,6 +39,13 @@ python3 <plugin-root>/scripts/superflow_taskgen.py \
 - Optional `WARLOG.md` only for deep, forensic, plugin, workflow, or
   multi-session work.
 
+## PRD Contract
+
+Generated PRDs must include `Story de Usuario`, `Story Tecnica`, current vs
+desired behavior, system pattern/contract, acceptance criteria, and definition
+of complete. A shallow idea can have low confidence, but it still uses the same
+shape as a mature PRD.
+
 ## Mermaid
 
 PRD diagrams use `../../assets/references/mermaid-contract.md`. Do not generate

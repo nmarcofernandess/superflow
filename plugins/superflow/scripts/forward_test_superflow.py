@@ -80,6 +80,12 @@ def main() -> int:
         local_payload = json.loads(local.stdout)
         spec_dir = Path(local_payload["spec_dir"])
         run([sys.executable, str(VALIDATE), str(spec_dir)])
+        prd_text = (spec_dir / "PRD.md").read_text(encoding="utf-8")
+        if "## Story de Usuario" not in prd_text or "## Story Tecnica" not in prd_text:
+            raise AssertionError("generated PRD missing required story sections")
+        status_payload = json.loads((spec_dir / "status.json").read_text(encoding="utf-8"))
+        if status_payload["decision"]["prd_status"] != "complete":
+            raise AssertionError(f"expected complete PRD decision, got {status_payload['decision']}")
         warlog = run([
             sys.executable,
             str(WARLOG),

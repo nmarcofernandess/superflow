@@ -25,7 +25,8 @@ Use plan when:
 - More than one acceptance criterion needs separate validation.
 - The change may be partially implemented across sessions.
 
-Write `implementation_plan.md` or the repo-native equivalent.
+Write `implementation_plan.json` as the executable task source. A Markdown plan
+may be generated for humans, but resume/execution should rely on JSON.
 
 ## Build First
 
@@ -36,7 +37,19 @@ Use build/spec when:
 - The PRD names behavior but not implementation boundaries.
 - A wrong implementation would be expensive to unwind.
 
-Write `technical_blueprint.md` or the repo-native equivalent.
+Write `technical_blueprint.md` or the repo-native equivalent. Build may include
+an implementation sequence, but it does not own the granular task checklist.
+Plan owns executable subtasks.
+
+## Build vs Plan
+
+| Phase | Owns | Does not own |
+|---|---|---|
+| Build | architecture, contracts, source-of-truth decisions, file boundaries, risks, validation strategy, rollback | per-subtask execution status |
+| Plan | ordered subtasks, file targets, verification per task, acceptance mapping, owner classification | architecture decisions that should have been closed by Build |
+
+If Build cannot choose a safe architecture, do not hide that in Plan. Mark the
+phase blocked or route back to Analyst/product decision.
 
 ## Investigate First
 
@@ -59,6 +72,16 @@ pending -> skipped
 ```
 
 Log human context in `progress.md`. Keep `status.json` terse.
+
+The executor of a phase owns that phase's status update. The router may create
+initial state and resume from it, but `complete` belongs to the phase that wrote
+the artifact and holds the evidence.
+
+Task lists do not live in `status.json`. Use:
+
+- `implementation_plan.json` for immutable executable tasks;
+- `implementation_log.json` for task execution evidence and remaining work;
+- `status.json` for phase/current pointer and artifact paths.
 
 For deep, forensic, plugin, workflow, migration, or multi-session work, also
 maintain `WARLOG.md` with Mermaid snapshots according to

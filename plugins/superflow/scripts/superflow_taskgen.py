@@ -271,6 +271,54 @@ def phase_status(route: str) -> dict:
     return phases
 
 
+def current_phase(classification: dict) -> str:
+    next_phase = classification["next_phase"]
+    if next_phase == "promote when mature":
+        return "inbox"
+    if next_phase == "route review":
+        return "taskgen"
+    return str(next_phase)
+
+
+def decision_payload(classification: dict) -> dict:
+    route = classification["route"]
+    maturity = classification["maturity_score"]
+    confidence = classification["confidence"]
+    if route in {"inbox_only", "inbox_prd"}:
+        verdict = "inbox"
+        prd_status = "draft"
+        reason = "Captured for inbox/backlog; not committed to local execution."
+        prd_path = None
+    elif route == "analyst_prd":
+        verdict = "needs_analysis"
+        prd_status = "draft"
+        reason = "Product/domain ambiguity must be resolved before PRD completion."
+        prd_path = "PRD.md"
+    elif route == "investigate_first":
+        verdict = "needs_discovery"
+        prd_status = "draft"
+        reason = "Bug or behavior lacks proven cause; discovery must run first."
+        prd_path = "PRD.md"
+    elif maturity >= 5 and confidence in {"medium", "high"}:
+        verdict = "prd_ready"
+        prd_status = "complete"
+        reason = "PRD has enough shape for the selected next phase."
+        prd_path = "PRD.md"
+    else:
+        verdict = "prd_draft"
+        prd_status = "draft"
+        reason = "PRD package exists, but it needs refinement before execution."
+        prd_path = "PRD.md"
+
+    return {
+        "verdict": verdict,
+        "prd_status": prd_status,
+        "reason": reason,
+        "prd_path": prd_path,
+        "discard_path": None,
+    }
+
+
 def build_values(args: argparse.Namespace, classification: dict) -> dict:
     now = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat()
     title = args.title or extract_markdown_title(args.description) or titleize(args.description)
@@ -286,10 +334,24 @@ def build_values(args: argparse.Namespace, classification: dict) -> dict:
         "problem": args.description.strip(),
         "goal": "Turn the request into a durable, verifiable workflow artifact.",
         "actor": "User or operator named by the PRD author",
+        "user_story": (
+            "As the user or operator named by this request, I want the requested "
+            "outcome to be captured and routed so the work can be verified instead "
+            "of rediscovered."
+        ),
+        "technical_story": (
+            "As the implementing agent, I need a durable PRD, correct phase route, "
+            "status updates, and evidence artifacts so execution can proceed without "
+            "hidden context."
+        ),
         "in_scope": "Define the intended behavior and route it through the selected Superflow phases.",
         "out_of_scope": "Do not expand beyond the described request without explicit approval.",
         "expected_behavior": "The final implementation or artifact satisfies the acceptance criteria and preserves existing behavior outside scope.",
+        "current_behavior": "Not proven yet. The next phase must ground existing-system claims before implementation.",
+        "desired_behavior": "The requested outcome is delivered through the selected Superflow route with traceable artifacts.",
+        "system_pattern": "Use repository-native patterns and record evidence before marking implementation phases complete.",
         "acceptance_criteria": "The selected next phase can verify this PRD against concrete evidence.",
+        "definition_of_complete": "All acceptance criteria have matching evidence and required Superflow artifacts are current.",
         "technical_context": "To be filled from repository inspection when the next phase runs.",
         "data_contracts": "No data contract identified yet.",
         "ux_states": "No UX states identified yet.",
@@ -330,6 +392,8 @@ def write_local_package(args: argparse.Namespace, classification: dict, values: 
             "file": args.source_file,
         },
         "confidence": classification["confidence"],
+        "current_phase": current_phase(classification),
+        "decision": decision_payload(classification),
         "scores": {
             "maturity": classification["maturity_score"],
             "risk": classification["risk_score"],
@@ -342,7 +406,13 @@ def write_local_package(args: argparse.Namespace, classification: dict, values: 
             "progress": "progress.md",
             "warlog": "WARLOG.md" if args.with_warlog else None,
             "plan": None,
+            "implementation_log": None,
             "qa": None,
+        },
+        "task_source": {
+            "type": "none",
+            "path": None,
+            "progress": None,
         },
         "updated_at": values["created_at"],
     }

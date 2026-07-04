@@ -28,8 +28,20 @@ CHECKS = [
     {
         "id": "actor",
         "label": "Actor/user is named",
-        "patterns": [r"usuario", r"usuário", r"user", r"admin", r"cliente", r"operador", r"nutri"],
+        "patterns": [r"##\s+Users\s*/\s*Actors", r"usuario", r"usuário", r"user", r"admin", r"cliente", r"operador", r"nutri"],
         "gap": "Name who benefits or operates the workflow.",
+    },
+    {
+        "id": "user_story",
+        "label": "User story exists",
+        "patterns": [r"##\s+Story de Usuario", r"##\s+Story de Usuário", r"user story", r"as a .+ i want"],
+        "gap": "Add a user story that names the actor, desired outcome, and why it matters.",
+    },
+    {
+        "id": "technical_story",
+        "label": "Technical story exists",
+        "patterns": [r"##\s+Story Tecnica", r"##\s+Story Técnica", r"technical story", r"system obligation"],
+        "gap": "Add a technical story that states the system obligation and contract.",
     },
     {
         "id": "scope",
@@ -48,6 +60,12 @@ CHECKS = [
         "label": "Technical context is named",
         "patterns": [r"##\s+Technical Context", r"src/", r"app/", r"api", r"schema", r"banco", r"database", r"arquivo"],
         "gap": "Name known files, systems, APIs, or data contracts.",
+    },
+    {
+        "id": "definition_of_complete",
+        "label": "Definition of complete exists",
+        "patterns": [r"##\s+Definition of Complete", r"definition of done", r"DoD", r"pronto quando"],
+        "gap": "Add a definition of complete that includes evidence and status/artifact updates.",
     },
     {
         "id": "risk",

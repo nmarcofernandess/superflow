@@ -55,6 +55,9 @@ REQUIRED_PLUGIN_FILES = [
     "assets/templates/ISSUE_PRD.md",
     "assets/templates/analysis.md",
     "assets/templates/progress.md",
+    "assets/templates/implementation_plan.json",
+    "assets/templates/implementation_plan.md",
+    "assets/templates/technical_blueprint.md",
     "assets/templates/WARLOG.md",
     "assets/templates/qa_report.md",
     "scripts/superflow_taskgen.py",
@@ -110,6 +113,8 @@ ANALYSIS_TEMPLATE_HEADINGS = [
     "## Phase 0 Grill",
     "## Source And Scope",
     "## Product Promise",
+    "## Story de Usuario",
+    "## Story Tecnica",
     "## Current Terrain",
     "## Evidence Matrix",
     "## Implementation Map",
@@ -122,6 +127,28 @@ ANALYSIS_TEMPLATE_HEADINGS = [
     "## Open Questions",
     "## Grill Verdict",
     "## Recommended Next Phase",
+]
+
+PRD_REQUIRED_HEADINGS = [
+    "## State",
+    "## Problem",
+    "## Goal",
+    "## Users / Actors",
+    "## Story de Usuario",
+    "## Story Tecnica",
+    "## Scope",
+    "## Expected Behavior",
+    "## Current Behavior / Bug",
+    "## Desired Behavior",
+    "## System Pattern / Contract",
+    "## Acceptance Criteria",
+    "## Definition of Complete",
+    "## Technical Context",
+    "## Data / Contracts",
+    "## UX / States",
+    "## Risks",
+    "## Open Questions",
+    "## Next Phase",
 ]
 
 
@@ -189,6 +216,19 @@ def validate_plugin_root(root: Path) -> None:
         if heading not in analysis_template:
             fail(f"assets/templates/analysis.md missing heading: {heading}")
 
+    prd_template = read(root / "assets" / "templates" / "PRD.md")
+    issue_template = read(root / "assets" / "templates" / "ISSUE_PRD.md")
+    for heading in PRD_REQUIRED_HEADINGS:
+        if heading not in prd_template:
+            fail(f"assets/templates/PRD.md missing heading: {heading}")
+        if heading not in issue_template:
+            fail(f"assets/templates/ISSUE_PRD.md missing heading: {heading}")
+
+    plan_template = read(root / "assets" / "templates" / "implementation_plan.json")
+    for marker in ["schema_version", "superflow.plan.v1", "subtasks", "verification", "status"]:
+        if marker not in plan_template:
+            fail(f"assets/templates/implementation_plan.json missing marker: {marker}")
+
 
 def scan_forbidden_diagrams(root: Path) -> None:
     for file in root.rglob("*.md"):
@@ -236,11 +276,28 @@ def validate_package(path: Path) -> None:
     status = json.loads(read(path / "status.json"))
     if status.get("schema_version") != "superflow.status.v1":
         fail(f"{path}/status.json has unexpected schema_version")
-    for key in ["id", "route", "phase_budget", "confidence", "phases", "artifacts"]:
+    for key in ["id", "route", "phase_budget", "confidence", "current_phase", "decision", "phases", "artifacts", "task_source"]:
         if key not in status:
             fail(f"{path}/status.json missing {key}")
     if status["artifacts"].get("prd") and not (path / status["artifacts"]["prd"]).exists():
         fail(f"{path}/status.json points to missing PRD artifact")
+    decision = status.get("decision")
+    if not isinstance(decision, dict):
+        fail(f"{path}/status.json decision must be an object")
+    for key in ["verdict", "prd_status", "reason", "prd_path", "discard_path"]:
+        if key not in decision:
+            fail(f"{path}/status.json decision missing {key}")
+    plan_artifact = status["artifacts"].get("plan")
+    task_source = status.get("task_source") or {}
+    if plan_artifact:
+        if plan_artifact != "implementation_plan.json":
+            fail(f"{path}/status.json artifacts.plan must point to implementation_plan.json")
+        if task_source.get("path") != plan_artifact:
+            fail(f"{path}/status.json task_source.path must match artifacts.plan")
+    prd_text = read(path / "PRD.md")
+    for heading in PRD_REQUIRED_HEADINGS:
+        if heading not in prd_text:
+            fail(f"{path}/PRD.md missing heading: {heading}")
 
 
 def main() -> int:

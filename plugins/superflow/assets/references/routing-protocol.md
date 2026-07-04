@@ -13,8 +13,10 @@ flowchart TD
   maturity --> risk["Score risk"]
   risk --> intent["Detect user intent"]
   intent --> route["Choose route"]
-  route --> artifact["Write or update artifact"]
-  artifact --> next["Declare next phase"]
+  route --> budget["Choose phase budget"]
+  budget --> artifact["Write or update artifact"]
+  artifact --> status["Update status.json"]
+  status --> next["Declare next phase"]
 ```
 
 ## Source
@@ -68,6 +70,30 @@ Start at 0. Add one point for each condition:
 | 2-3 | Medium |
 | 4+ | High |
 
+## Phase Engine
+
+Superflow is one user-facing engine with optional internal phases. The user can
+ask for `superflow` or `taskgen`; the engine decides whether Analyst, Build, or
+Plan are necessary.
+
+```mermaid
+flowchart TD
+  prd["PRD"] --> ambiguity{"Product or domain ambiguity?"}
+  ambiguity -->|"yes"| analyst["Analyst"]
+  ambiguity -->|"no"| risk{"Technical risk?"}
+  analyst --> prd2["PRD update"]
+  prd2 --> risk
+  risk -->|"low"| execute["Execute"]
+  risk -->|"medium or sequencing"| plan["Plan"]
+  risk -->|"high architecture risk"| build["Build"]
+  build --> plan
+  plan --> execute
+  execute --> qa["QA"]
+```
+
+Build closes architecture. Plan creates executable tasks. Execution consumes the
+plan when present.
+
 ## Route Selection
 
 ```mermaid
@@ -115,3 +141,6 @@ Override with explicit user intent:
 - Do not open GitHub issue if the user asked for local-only work.
 - Do not create local folders for pure inbox capture unless the user explicitly
   asks for local archival.
+- Do not write task lists into `status.json`; use `implementation_plan.json`.
+- Do not mark a phase `complete` unless that phase's artifact exists and its
+  executor has evidence.

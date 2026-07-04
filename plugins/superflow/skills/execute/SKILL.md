@@ -13,12 +13,26 @@ confidence or the route says investigate/build/plan first, do that before code.
 1. Read `../../assets/references/execution-contract.md`.
 2. Read `../../assets/references/status-schema.md`.
 3. Read the local `PRD.md`, then `technical_blueprint.md` and
-   `implementation_plan.md` if present.
+   `implementation_plan.json` if present. If only `implementation_plan.md`
+   exists, treat it as human context and prefer creating/asking for JSON before
+   multi-task execution.
 4. Update `status.json`: `phases.execute = "running"` before code and
    `complete` only after implementation is done.
-5. Record human context in `progress.md`; update `WARLOG.md` for deep,
+5. When a plan exists, implement the next pending task as a whole unit. Record
+   files, checks, self-critique, and remaining tasks in `implementation_log.json`.
+6. Record human context in `progress.md`; update `WARLOG.md` for deep,
    forensic, plugin, workflow, or multi-session work.
-6. Run QA according to the risk before declaring done.
+7. Run QA according to the risk before declaring done.
+
+## Status Discipline
+
+- Mark `phases.execute = "running"` before code changes.
+- Keep `implementation_plan.json` as the task source. Do not rewrite it as a
+  progress log.
+- Update `implementation_log.json` after each task.
+- Mark `phases.execute = "complete"` only when all planned tasks are complete
+  or direct execution is fully implemented with evidence.
+- If blocked, set `phases.execute = "blocked"` and record the blocking reason.
 
 ## Mermaid
 

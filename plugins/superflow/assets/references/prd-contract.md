@@ -24,6 +24,10 @@ confidence fields say how ready it is.
 
 ## Users / Actors
 
+## Story de Usuario
+
+## Story Tecnica
+
 ## Scope
 
 ### In Scope
@@ -32,7 +36,17 @@ confidence fields say how ready it is.
 
 ## Expected Behavior
 
+## Current Behavior / Bug
+
+## Desired Behavior
+
+## System Pattern / Contract
+
 ## Acceptance Criteria
+
+- [ ] ...
+
+## Definition of Complete
 
 - [ ] ...
 
@@ -90,7 +104,22 @@ Optional artifacts:
 ```txt
 discovery.json
 technical_blueprint.md
+implementation_plan.json
 implementation_plan.md
+implementation_log.json
 qa_report.md
 units/*/PRD.md
 ```
+
+## Story Rules
+
+- `Story de Usuario` states who needs the outcome, what changes for them, and
+  why it matters.
+- `Story Tecnica` states the system obligation that makes the user story true:
+  source of truth, contract, state, or integration expectation.
+- `Current Behavior / Bug` can say "Not proven yet" for new work, but existing
+  bug or gap claims need evidence before execution.
+- `System Pattern / Contract` names the local pattern to preserve or says what
+  the next phase must prove.
+- `Definition of Complete` is broader than acceptance criteria: it includes
+  artifact/status updates and proof closure.

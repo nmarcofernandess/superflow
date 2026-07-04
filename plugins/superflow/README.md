@@ -7,7 +7,7 @@ execute.
 The spine is:
 
 ```text
-raw request -> classify -> route -> durable artifact -> execute or stop honestly
+raw request -> classify -> route -> durable artifact -> optional build/plan -> execute or stop honestly
 ```
 
 This README is the runtime guide. For the marketplace repository shape,
@@ -47,7 +47,7 @@ superflow/
   handoff.
 - `superflow:build` writes the technical blueprint/spec from analyst/PRD terrain
   using code recon and Product -> Backend -> Frontend contracts.
-- `superflow:plan` writes implementation plans.
+- `superflow:plan` writes executable `implementation_plan.json` task catalogs.
 - `superflow:warlog` maintains Mermaid-first WARLOGs.
 - `superflow:execute` implements from durable artifacts.
 - `superflow:qa` closes acceptance/proof.
@@ -68,6 +68,12 @@ The validator intentionally fails if the Analyst contract is reduced to a thin
 section checklist. Existing-code analysis must carry `Evidence Matrix`,
 `Implementation Map`, `Entities And State`, `Blueprint Handoff`, and grill
 verdicts.
+
+The validator also fails generated packages whose PRD lacks `Story de Usuario`,
+`Story Tecnica`, current/desired behavior, system contract, or definition of
+complete. `status.json` is the phase GPS; detailed tasks live in
+`implementation_plan.json`, and execution evidence lives in
+`implementation_log.json`.
 
 ## Marketplace Distribution
 

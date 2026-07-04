@@ -5,6 +5,8 @@
 - PRD: PRD.md
 - Route: {route}
 - Phase budget: {phase_budget}
+- Plan: implementation_plan.json when present
+- Implementation log: implementation_log.json when present
 
 ## Acceptance Coverage
 

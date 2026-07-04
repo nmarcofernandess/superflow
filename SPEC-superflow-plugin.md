@@ -22,7 +22,7 @@ raw idea -> direct code with no source of truth
 The correct default is:
 
 ```text
-request -> classify -> route -> durable artifact -> execute or stop honestly
+request -> classify -> route -> durable artifact -> optional build/plan -> execute or stop honestly
 ```
 
 ## 2. Decisions
@@ -48,8 +48,8 @@ model, not from route classification.
 
 ### 2.4 Mermaid only
 
-All visual contracts use Mermaid fenced blocks. PlantUML tokens are forbidden by
-the validator.
+All visual contracts use Mermaid fenced blocks. Legacy diagram tokens are
+forbidden by the validator.
 
 ### 2.5 Analyst is a heavyweight phase
 
@@ -57,6 +57,23 @@ Analyst is not a compact PRD checklist. For existing-system work, it must merge
 native grill, code recon, implementation mapping, entities/state modeling,
 rules/invariants, Mermaid runtime modeling, and blueprint handoff. If evidence
 or map is missing, the verdict cannot be `ready`.
+
+### 2.6 PRD carries user and technical stories
+
+Every PRD, whether in GitHub or local `specs/NNN-slug/PRD.md`, uses the same
+shape. It must include `Story de Usuario`, `Story Tecnica`, current vs desired
+behavior, system pattern/contract, acceptance criteria, and definition of
+complete. Low-confidence ideas stay shallow, but they do not become a separate
+artifact species.
+
+### 2.7 Build and Plan are distinct
+
+Build writes `technical_blueprint.md`: architecture, contracts, boundaries,
+risks, validation strategy, rollback, and dependency sequence. Plan writes
+`implementation_plan.json`: executable subtasks, file targets, verification,
+acceptance mapping, owner classification, and `pending` task state. `status.json`
+tracks phase/current state and artifact pointers; it does not store detailed
+tasks.
 
 ## 3. Lifecycle
 
@@ -66,10 +83,14 @@ flowchart TD
   B --> C{"Route"}
   C --> D["Inbox issue body"]
   C --> E["Local PRD package"]
-  C --> F["Analyst or build first"]
-  E --> G["Plan if needed"]
-  F --> G
-  G --> H["Execute"]
+  C --> F["Analyst if product ambiguity"]
+  E --> R{"Risk"}
+  F --> R
+  R -->|"high"| BLD["Build blueprint"]
+  R -->|"medium"| G["Plan JSON"]
+  R -->|"low"| H["Execute"]
+  BLD --> G
+  G --> H
   H --> I["QA and proof"]
 ```
 
@@ -100,7 +121,7 @@ superflow/
 | `taskgen` | Local PRD package creation and issue promotion |
 | `analyst` | Product/domain ambiguity before PRD hardening |
 | `build` | Technical blueprint/spec for risky work |
-| `plan` | Implementation plan from PRD or blueprint |
+| `plan` | Executable `implementation_plan.json` from PRD or blueprint |
 | `warlog` | Mermaid-first long-running work log |
 | `execute` | Implementation from durable Superflow artifacts |
 | `qa` | Acceptance and proof closure |
@@ -123,6 +144,10 @@ The script must run the Superflow validators and smoke tests from the package:
 The validator also protects the Analyst contract: it fails if
 `skills/analyst/SKILL.md` loses the required recon/blueprint markers or if
 `assets/templates/analysis.md` loses the heavy analysis sections.
+
+It also protects the PRD/status/plan contract: generated packages must include
+story sections, definition of complete, `decision/current_phase/task_source` in
+`status.json`, and the `implementation_plan.json` template.
 
 Optional runtime validation:
 

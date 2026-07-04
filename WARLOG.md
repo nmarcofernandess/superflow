@@ -12,8 +12,8 @@
 | Project | `superflow` |
 | Source repository | `nmarcofernandess/superflow` |
 | Plugin target | `superflow` |
-| State | Marketplace repo published; analyst contract hardening in progress after weak output audit |
-| Next action | Validate hardened Analyst/Build contract, sync installed copy, and push update |
+| State | Marketplace repo published; PRD/story/status/Build/Plan contract hardened and installed locally |
+| Next action | Review diff, commit, and push when ready |
 
 ## Mission
 
@@ -75,10 +75,34 @@ Out of scope for this publishing pass:
   handoff, Product -> Backend -> Frontend contracts, and ready gates.
 - Hardened `validate_superflow.py` so a thin analyst contract fails validation.
 
+### 2026-07-04 - PRD/status/Build/Plan hardening
+
+- Added required PRD sections for `Story de Usuario`, `Story Tecnica`, current
+  vs desired behavior, system pattern/contract, acceptance criteria, and
+  definition of complete.
+- Clarified phase semantics:
+  - Build owns `technical_blueprint.md`: architecture, contracts, risk,
+    validation, rollback, and dependency sequence.
+  - Plan owns `implementation_plan.json`: executable subtasks, file targets,
+    verification, acceptance mapping, and owner classification.
+  - Execute owns `implementation_log.json`: implementation evidence and
+    remaining work.
+  - `status.json` stays the GPS for `current_phase`, `decision`, phase state,
+    and artifact pointers.
+- Removed remaining legacy visual/config wording from runtime texts; Mermaid is
+  the only visual contract.
+- Synced the updated package to `/Users/marcoantonio/plugins/superflow` and
+  installed `superflow@personal` version `0.1.0+codex.20260704210013`.
+
 ## Proof Checklist
 
 - [x] `scripts/validate-all.sh` passes for initial publish.
-- [ ] `scripts/validate-all.sh` passes after Analyst hardening.
+- [x] `plugins/superflow/scripts/validate_superflow.py plugins/superflow --mermaid`
+  passes after PRD/status/Build/Plan hardening.
+- [x] `plugins/superflow/scripts/test_superflow_routes.py` passes after
+  PRD/status/Build/Plan hardening.
+- [x] `plugins/superflow/scripts/forward_test_superflow.py` passes after
+  PRD/status/Build/Plan hardening.
 - [ ] Git repository has a clean committed `main`.
 - [ ] GitHub repository exists and is public.
 - [ ] Remote `origin` points to `nmarcofernandess/superflow`.

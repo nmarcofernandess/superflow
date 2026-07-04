@@ -35,13 +35,15 @@ Read these completely before producing or updating analysis:
    `path:line` or explicitly marked `UNPROVEN`.
 4. Separate product promise, entities/state, rules, current behavior, and
    implementation terrain.
-5. Produce or update `analysis.md` inside the local package. For inbox-only
+5. Include `Story de Usuario` and `Story Tecnica` so taskgen/build can preserve
+   both the human outcome and the system obligation in the PRD.
+6. Produce or update `analysis.md` inside the local package. For inbox-only
    work, write the analysis into the GitHub issue body only if local artifact
    creation is not appropriate.
-6. Include a blueprint handoff when the analysis can become implementation.
+7. Include a blueprint handoff when the analysis can become implementation.
    High architecture risk should end as `ready for build`, not direct execute.
-7. Run a final grill pass and record the verdict.
-8. Update `status.json`: set `phases.analyst = "complete"` and
+8. Run a final grill pass and record the verdict.
+9. Update `status.json`: set `phases.analyst = "complete"` and
    `artifacts.analysis = "analysis.md"` when local.
 
 ## Mandatory Output
@@ -54,6 +56,8 @@ Mandatory for existing-system work:
 - `Evidence Matrix` with concrete file evidence.
 - `Implementation Map` in context -> backend -> services/hooks -> shells ->
   frontend -> tests order.
+- `Story de Usuario` and `Story Tecnica`, with technical story grounded in the
+  implementation map instead of vibes.
 - `Entities And State` with source of truth and invalid states.
 - `Runtime / Data Flow` with Mermaid when it reduces ambiguity.
 - `Rules And Invariants` that a dumb machine can execute.
@@ -84,4 +88,4 @@ analysis must contain the cited evidence and decisions itself.
 
 Use Mermaid for user flow, lifecycle, data flow, entity relation, or decision
 trees when it reduces ambiguity. Follow
-`../../assets/references/mermaid-contract.md`. No PlantUML.
+`../../assets/references/mermaid-contract.md`. Mermaid only.

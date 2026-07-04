@@ -1,0 +1,53 @@
+{
+  "schema_version": "superflow.plan.v1",
+  "status": "complete",
+  "source": {
+    "prd": "PRD.md",
+    "blueprint": null
+  },
+  "plan": {
+    "feature": "{title}",
+    "workflow_type": "feature|refactor|bug_fix|simple",
+    "strategy": "{execution_strategy}",
+    "preconditions": [
+      "PRD reviewed",
+      "Route confirmed: {route}",
+      "Phase budget confirmed: {phase_budget}"
+    ],
+    "phases": [
+      {
+        "id": "phase-1",
+        "name": "Implementation",
+        "description": "Replace with dependency-ordered work.",
+        "depends_on": [],
+        "subtasks": [
+          {
+            "id": "subtask-1-1",
+            "description": "Replace with one executable task.",
+            "files_to_modify": [],
+            "files_to_create": [],
+            "patterns_from": [],
+            "verification": {
+              "type": "command|test|typecheck|manual",
+              "command": "",
+              "expected": ""
+            },
+            "acceptance_criteria": [],
+            "owner": "main_agent",
+            "status": "pending"
+          }
+        ]
+      }
+    ],
+    "summary": {
+      "total_phases": 1,
+      "total_subtasks": 1,
+      "estimated_complexity": "{phase_budget}"
+    }
+  },
+  "done_criteria": [
+    "All mapped PRD acceptance criteria have evidence.",
+    "Each completed subtask has implementation_log evidence.",
+    "status.json and progress.md are updated by the phase executor."
+  ]
+}

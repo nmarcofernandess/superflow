@@ -69,6 +69,8 @@ timeline
 ## Regras
 
 - Atualize `status.json.artifacts.warlog = "WARLOG.md"` quando o WARLOG existir.
+- WARLOG pode resumir tasks, mas nao substitui `implementation_plan.json` nem
+  `implementation_log.json`.
 - Registre skipped phases no WARLOG quando a decisao for importante para uma
   leitura futura.
 - Se o WARLOG contradiz o PRD, pare e resolva a fonte de verdade antes de

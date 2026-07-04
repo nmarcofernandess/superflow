@@ -35,6 +35,16 @@ taskgen, ready for build, needs recon, needs human decision, or must split.
 
 Who needs what outcome, what is broken today, and what success looks like.
 
+## Story de Usuario
+
+As a concrete user or operator, describe the outcome they need and why the
+current system fails or underserves that outcome.
+
+## Story Tecnica
+
+As the implementing agent/system, describe the technical obligation that must
+be satisfied to make the user story true without violating repository patterns.
+
 ## Current Terrain
 
 Facts from the current system. Existing-code claims require evidence.

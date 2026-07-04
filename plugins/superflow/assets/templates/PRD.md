@@ -21,6 +21,14 @@
 
 - {actor}
 
+## Story de Usuario
+
+{user_story}
+
+## Story Tecnica
+
+{technical_story}
+
 ## Scope
 
 ### In Scope
@@ -35,9 +43,27 @@
 
 {expected_behavior}
 
+## Current Behavior / Bug
+
+{current_behavior}
+
+## Desired Behavior
+
+{desired_behavior}
+
+## System Pattern / Contract
+
+{system_pattern}
+
 ## Acceptance Criteria
 
 - [ ] {acceptance_criteria}
+
+## Definition of Complete
+
+- [ ] {definition_of_complete}
+- [ ] `status.json` reflects the current phase and final verdict.
+- [ ] Human progress is recorded in `progress.md`.
 
 ## Technical Context
 

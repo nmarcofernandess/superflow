@@ -8,6 +8,10 @@ blueprint/spec.
 Create a technical specification that proves the terrain and defines how the
 product promise will be implemented or intentionally deferred.
 
+Build is not the final implementation plan. It closes architecture, contracts,
+boundaries, risk, validation strategy, and sequence. Plan later converts that
+blueprint into executable subtasks in `implementation_plan.json`.
+
 ## Autocontained Dependencies
 
 - Use `code-recon-protocol.md` for real terrain.
@@ -64,7 +68,7 @@ Use Mermaid:
 - `stateDiagram-v2` for lifecycle;
 - controlled `flowchart` for component/module map.
 
-No PlantUML.
+Mermaid only.
 
 ### 5. Blueprint
 
@@ -84,7 +88,9 @@ If ready:
 - write `technical_blueprint.md` or repo-native equivalent;
 - update `status.json` with `phases.build = "complete"` and
   `artifacts.blueprint = "technical_blueprint.md"`;
-- route to `plan` or `warlog` only when sequencing is clear.
+- route to `plan` when executable tasks are needed;
+- route to `warlog` when this is deep, forensic, plugin, architecture, or
+  multi-session work.
 
 Build is not ready if:
 

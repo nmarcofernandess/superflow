@@ -29,6 +29,11 @@ Phase budget: capture|lean|standard|deep|forensic
 Local package: specs/NNN-slug or none
 ```
 
+The issue PRD uses the same required story sections as a local PRD:
+`Story de Usuario`, `Story Tecnica`, current/desired behavior, system contract,
+acceptance criteria, and definition of complete. A shallow idea is still a
+low-confidence PRD, not a separate artifact species.
+
 ## Promotion
 
 Promoting an issue means:
@@ -38,6 +43,8 @@ Promoting an issue means:
 3. Create `specs/NNN-slug/`.
 4. Write `PRD.md`, `status.json`, and `progress.md`.
 5. Update the issue body with local package path if GitHub write access exists.
+6. Preserve the issue PRD stories in the local `PRD.md`; promotion should not
+   flatten the idea back into a generic summary.
 
 Script path:
 

@@ -1,7 +1,7 @@
 {
   "name": "superflow",
   "displayName": "Superflow",
-  "version": "0.1.0+codex.20260704195600",
+  "version": "0.1.0+codex.20260704210013",
   "description": "Routes work through the smallest honest phase set: inbox, PRD, analyst, build, plan, execute, and QA.",
   "author": {
     "name": "Marco Antonio",
@@ -14,6 +14,7 @@
     "workflow",
     "prd",
     "phase-budget",
+    "implementation-plan-json",
     "warlog",
     "qa"
   ],

@@ -13,9 +13,11 @@ is not proof.
 1. Read `../../assets/references/execution-contract.md`.
 2. Read `../../assets/references/status-schema.md`.
 3. Compare implementation or artifact output against `PRD.md`.
-4. Run repo-native checks that cover the actual risk.
-5. Write `qa_report.md` when the work is non-trivial.
-6. Update `status.json`: `phases.qa = "complete"` only after evidence exists,
+4. If present, read `implementation_plan.json` and `implementation_log.json` to
+   verify every planned task has evidence.
+5. Run repo-native checks that cover the actual risk.
+6. Write `qa_report.md` when the work is non-trivial.
+7. Update `status.json`: `phases.qa = "complete"` only after evidence exists,
    and `artifacts.qa = "qa_report.md"` when local.
 
 ## Evidence

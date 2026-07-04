@@ -25,7 +25,12 @@ can produce a durable artifact or a verified implementation.
 7. If maintaining a WARLOG, follow `../../assets/references/warlog-contract.md`.
 8. If executing, follow `../../assets/references/execution-contract.md` and keep
    `status.json` current.
-9. Validate the package with `../../scripts/validate_superflow.py` before declaring it
+9. Treat Build and Plan as different phases: Build writes the technical
+   blueprint; Plan writes executable tasks in `implementation_plan.json`.
+10. The phase executor owns its own status update. The router initializes and
+    resumes from `status.json`; it does not mark a phase complete without the
+    phase artifact and evidence.
+11. Validate the package with `../../scripts/validate_superflow.py` before declaring it
    ready.
 
 ## Route Table
@@ -36,9 +41,9 @@ can produce a durable artifact or a verified implementation.
 | `inbox_prd` | Loose idea deserves structure but not local work yet | GitHub issue body with PRD shape |
 | `local_prd` | User asks taskgen/local spec or scope is mature | `specs/NNN-slug/PRD.md` |
 | `prd_execute` | Clear scope, low risk, direct implementation | PRD package, then execute |
-| `prd_plan_execute` | Clear scope but sequencing matters | PRD package, plan, execute |
+| `prd_plan_execute` | Clear scope but sequencing matters | PRD package, `implementation_plan.json`, execute |
 | `analyst_prd` | Product/domain/rule ambiguity dominates | Analyst artifact, then PRD |
-| `build_plan_execute` | Technical risk, architecture, migration, cross-module work | Build/spec, plan, execute |
+| `build_plan_execute` | Technical risk, architecture, migration, cross-module work | `technical_blueprint.md`, `implementation_plan.json`, execute |
 | `investigate_first` | Bug or unknown behavior lacks proven cause | Discovery, then route again |
 
 ## Phase Budget
@@ -63,7 +68,7 @@ Superflow exposes the router and each major phase:
 - `taskgen`: create or promote local PRD packages.
 - `analyst`: product/domain ambiguity analysis before PRD hardening.
 - `build`: technical blueprint/spec for risky or architectural work.
-- `plan`: implementation plan from PRD/blueprint.
+- `plan`: executable `implementation_plan.json` from PRD/blueprint.
 - `warlog`: long-running Mermaid WARLOG creation and updates.
 - `execute`: implementation from a durable Superflow source.
 - `qa`: acceptance and proof closure.
@@ -158,6 +163,11 @@ python3 <plugin-root>/scripts/forward_test_superflow.py
 - Skip `plan` when execution is obvious and acceptance criteria are testable.
 - Never skip QA for implementation.
 - Keep `status.json` machine-readable and `progress.md` human-readable.
+- Keep executable tasks in `implementation_plan.json`, not `status.json`.
+- Keep execution evidence in `implementation_log.json`; do not rewrite the plan
+  as a progress log.
+- Build is a technical blueprint, not a super PRD and not the final task list.
+- Plan is the task list, not an architecture decision phase.
 - Use `WARLOG.md` for product/plugin, forensic, deep, or multi-session work;
   keep it Mermaid-first for visual snapshots.
 - Use Mermaid fenced blocks only for diagrams.

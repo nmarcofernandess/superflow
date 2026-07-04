@@ -8,6 +8,10 @@ Bridge product intent and codebase reality into an implementation-safe
 blueprint. Blueprint is the architect lane: file boundaries, contracts, trade
 offs, sequencing, validation, and rollback.
 
+Blueprint is the Build artifact. It may include implementation sequence, but it
+does not own task status or worker ownership. Plan owns the executable subtask
+catalog.
+
 ## Rules
 
 - Ground the blueprint in real files, docs, commands, tests, and constraints.
@@ -48,6 +52,9 @@ Tests, manual checks, CI, route proof, performance/edge cases.
 
 ## Sequence
 Ordered implementation steps.
+
+These are dependency steps, not the final task tracker. Convert them into
+`implementation_plan.json` during Plan.
 
 ## Rollback / Containment
 How to keep the blast radius bounded.

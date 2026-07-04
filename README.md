@@ -4,7 +4,7 @@ Superflow is a portable Agent Skills workflow for routing raw requests into the
 smallest honest phase set:
 
 ```text
-request -> route -> inbox/PRD/build/plan -> execute -> QA
+request -> route -> inbox/PRD -> optional build -> optional plan -> execute -> QA
 ```
 
 The reusable core is the `SKILL.md` tree under `plugins/superflow/skills`.
@@ -83,6 +83,13 @@ Analyst and Build are heavyweight phases. Analyst must combine native grill,
 code recon, implementation mapping, entities/state, source-backed evidence, and
 blueprint handoff when the request touches existing code. Build must turn that
 terrain into Product -> Backend -> Frontend contracts before execution.
+
+PRDs always carry both `Story de Usuario` and `Story Tecnica`, plus current vs
+desired behavior, system contract, acceptance criteria, and definition of
+complete. Build is the technical blueprint phase (`technical_blueprint.md`).
+Plan is the executable task phase (`implementation_plan.json`). `status.json`
+is only the GPS for current phase, decision, and artifact pointers; task
+progress belongs in `implementation_log.json`.
 
 ## Validate
 

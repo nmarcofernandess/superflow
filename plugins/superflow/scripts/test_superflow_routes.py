@@ -42,6 +42,14 @@ def run_case(root: Path, description: str, *, mode: str, expected_route: str, ex
     if payload["mode"] == "local":
         spec_dir = Path(payload["spec_dir"])
         run([sys.executable, str(VALIDATE), str(spec_dir)])
+        prd_text = (spec_dir / "PRD.md").read_text(encoding="utf-8")
+        for marker in ["## Story de Usuario", "## Story Tecnica", "## Definition of Complete"]:
+            if marker not in prd_text:
+                raise AssertionError(f"generated PRD missing marker {marker!r}")
+        status = json.loads((spec_dir / "status.json").read_text(encoding="utf-8"))
+        for key in ["current_phase", "decision", "task_source"]:
+            if key not in status:
+                raise AssertionError(f"generated status missing {key}")
     return payload
 
 
@@ -98,6 +106,7 @@ def main() -> int:
         assert_eq((warlog_dir / "WARLOG.md").exists(), True, "warlog file exists")
         status = json.loads((warlog_dir / "status.json").read_text(encoding="utf-8"))
         assert_eq(status["artifacts"]["warlog"], "WARLOG.md", "warlog artifact")
+        assert_eq(status["decision"]["prd_path"], "PRD.md", "decision prd path")
         run([sys.executable, str(VALIDATE), str(warlog_dir), "--mermaid"])
 
     print("OK: superflow route tests")

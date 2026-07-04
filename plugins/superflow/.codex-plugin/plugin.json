@@ -1,6 +1,6 @@
 {
   "name": "superflow",
-  "version": "0.1.0+codex.20260704195600",
+  "version": "0.1.0+codex.20260704210013",
   "description": "Phase-budget workflow for routing ideas, GitHub issues, PRDs, analyst notes, specs, plans, WARLOGs, execution, and QA without forcing a rigid chain.",
   "author": {
     "name": "Marco Antonio"
@@ -16,9 +16,11 @@
       "phase-budget-routing",
       "github-inbox",
       "prd-generation",
+      "user-and-technical-stories",
       "analyst-workflow",
       "technical-blueprint",
-      "implementation-planning",
+      "implementation-plan-json",
+      "status-gps",
       "warlog-mermaid",
       "issue-promotion",
       "mermaid-contracts",

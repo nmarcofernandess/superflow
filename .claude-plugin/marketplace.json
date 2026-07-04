@@ -10,7 +10,7 @@
       "name": "superflow",
       "source": "./plugins/superflow",
       "description": "Routes work through the smallest honest phase set: inbox, PRD, analyst, build, plan, execute, and QA.",
-      "version": "0.1.0+codex.20260704195600",
+      "version": "0.1.0+codex.20260704210013",
       "author": {
         "name": "Marco Antonio",
         "url": "https://github.com/nmarcofernandess"
