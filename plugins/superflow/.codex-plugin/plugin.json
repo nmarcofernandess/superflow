@@ -1,6 +1,6 @@
 {
   "name": "superflow",
-  "version": "0.1.0+codex.20260704160850",
+  "version": "0.1.0+codex.20260704195600",
   "description": "Phase-budget workflow for routing ideas, GitHub issues, PRDs, analyst notes, specs, plans, WARLOGs, execution, and QA without forcing a rigid chain.",
   "author": {
     "name": "Marco Antonio"

@@ -42,8 +42,11 @@ superflow/
 - `superflow:superflow` routes and orchestrates phases.
 - `superflow:capture` captures ideas into GitHub-ready PRD issues.
 - `superflow:taskgen` creates or promotes local PRD packages.
-- `superflow:analyst` handles product/domain ambiguity.
-- `superflow:build` writes the technical blueprint/spec.
+- `superflow:analyst` handles product/domain/system ambiguity with native grill,
+  code recon, evidence matrix, implementation map, entities/state, and blueprint
+  handoff.
+- `superflow:build` writes the technical blueprint/spec from analyst/PRD terrain
+  using code recon and Product -> Backend -> Frontend contracts.
 - `superflow:plan` writes implementation plans.
 - `superflow:warlog` maintains Mermaid-first WARLOGs.
 - `superflow:execute` implements from durable artifacts.
@@ -60,6 +63,11 @@ python3 scripts/forward_test_superflow.py
 
 Use `--mermaid` on `validate_superflow.py` when you need render-level Mermaid
 proof.
+
+The validator intentionally fails if the Analyst contract is reduced to a thin
+section checklist. Existing-code analysis must carry `Evidence Matrix`,
+`Implementation Map`, `Entities And State`, `Blueprint Handoff`, and grill
+verdicts.
 
 ## Marketplace Distribution
 

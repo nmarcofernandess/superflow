@@ -40,6 +40,10 @@ REQUIRED_PLUGIN_FILES = [
     "skills/execute/SKILL.md",
     "skills/qa/SKILL.md",
     "skills/audit/SKILL.md",
+    "assets/references/analyst-protocol.md",
+    "assets/references/code-recon-protocol.md",
+    "assets/references/technical-blueprint-protocol.md",
+    "assets/references/build-protocol.md",
     "assets/references/routing-protocol.md",
     "assets/references/prd-contract.md",
     "assets/references/github-issue-contract.md",
@@ -49,6 +53,7 @@ REQUIRED_PLUGIN_FILES = [
     "assets/references/status-schema.md",
     "assets/templates/PRD.md",
     "assets/templates/ISSUE_PRD.md",
+    "assets/templates/analysis.md",
     "assets/templates/progress.md",
     "assets/templates/WARLOG.md",
     "assets/templates/qa_report.md",
@@ -76,6 +81,47 @@ FORBIDDEN_DIAGRAM_TOKENS = [
     "@start" + "uml",
     "@start" + "mindmap",
     "@start" + "wbs",
+]
+
+ANALYST_REQUIRED_MARKERS = [
+    "analyst-protocol.md",
+    "code-recon-protocol.md",
+    "technical-blueprint-protocol.md",
+    "Phase 0 grill",
+    "Evidence Matrix",
+    "Implementation Map",
+    "Entities And State",
+    "Blueprint Handoff",
+    "Ready Gate",
+    "path:line",
+]
+
+BUILD_REQUIRED_MARKERS = [
+    "build-protocol.md",
+    "code-recon-protocol.md",
+    "technical-blueprint-protocol.md",
+    "Product -> Backend -> Frontend",
+    "Ready Gate",
+]
+
+ANALYSIS_TEMPLATE_HEADINGS = [
+    "## State",
+    "## TL;DR",
+    "## Phase 0 Grill",
+    "## Source And Scope",
+    "## Product Promise",
+    "## Current Terrain",
+    "## Evidence Matrix",
+    "## Implementation Map",
+    "## Entities And State",
+    "## Runtime / Data Flow",
+    "## Rules And Invariants",
+    "## Architecture Risks",
+    "## Blueprint Handoff",
+    "## Acceptance Criteria",
+    "## Open Questions",
+    "## Grill Verdict",
+    "## Recommended Next Phase",
 ]
 
 
@@ -125,6 +171,23 @@ def validate_plugin_root(root: Path) -> None:
             fail(f"skills/{skill_name}/SKILL.md frontmatter must include name: {skill_name}")
         if skill_name != "audit" and "mermaid" not in skill_text.lower():
             fail(f"skills/{skill_name}/SKILL.md must mention Mermaid contract")
+
+    analyst_text = read(root / "skills" / "analyst" / "SKILL.md")
+    if len(analyst_text.splitlines()) < 80:
+        fail("skills/analyst/SKILL.md is too thin for the Superflow analyst contract")
+    for marker in ANALYST_REQUIRED_MARKERS:
+        if marker not in analyst_text:
+            fail(f"skills/analyst/SKILL.md missing analyst marker: {marker}")
+
+    build_text = read(root / "skills" / "build" / "SKILL.md")
+    for marker in BUILD_REQUIRED_MARKERS:
+        if marker not in build_text:
+            fail(f"skills/build/SKILL.md missing build marker: {marker}")
+
+    analysis_template = read(root / "assets" / "templates" / "analysis.md")
+    for heading in ANALYSIS_TEMPLATE_HEADINGS:
+        if heading not in analysis_template:
+            fail(f"assets/templates/analysis.md missing heading: {heading}")
 
 
 def scan_forbidden_diagrams(root: Path) -> None:

@@ -1,33 +1,61 @@
 ---
 name: build
-description: "Create the Superflow technical blueprint/spec for architecture, schema, migration, API, auth, shared primitive, cross-module, or high-risk implementation work. Use when route is build_plan_execute or when a PRD is mature but the technical boundary is not."
+description: "Create the Superflow technical blueprint/spec for architecture, schema, migration, API, auth, shared primitive, cross-module, or high-risk implementation work. Use when route is build_plan_execute, when analyst output is ready for architecture, or when a mature PRD still needs file-level contracts before plan/execution."
 ---
 
 # Build
 
-Build turns a mature PRD into an implementation-safe technical blueprint. It is
-not a generic brainstorm and it does not replace execution.
+Build turns a mature PRD or `analysis.md` into an implementation-safe technical
+blueprint. It is not a generic brainstorm and it does not replace execution.
+
+## Required Reading
+
+Read these completely before producing or updating a blueprint:
+
+1. `../../assets/references/execution-contract.md`
+2. `../../assets/references/status-schema.md`
+3. `../../assets/references/build-protocol.md`
+4. `../../assets/references/code-recon-protocol.md`
+5. `../../assets/references/technical-blueprint-protocol.md`
+6. `../../assets/references/mermaid-contract.md`
 
 ## Procedure
 
-1. Read `../../assets/references/execution-contract.md`.
-2. Read `../../assets/references/status-schema.md`.
-3. Read `../../assets/references/mermaid-contract.md`.
-4. Inspect real repository files before choosing boundaries.
+1. Confirm the input is mature: GitHub PRD, `analysis.md`, `PRD.md`, or an
+   explicit blueprint/spec request.
+2. If product promise, entities, state, or evidence are weak, route back to
+   `analyst`. Do not build on mush.
+3. Inspect real repository files before choosing boundaries.
+4. Close the design in Product -> Backend -> Frontend order.
 5. Write `technical_blueprint.md` or the repo-native equivalent.
-6. Update `status.json`: `phases.build = "complete"` and
+6. Include architecture/data flow diagrams when they clarify execution.
+7. Run a grill pass before declaring the blueprint ready.
+8. Update `status.json`: `phases.build = "complete"` and
    `artifacts.blueprint = "technical_blueprint.md"`.
 
 ## Required Blueprint
 
-- Existing system read.
+- Goal and product promise.
+- Current terrain with evidence.
 - Files and ownership boundaries.
 - Reuse decisions vs new code.
 - Data/API/contracts.
-- Migration/security/cache risks.
+- Migration/security/cache/permission risks.
 - Implementation sequence.
 - Verification plan.
+- Rollback/containment.
 - Go/no-go verdict.
+
+## Ready Gate
+
+Build is not ready if:
+
+- technical claims lack source proof;
+- local patterns were not checked;
+- sequence is not dependency-ordered;
+- validation is vague;
+- human decision can still change architecture;
+- the implementation is too large for one slice and has not been split.
 
 ## Mermaid
 

@@ -79,6 +79,11 @@ runtime adapters. If workflow behavior changes, edit
 `plugins/superflow/scripts` first and then bump the plugin manifests when
 publishing a release.
 
+Analyst and Build are heavyweight phases. Analyst must combine native grill,
+code recon, implementation mapping, entities/state, source-backed evidence, and
+blueprint handoff when the request touches existing code. Build must turn that
+terrain into Product -> Backend -> Frontend contracts before execution.
+
 ## Validate
 
 ```bash

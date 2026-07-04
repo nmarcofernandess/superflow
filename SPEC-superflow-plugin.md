@@ -51,6 +51,13 @@ model, not from route classification.
 All visual contracts use Mermaid fenced blocks. PlantUML tokens are forbidden by
 the validator.
 
+### 2.5 Analyst is a heavyweight phase
+
+Analyst is not a compact PRD checklist. For existing-system work, it must merge
+native grill, code recon, implementation mapping, entities/state modeling,
+rules/invariants, Mermaid runtime modeling, and blueprint handoff. If evidence
+or map is missing, the verdict cannot be `ready`.
+
 ## 3. Lifecycle
 
 ```mermaid
@@ -112,6 +119,10 @@ The script must run the Superflow validators and smoke tests from the package:
 - `validate_superflow.py`;
 - `test_superflow_routes.py`;
 - `forward_test_superflow.py`.
+
+The validator also protects the Analyst contract: it fails if
+`skills/analyst/SKILL.md` loses the required recon/blueprint markers or if
+`assets/templates/analysis.md` loses the heavy analysis sections.
 
 Optional runtime validation:
 
