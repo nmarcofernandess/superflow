@@ -1,0 +1,31 @@
+{
+  "name": "superflow",
+  "description": "Portable Agent Skills workflow for routing ideas, issues, PRDs, specs, plans, execution, and QA by maturity and risk.",
+  "owner": {
+    "name": "Marco Antonio",
+    "url": "https://github.com/nmarcofernandess"
+  },
+  "plugins": [
+    {
+      "name": "superflow",
+      "source": "./plugins/superflow",
+      "description": "Routes work through the smallest honest phase set: inbox, PRD, analyst, build, plan, execute, and QA.",
+      "version": "0.1.0+codex.20260704160850",
+      "author": {
+        "name": "Marco Antonio",
+        "url": "https://github.com/nmarcofernandess"
+      },
+      "repository": "https://github.com/nmarcofernandess/superflow",
+      "license": "MIT",
+      "category": "productivity",
+      "keywords": [
+        "agent-skills",
+        "workflow",
+        "prd",
+        "phase-budget",
+        "warlog",
+        "qa"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "name": "superflow",
+  "version": "0.1.0+codex.20260704160850",
+  "description": "Phase-budget workflow for routing ideas, GitHub issues, PRDs, analyst notes, specs, plans, WARLOGs, execution, and QA without forcing a rigid chain.",
+  "author": {
+    "name": "Marco Antonio"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Superflow",
+    "shortDescription": "Route ideas into issue, PRD, plan, or execution.",
+    "longDescription": "Superflow is a local workflow plugin that routes raw ideas, GitHub issues, mature PRDs, analyst notes, technical specs, implementation plans, WARLOGs, execution requests, and QA through the smallest honest set of phases. It preserves GitHub as an inbox, promotes mature work into local PRD packages, exposes the major phases as separate skills, uses Mermaid-only visual contracts, and treats analyst/build/plan as tools instead of mandatory ritual.",
+    "developerName": "Marco Antonio",
+    "category": "Productivity",
+    "capabilities": [
+      "phase-budget-routing",
+      "github-inbox",
+      "prd-generation",
+      "analyst-workflow",
+      "technical-blueprint",
+      "implementation-planning",
+      "warlog-mermaid",
+      "issue-promotion",
+      "mermaid-contracts",
+      "execution-handoff"
+    ],
+    "defaultPrompt": [
+      "Use Superflow to route this request.",
+      "Audit this request with Superflow gaps.",
+      "Promote this issue into a Superflow PRD package."
+    ]
+  }
+}

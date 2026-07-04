@@ -1,0 +1,21 @@
+{
+  "name": "superflow",
+  "displayName": "Superflow",
+  "version": "0.1.0+codex.20260704160850",
+  "description": "Routes work through the smallest honest phase set: inbox, PRD, analyst, build, plan, execute, and QA.",
+  "author": {
+    "name": "Marco Antonio",
+    "url": "https://github.com/nmarcofernandess"
+  },
+  "repository": "https://github.com/nmarcofernandess/superflow",
+  "license": "MIT",
+  "keywords": [
+    "agent-skills",
+    "workflow",
+    "prd",
+    "phase-budget",
+    "warlog",
+    "qa"
+  ],
+  "skills": "./skills/"
+}
