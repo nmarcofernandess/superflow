@@ -32,6 +32,13 @@ can produce a durable artifact or a verified implementation.
     phase artifact and evidence.
 11. Validate the package with `../../scripts/validate_superflow.py` before declaring it
    ready.
+12. If the deliverable is a visual mural/one-pager for a non-technical reader
+    (status wall, feature explainer, or a proof-final wireframe), use the
+    `html-didatico` skill; use Direction C when a verification wireframe is
+    filled into the proof in the same file.
+13. If asked whether existing issues are truly resolved, use the
+    `backlog-status` skill to reconcile each issue against merged PRs and real
+    code; this is not `audit`, which scores one forward request.
 
 ## Route Table
 
@@ -73,6 +80,10 @@ Superflow exposes the router and each major phase:
 - `execute`: implementation from a durable Superflow source.
 - `qa`: acceptance and proof closure.
 - `audit`: no-write route/readiness/gap analysis.
+- `html-didatico`: self-contained visual HTML docs with CSS dioramas —
+  manuals, murals, and verification wireframes.
+- `backlog-status`: verify whether existing GitHub issues are actually
+  resolved against merged PRs and real code.
 
 ## Commands
 
@@ -187,3 +198,5 @@ python3 <plugin-root>/scripts/forward_test_superflow.py
 - Read `../../assets/references/status-schema.md` before editing `status.json`.
 - Read `../../assets/references/execution-contract.md` before executing from a Superflow
   package.
+- Read `../../assets/references/backlog-status-protocol.md` before verifying
+  existing issues against merged PRs.
