@@ -374,6 +374,73 @@ Migração de specs antigas deve ser lazy: só quando uma spec for retomada.
 - Controle humano: decisão nova de produto aparece como gate; nenhum script a
   resolve.
 
+---
+
+## Mindset — O plano deve pré-compilar o TDD até o DoD
+
+Percebi que um plano não pode apenas decompor “o que implementar”. Ele precisa pré-compilar como cada comportamento será provado até o Definition of Done.
+
+Quando o TDD é imaginado durante a execução, cada agente interpreta o requisito novamente, inventa testes diferentes e depende dos reviewers para descobrir contratos que já deveriam estar explícitos. Isso gera retrabalho, expansão tardia de escopo e ciclos intermináveis de “implementa → reviewer encontra furo → cria teste → corrige”.
+
+A unidade correta de planejamento não é uma atividade técnica. É um comportamento completo, com seu próprio ciclo de prova:
+
+1. contrato de comportamento;
+2. teste exato que deve falhar;
+3. motivo esperado da falha;
+4. implementação mínima;
+5. teste passando;
+6. casos negativos e concorrentes;
+7. integração com os consumidores;
+8. evidência necessária para o DoD;
+9. commit/review independente.
+
+Portanto, cada task do Superflow deve nascer no formato `writing-plans`, contendo:
+
+- arquivos exatos de implementação e teste;
+- interfaces consumidas e produzidas;
+- nomes e conteúdo dos testes;
+- comando para provar o RED;
+- implementação prevista;
+- comando para provar o GREEN;
+- contratos positivos, negativos, de erro e concorrência;
+- paridade entre superfícies equivalentes;
+- prova visual/E2E quando o comportamento for de jornada;
+- gate final e evidência exigida.
+
+O plano também precisa terminar com uma matriz de cobertura do DoD:
+
+```text
+requisito da spec
+→ task responsável
+→ teste unitário
+→ teste de integração
+→ E2E/prova visual
+→ gate de CI
+→ documento atualizado
+```
+
+Nenhum requisito pode ficar coberto apenas por prosa, “review posterior” ou esperança de que o executor perceba.
+
+### Mudança de papel dos reviewers
+
+Reviewer não deve funcionar como autor tardio do plano. Sua função é encontrar o imprevisível: erro de implementação, interação emergente, risco não modelado ou premissa falsa.
+
+Se o reviewer encontra repetidamente contratos fundamentais ausentes — atomicidade, idempotência, conflito, autorização, paridade, estado vazio — isso indica falha do plano, não apenas falha do código.
+
+### Regra operacional
+
+> Nenhuma task entra em execução sem declarar previamente seus contratos positivos, negativos, concorrentes e de integração, com teste, comando e resultado esperado. Nenhuma fatia termina sem mapear suas provas ao DoD global.
+
+Testes adicionais durante a execução continuam permitidos para descobertas genuínas. O que não pode acontecer é usar a execução para descobrir o TDD básico que o plano deveria ter definido.
+
+### Síntese
+
+O plano não é uma lista de coisas para codar.
+
+O plano é um programa de execução e verificação: já determina o que será construído, como sabemos que falhou antes, como sabemos que passou depois e como cada verde local compõe o DoD final.
+
+---
+
 ## Decisões ainda a cravar
 
 Defaults recomendados:
