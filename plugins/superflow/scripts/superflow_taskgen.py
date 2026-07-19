@@ -204,7 +204,7 @@ def classify(text: str, mode: str, explicit_route: str | None) -> dict:
         next_phase = "analyst"
         skipped = []
     elif route == "investigate_first":
-        next_phase = "discovery"
+        next_phase = "analyst"
         skipped = []
     elif route in {"inbox_only", "inbox_prd"}:
         next_phase = "promote when mature"
@@ -249,7 +249,6 @@ def next_spec_dir(root: Path, specs_dir: str, slug: str) -> Path:
 def phase_status(route: str) -> dict:
     phases = {
         "inbox": "skipped",
-        "discovery": "skipped",
         "analyst": "skipped",
         "taskgen": "complete",
         "build": "skipped",
@@ -267,7 +266,7 @@ def phase_status(route: str) -> dict:
     elif route == "prd_plan_execute":
         phases.update({"plan": "pending"})
     elif route == "investigate_first":
-        phases.update({"discovery": "pending", "execute": "skipped", "qa": "skipped"})
+        phases.update({"analyst": "pending", "execute": "skipped", "qa": "skipped"})
     return phases
 
 
@@ -295,9 +294,9 @@ def decision_payload(classification: dict) -> dict:
         reason = "Product/domain ambiguity must be resolved before PRD completion."
         prd_path = "PRD.md"
     elif route == "investigate_first":
-        verdict = "needs_discovery"
+        verdict = "needs_analysis"
         prd_status = "draft"
-        reason = "Bug or behavior lacks proven cause; discovery must run first."
+        reason = "Bug or behavior lacks proven cause; Analyst must investigate before the fix is scoped."
         prd_path = "PRD.md"
     elif maturity >= 5 and confidence in {"medium", "high"}:
         verdict = "prd_ready"

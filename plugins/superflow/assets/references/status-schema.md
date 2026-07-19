@@ -28,7 +28,6 @@ nao vira documento narrativo.
   },
   "phases": {
     "inbox": "skipped",
-    "discovery": "skipped",
     "analyst": "skipped",
     "taskgen": "complete",
     "build": "skipped",
@@ -107,10 +106,13 @@ inbox
 prd_draft
 prd_ready
 needs_analysis
-needs_discovery
 needs_product_decision
 discarded
 ```
+
+Legado: specs antigas podem conter `needs_discovery` e uma fase `discovery` no
+`phases`. Discovery não é mais fase pública — investigação de bug/comportamento
+desconhecido é modo do Analyst (migração lazy; não reescrever specs antigas).
 
 ### `decision.prd_status`
 
@@ -156,7 +158,7 @@ discarded
 | `prd_plan_execute` | `standard` | plan |
 | `analyst_prd` | `deep` | analyst |
 | `build_plan_execute` | `deep` | build |
-| `investigate_first` | `forensic` | discovery |
+| `investigate_first` | `forensic` | analyst (investigation mode) |
 
 ## Phase Ownership
 

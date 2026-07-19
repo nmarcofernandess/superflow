@@ -14,7 +14,7 @@ architecture; Plan creates the task catalog.
 1. Read `../../assets/references/execution-contract.md`.
 2. Read `../../assets/references/status-schema.md`.
 3. Read local `PRD.md` first. Then read `technical_blueprint.md`,
-   `analysis.md`, `discovery.json`, or repo-native equivalents when present.
+   `analysis.md`, or repo-native equivalents when present.
 4. Read `../../assets/templates/implementation_plan.json` before writing a
    local plan.
 5. Write `implementation_plan.json` as the executable task source. Optionally

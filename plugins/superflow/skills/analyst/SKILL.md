@@ -25,6 +25,14 @@ Read these completely before producing or updating analysis:
 6. `../../assets/references/mermaid-contract.md`
 7. `../../assets/templates/analysis.md`
 
+## Investigation Mode
+
+There is no separate Discovery phase. When the input is a bug or unknown
+behavior without proven cause (route `investigate_first`), Analyst owns the
+investigation: reproduce, read logs/tests/code paths, and either prove the
+cause with evidence or mark it `UNPROVEN`. The investigation lives inside the
+analysis artifact; the verdict routes the work after the cause is known.
+
 ## Procedure
 
 1. Classify the source: inline ask, GitHub issue, PRD, spec folder, or diff.

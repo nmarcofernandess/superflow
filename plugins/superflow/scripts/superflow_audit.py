@@ -112,7 +112,7 @@ def audit(text: str, source: str, mode: str) -> dict:
     if gaps:
         next_actions.append("Improve PRD gaps before execution.")
     if confidence == "low":
-        next_actions.append("Keep as inbox or run analyst/discovery.")
+        next_actions.append("Keep as inbox or run analyst.")
     if route == "prd_execute" and not gaps:
         next_actions.append("Execute directly with QA.")
     elif route == "prd_execute":
@@ -122,7 +122,7 @@ def audit(text: str, source: str, mode: str) -> dict:
     elif route == "build_plan_execute":
         next_actions.append("Write technical blueprint before plan/execution.")
     elif route == "investigate_first":
-        next_actions.append("Run discovery before defining fix.")
+        next_actions.append("Run Analyst in investigation mode before defining fix.")
     elif route in {"inbox_only", "inbox_prd"}:
         next_actions.append("Store as GitHub issue; promote when mature.")
 

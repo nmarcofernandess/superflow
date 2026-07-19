@@ -51,7 +51,7 @@ can produce a durable artifact or a verified implementation.
 | `prd_plan_execute` | Clear scope but sequencing matters | PRD package, `implementation_plan.json`, execute |
 | `analyst_prd` | Product/domain/rule ambiguity dominates | Analyst artifact, then PRD |
 | `build_plan_execute` | Technical risk, architecture, migration, cross-module work | `technical_blueprint.md`, `implementation_plan.json`, execute |
-| `investigate_first` | Bug or unknown behavior lacks proven cause | Discovery, then route again |
+| `investigate_first` | Bug or unknown behavior lacks proven cause | Analyst in investigation mode, then route again |
 
 ## Phase Budget
 
@@ -61,7 +61,7 @@ can produce a durable artifact or a verified implementation.
 | `lean` | taskgen, execute, qa | analyst, build, plan |
 | `standard` | taskgen, plan, execute, qa | analyst, build |
 | `deep` | analyst, taskgen, build, plan, execute, qa | none |
-| `forensic` | discovery, analyst, build, critic, plan, execute, qa | none |
+| `forensic` | analyst (investigation mode), build, critic, plan, execute, qa | none |
 
 Budget controls phases first. Model strength is secondary and can be chosen
 inside each phase.

@@ -39,22 +39,24 @@ Totals diverge intermittently, but the cause is unknown.
 
 ## Desired Behavior
 
-Discovery proves the cause and routes the work to the correct fix path.
+Analyst investigation proves the cause and routes the work to the correct fix
+path.
 
 ## System Pattern / Contract
 
-Unknown bugs route to discovery before PRD/build/plan.
+Unknown bugs route to Analyst in investigation mode before PRD/build/plan.
 
 ## Acceptance Criteria
 
 - [ ] Causa raiz provada por arquivo, log, teste ou reproduçao.
-- [ ] Fix so e definido depois da discovery.
+- [ ] Fix so e definido depois da investigacao do Analyst.
 - [ ] QA cobre o caminho que reproduzia a divergencia.
 
 ## Definition of Complete
 
-- [ ] Discovery artifact proves or disproves the suspected cause.
+- [ ] Analyst investigation (`analysis.md`) proves or disproves the suspected
+      cause.
 
 ## Next Phase
 
-discovery
+analyst (investigation mode)

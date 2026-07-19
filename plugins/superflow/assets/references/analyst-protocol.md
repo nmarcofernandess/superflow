@@ -67,6 +67,10 @@ Classify the analyst job:
 - `extraction`: existing system behavior must be documented.
 - `audit`: current architecture or implementation must be judged.
 - `hybrid`: existing system plus proposed change.
+- `investigation`: bug or unknown behavior without proven cause. There is no
+  separate Discovery phase — reproduce, read logs/tests/code paths until the
+  cause is proven with evidence or explicitly `UNPROVEN`; only then scope a
+  fix and route forward.
 
 Record:
 

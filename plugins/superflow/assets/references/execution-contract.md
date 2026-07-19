@@ -53,12 +53,16 @@ phase blocked or route back to Analyst/product decision.
 
 ## Investigate First
 
-Use discovery before PRD/build/plan when:
+Use Analyst in investigation mode before PRD/build/plan when:
 
 - The request is a bug without proven cause.
 - The user asks "why" or "verifica".
 - Logs, tests, runtime behavior, or code paths must be inspected before
   defining the fix.
+
+There is no separate Discovery phase. The investigation lives inside the
+Analyst artifact (`analysis.md`): reproduce, read logs/tests/code paths, and
+either prove the cause or mark it `UNPROVEN` before any fix is scoped.
 
 ## Status Updates
 

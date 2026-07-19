@@ -67,7 +67,7 @@ confidence fields say how ready it is.
 
 | Confidence | Meaning | Allowed next step |
 |------------|---------|-------------------|
-| `low` | Useful capture, missing core facts | inbox, analyst, ask, discovery |
+| `low` | Useful capture, missing core facts | inbox, analyst, ask |
 | `medium` | Implementable after plan/build | plan, build, analyst |
 | `high` | Ready for direct execution or plan | execute, plan |
 
@@ -102,7 +102,6 @@ specs/NNN-slug/
 Optional artifacts:
 
 ```txt
-discovery.json
 technical_blueprint.md
 implementation_plan.json
 implementation_plan.md
