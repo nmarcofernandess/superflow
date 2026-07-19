@@ -2,10 +2,13 @@
 
 > Data: 2026-07-15
 >
-> Atualizado: 2026-07-19 — task board: a sprint precisa de um painel de
-> execução que o humano enxerga
+> Atualizado: 2026-07-19 — primeira fatia IMPLEMENTADA no plugin: Discovery →
+> modo do Analyst, multi-analyst com síntese única, `SPEC.md` default do Build,
+> PRD gate `gathering` (script nunca promove) e task board com prova em browser
 >
-> Estado: proposta de refatoração, ainda não implementada
+> Estado: parcialmente implementada — kernel de fases e task board já no
+> plugin; WARLOG oficial, status v2, budgets v2 e `superflow:proof` seguem
+> proposta
 >
 > Fonte: `nmarcofernandess/superflow`
 
@@ -362,8 +365,14 @@ análises necessárias, uma síntese e um Plan Markdown antes de executar.
 1. Revisar este memo e cravar as decisões abertas abaixo.
 2. Refatorar Warlog Minimal no WARLOG oficial; provar paridade; eliminar o duplo.
 3. Criar `status.v2` mínimo e mover Discovery para Analyst.
+   (✅ Discovery → modo `investigation` do Analyst FEITO 2026-07-19, ainda
+   sobre o status v1; status.v2 pendente.)
 4. Fazer a skill de PRD possuir `gathering -> ready|blocked|superseded`.
+   (✅ FEITO 2026-07-19: script sempre grava `gathering`; promoção é ato da
+   skill; forward_test guarda o invariante invertido.)
 5. Tornar Build a SPEC consolidada por sprint.
+   (✅ Artefato `SPEC.md` + síntese multi-analyst FEITOS 2026-07-19; o "por
+   sprint" depende do modelo de sprint do WARLOG, pendente.)
 6. Tornar `PLAN.md` canônico e sem tracking.
 7. Remover `progress.md` e `implementation_log.json` do contrato.
 8. Cortar scripts até sobrar mecânica.
@@ -378,6 +387,9 @@ análises necessárias, uma síntese e um Plan Markdown antes de executar.
 13. Criar `assets/task-board/` (`board.html` + `board-data.example.js`) e
     cravar a atualização do board no boundary do Execute; validar numa spec
     real antes de acoplar a qualquer script.
+    (✅ FEITO 2026-07-19: template + exemplo no plugin, contratos em
+    plan/execute/qa, prova headless com asserts DOM e screenshot; falta só o
+    uso numa spec real.)
 
 Migração de specs antigas deve ser lazy: só quando uma spec for retomada.
 
@@ -965,7 +977,8 @@ sprints já fechadas.
 
 Defaults recomendados:
 
-1. Build artifact: `SPEC.md`.
+1. ✅ CRAVADO E IMPLEMENTADO (2026-07-19): Build artifact `SPEC.md`;
+   `technical_blueprint.md` segue válido como nome legado (migração lazy).
 2. Unidade: `sprint da spec`, definida como fatia mergeável.
 3. Budgets: `direct`, `plan`, `spec`.
 4. `progress.md`: remover sem fallback paralelo.
@@ -976,11 +989,13 @@ Defaults recomendados:
 9. `html-didatico`: apresentação e narrativa, nunca autoridade de execução.
 10. Atlas portátil: scaffold somente quando não houver harness nativo e a
     recorrência justificar o custo.
-11. Task board: superfície viva da sprint ativa — `board.html` congelado +
-    `board-data.js` como único arquivo mutável, estados
-    `done|active|queued|blocked|added` e `delivers` obrigatório.
-12. Dono da atualização do board: Execute, no mesmo boundary do
-    `status.json`; Plan cria, QA fecha. Board é projeção, nunca fonte.
+11. ✅ CRAVADO E IMPLEMENTADO (2026-07-19): task board — `board.html`
+    congelado + `board-data.js` único mutável, estados
+    `done|active|queued|blocked|added`, `delivers` obrigatório; template em
+    `assets/task-board/`, provado em browser via `file://`.
+12. ✅ CRAVADO E IMPLEMENTADO (2026-07-19): dono da atualização do board —
+    Execute no mesmo boundary do `status.json`; Plan cria, QA fecha; board é
+    projeção, nunca fonte. Contratos gravados nas skills plan/execute/qa.
 
 ## Próximo passo
 
