@@ -60,6 +60,8 @@ REQUIRED_PLUGIN_FILES = [
     "assets/templates/technical_blueprint.md",
     "assets/templates/WARLOG.md",
     "assets/templates/qa_report.md",
+    "assets/task-board/board.html",
+    "assets/task-board/board-data.example.js",
     "scripts/superflow_taskgen.py",
     "scripts/superflow_github.py",
     "scripts/superflow_audit.py",

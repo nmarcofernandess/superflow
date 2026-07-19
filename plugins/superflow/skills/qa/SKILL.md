@@ -19,6 +19,9 @@ is not proof.
 6. Write `qa_report.md` when the work is non-trivial.
 7. Update `status.json`: `phases.qa = "complete"` only after evidence exists,
    and `artifacts.qa = "qa_report.md"` when local.
+8. When a task board exists, close its remaining stations in `board-data.js`
+   so the board ends honest: every station `done` or explicitly
+   `blocked` with a note. A board left mid-race after QA is a defect.
 
 ## Evidence
 

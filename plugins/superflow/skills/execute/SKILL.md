@@ -30,6 +30,12 @@ confidence or the route says investigate/build/plan first, do that before code.
 - Keep `implementation_plan.json` as the task source. Do not rewrite it as a
   progress log.
 - Update `implementation_log.json` after each task.
+- When a task board exists (`board.html` + `board-data.js`), rewrite
+  `board-data.js` in the SAME boundary as `status.json`: task finished,
+  pitstop inserted (`state: "added"`), or blocked. Status changed without the
+  board changed means the boundary is not finished. If no board exists yet and
+  execution has three or more tasks, create one from
+  `../../assets/task-board/board-data.example.js`.
 - Mark `phases.execute = "complete"` only when all planned tasks are complete
   or direct execution is fully implemented with evidence.
 - If blocked, set `phases.execute = "blocked"` and record the blocking reason.

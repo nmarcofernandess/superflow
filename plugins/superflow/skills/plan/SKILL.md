@@ -22,6 +22,12 @@ architecture; Plan creates the task catalog.
 6. Update `status.json`: `phases.plan = "complete"`,
    `artifacts.plan = "implementation_plan.json"`, and
    `task_source.path = "implementation_plan.json"`.
+7. Create the human-facing task board: copy
+   `../../assets/task-board/board.html` into the package and write
+   `board-data.js` from the plan tasks (schema in
+   `../../assets/task-board/board-data.example.js`). The board is a projection
+   of the plan for the human; it never replaces `implementation_plan.json`.
+   Skip it only for trivial direct execution with one or two obvious steps.
 
 ## Required Plan
 
