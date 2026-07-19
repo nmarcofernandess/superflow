@@ -5,8 +5,9 @@ description: "Create the Superflow technical blueprint/spec for architecture, sc
 
 # Build
 
-Build turns a mature PRD or `analysis.md` into an implementation-safe technical
-blueprint. It is not a generic brainstorm and it does not replace execution.
+Build turns a mature PRD or one or more analyses into an implementation-safe
+technical spec. It is not a generic brainstorm and it does not replace
+execution.
 It is also not Plan: Build closes architecture, contracts, boundaries, risks,
 and validation strategy. Plan later turns those decisions into executable tasks.
 
