@@ -58,7 +58,7 @@ High-risk schema/report changes require Build before Plan.
 
 ## Definition of Complete
 
-- [ ] `technical_blueprint.md` closes contracts, sequence, validation, and rollback.
+- [ ] `SPEC.md` closes contracts, sequence, validation, and rollback.
 
 ## Next Phase
 

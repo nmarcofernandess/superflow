@@ -33,11 +33,13 @@ Read these completely before producing or updating a blueprint:
    not reconcile individual analyses — the spec does.
 4. Inspect real repository files before choosing boundaries.
 5. Close the design in Product -> Backend -> Frontend order.
-6. Write `technical_blueprint.md` or the repo-native equivalent.
+6. Write `SPEC.md` (default) or the repo-native equivalent.
+   `technical_blueprint.md` remains valid in existing specs — lazy migration,
+   do not rewrite old packages.
 7. Include architecture/data flow diagrams when they clarify execution.
 8. Run a grill pass before declaring the blueprint ready.
 9. Update `status.json`: `phases.build = "complete"` and
-   `artifacts.blueprint = "technical_blueprint.md"`.
+   `artifacts.blueprint = "SPEC.md"` (or the legacy filename in old packages).
 10. Leave granular task ownership to Plan. Do not duplicate the final task
     tracker inside the blueprint.
 

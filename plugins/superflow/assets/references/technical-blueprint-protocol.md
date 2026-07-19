@@ -2,6 +2,11 @@
 
 Use after PRD/recon when a task needs a concrete implementation path.
 
+The Build artifact is `SPEC.md` by default. `technical_blueprint.md` is the
+legacy filename and remains valid in existing specs (lazy migration). This
+protocol keeps its historical name; it defines the artifact's contract either
+way.
+
 ## Mission
 
 Bridge product intent and codebase reality into an implementation-safe

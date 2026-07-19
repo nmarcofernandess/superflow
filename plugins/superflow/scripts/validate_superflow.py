@@ -57,7 +57,7 @@ REQUIRED_PLUGIN_FILES = [
     "assets/templates/progress.md",
     "assets/templates/implementation_plan.json",
     "assets/templates/implementation_plan.md",
-    "assets/templates/technical_blueprint.md",
+    "assets/templates/SPEC.md",
     "assets/templates/WARLOG.md",
     "assets/templates/qa_report.md",
     "assets/task-board/board.html",

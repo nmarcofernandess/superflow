@@ -12,10 +12,10 @@ confidence or the route says investigate/build/plan first, do that before code.
 
 1. Read `../../assets/references/execution-contract.md`.
 2. Read `../../assets/references/status-schema.md`.
-3. Read the local `PRD.md`, then `technical_blueprint.md` and
-   `implementation_plan.json` if present. If only `implementation_plan.md`
-   exists, treat it as human context and prefer creating/asking for JSON before
-   multi-task execution.
+3. Read the local `PRD.md`, then `SPEC.md` (or legacy
+   `technical_blueprint.md`) and `implementation_plan.json` if present. If
+   only `implementation_plan.md` exists, treat it as human context and prefer
+   creating/asking for JSON before multi-task execution.
 4. Update `status.json`: `phases.execute = "running"` before code and
    `complete` only after implementation is done.
 5. When a plan exists, implement the next pending task as a whole unit. Record

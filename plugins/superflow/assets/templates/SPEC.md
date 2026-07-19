@@ -1,4 +1,4 @@
-# Technical Blueprint: {title}
+# SPEC: {title}
 
 ## Inputs
 

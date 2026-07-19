@@ -166,7 +166,7 @@ discarded
 |---|---|---|---|
 | taskgen | source input | `PRD.md`, `status.json`, `progress.md` | taskgen |
 | analyst | `PRD.md` or issue body | `analysis.md` | analyst |
-| build | `PRD.md` and optional `analysis.md` | `technical_blueprint.md` | build |
+| build | `PRD.md` and analyses when present | `SPEC.md` (legacy `technical_blueprint.md`) | build |
 | plan | `PRD.md` and optional blueprint | `implementation_plan.json` | plan |
 | execute | `PRD.md`, plan when present | `implementation_log.json` and code | execute |
 | qa | `PRD.md`, plan/log when present | `qa_report.md` | qa |

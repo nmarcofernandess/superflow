@@ -37,9 +37,10 @@ Use build/spec when:
 - The PRD names behavior but not implementation boundaries.
 - A wrong implementation would be expensive to unwind.
 
-Write `technical_blueprint.md` or the repo-native equivalent. Build may include
-an implementation sequence, but it does not own the granular task checklist.
-Plan owns executable subtasks.
+Write `SPEC.md` (default; `technical_blueprint.md` is the valid legacy name)
+or the repo-native equivalent. Build may include an implementation sequence,
+but it does not own the granular task checklist. Plan owns executable
+subtasks.
 
 ## Build vs Plan
 

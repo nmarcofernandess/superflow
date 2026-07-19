@@ -89,9 +89,10 @@ Produce:
 
 If ready:
 
-- write `technical_blueprint.md` or repo-native equivalent;
+- write `SPEC.md` (default) or the repo-native equivalent —
+  `technical_blueprint.md` remains valid in existing specs (lazy migration);
 - update `status.json` with `phases.build = "complete"` and
-  `artifacts.blueprint = "technical_blueprint.md"`;
+  `artifacts.blueprint = "SPEC.md"`;
 - route to `plan` when executable tasks are needed;
 - route to `warlog` when this is deep, forensic, plugin, architecture, or
   multi-session work.

@@ -104,7 +104,8 @@ Optional artifacts:
 ```txt
 analysis.md
 ANALYSIS-*.md
-technical_blueprint.md
+SPEC.md
+technical_blueprint.md   (legacy name for SPEC.md)
 implementation_plan.json
 implementation_plan.md
 implementation_log.json
