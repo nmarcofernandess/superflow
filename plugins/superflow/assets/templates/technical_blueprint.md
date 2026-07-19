@@ -3,6 +3,7 @@
 ## Inputs
 
 - PRD: PRD.md
+- Analyses consumed: list `analysis.md` / `ANALYSIS-*.md` actually read, or "none"
 - Route: {route}
 - Phase budget: {phase_budget}
 

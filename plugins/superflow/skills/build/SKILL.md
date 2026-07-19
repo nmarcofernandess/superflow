@@ -23,19 +23,23 @@ Read these completely before producing or updating a blueprint:
 
 ## Procedure
 
-1. Confirm the input is mature: GitHub PRD, `analysis.md`, `PRD.md`, or an
-   explicit blueprint/spec request.
+1. Confirm the input is mature: GitHub PRD, one or more analyses
+   (`analysis.md`, `ANALYSIS-*.md`), `PRD.md`, or an explicit blueprint/spec
+   request.
 2. If product promise, entities, state, or evidence are weak, route back to
    `analyst`. Do not build on mush.
-3. Inspect real repository files before choosing boundaries.
-4. Close the design in Product -> Backend -> Frontend order.
-5. Write `technical_blueprint.md` or the repo-native equivalent.
-6. Include architecture/data flow diagrams when they clarify execution.
-7. Run a grill pass before declaring the blueprint ready.
-8. Update `status.json`: `phases.build = "complete"` and
+3. Read ALL analyses present in the package. The Build output is the single
+   canonical synthesis and must list the sources it consumed; the status does
+   not reconcile individual analyses — the spec does.
+4. Inspect real repository files before choosing boundaries.
+5. Close the design in Product -> Backend -> Frontend order.
+6. Write `technical_blueprint.md` or the repo-native equivalent.
+7. Include architecture/data flow diagrams when they clarify execution.
+8. Run a grill pass before declaring the blueprint ready.
+9. Update `status.json`: `phases.build = "complete"` and
    `artifacts.blueprint = "technical_blueprint.md"`.
-9. Leave granular task ownership to Plan. Do not duplicate the final task
-   tracker inside the blueprint.
+10. Leave granular task ownership to Plan. Do not duplicate the final task
+    tracker inside the blueprint.
 
 ## Required Blueprint
 

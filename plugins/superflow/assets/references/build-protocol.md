@@ -30,9 +30,13 @@ final evidence and decisions.
 Require one of:
 
 - GitHub Issue with PRD;
-- `analysis.md`;
+- one or more analyses (`analysis.md`, `ANALYSIS-*.md`);
 - `PRD.md`;
 - clear user request explicitly asking for blueprint/spec.
+
+When multiple analyses exist, read all of them. The blueprint/spec is the
+single canonical synthesis and lists the sources it consumed; the status does
+not reconcile individual analyses.
 
 If the input lacks product promise, entities, scope, or source truth, route back
 to Analyst.

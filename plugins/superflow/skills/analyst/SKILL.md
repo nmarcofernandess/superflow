@@ -33,6 +33,16 @@ investigation: reproduce, read logs/tests/code paths, and either prove the
 cause with evidence or mark it `UNPROVEN`. The investigation lives inside the
 analysis artifact; the verdict routes the work after the cause is known.
 
+## Multiple Analyses, One Active Synthesis
+
+One piece of work can need more than one analysis lens — product, code, data,
+performance. The default output is a single `analysis.md`; when more than one
+lens deserves its own artifact, name them `ANALYSIS-<lens>.md` in the same
+package. `status.json.artifacts.analysis` points at the single ACTIVE
+analysis — the status never reconciles individual analyses. When
+implementation needs one canonical technical closure, Build consumes all
+analyses and produces the single spec, listing the sources it consumed.
+
 ## Procedure
 
 1. Classify the source: inline ask, GitHub issue, PRD, spec folder, or diff.
@@ -51,8 +61,9 @@ analysis artifact; the verdict routes the work after the cause is known.
 7. Include a blueprint handoff when the analysis can become implementation.
    High architecture risk should end as `ready for build`, not direct execute.
 8. Run a final grill pass and record the verdict.
-9. Update `status.json`: set `phases.analyst = "complete"` and
-   `artifacts.analysis = "analysis.md"` when local.
+9. Update `status.json`: set `phases.analyst = "complete"` and point
+   `artifacts.analysis` at the active analysis (`analysis.md` or the relevant
+   `ANALYSIS-<lens>.md`) when local.
 
 ## Mandatory Output
 

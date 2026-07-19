@@ -102,6 +102,8 @@ specs/NNN-slug/
 Optional artifacts:
 
 ```txt
+analysis.md
+ANALYSIS-*.md
 technical_blueprint.md
 implementation_plan.json
 implementation_plan.md
