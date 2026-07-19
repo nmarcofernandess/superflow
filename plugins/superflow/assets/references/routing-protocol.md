@@ -135,6 +135,9 @@ Override with explicit user intent:
 
 ## Stop Rules
 
+- Do not execute while `decision.prd_status = "gathering"`. Promotion to
+  `ready` is the PRD-owning skill's act after reviewing content against the
+  PRD contract — never automatic and never derived from a score.
 - Do not execute a `confidence=low` PRD without explicit user approval or one
   improvement pass.
 - Do not run build/plan just to satisfy ritual when the direct path is clear.

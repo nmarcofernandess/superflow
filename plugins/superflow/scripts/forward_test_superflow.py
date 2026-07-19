@@ -84,8 +84,11 @@ def main() -> int:
         if "## Story de Usuario" not in prd_text or "## Story Tecnica" not in prd_text:
             raise AssertionError("generated PRD missing required story sections")
         status_payload = json.loads((spec_dir / "status.json").read_text(encoding="utf-8"))
-        if status_payload["decision"]["prd_status"] != "complete":
-            raise AssertionError(f"expected complete PRD decision, got {status_payload['decision']}")
+        if status_payload["decision"]["prd_status"] != "gathering":
+            raise AssertionError(
+                "scaffolded PRD must be born 'gathering' (the script never promotes); "
+                f"got {status_payload['decision']}"
+            )
         warlog = run([
             sys.executable,
             str(WARLOG),

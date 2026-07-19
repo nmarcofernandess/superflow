@@ -21,8 +21,8 @@ nao vira documento narrativo.
   "current_phase": "execute",
   "decision": {
     "verdict": "prd_ready",
-    "prd_status": "complete",
-    "reason": "PRD has enough shape for the selected next phase.",
+    "prd_status": "ready",
+    "reason": "Promoted by the PRD-owning skill after review against the PRD contract.",
     "prd_path": "PRD.md",
     "discard_path": null
   },
@@ -117,11 +117,19 @@ desconhecido é modo do Analyst (migração lazy; não reescrever specs antigas)
 ### `decision.prd_status`
 
 ```txt
-draft
-complete
+gathering
+ready
 blocked
-discarded
+superseded
 ```
+
+`gathering` = ainda reúne decisões/evidências (todo scaffold nasce aqui).
+`ready` = cumpre o prd-contract e pode alimentar a próxima fase.
+`blocked` = depende de decisão/evidência externa.
+`superseded` = outra versão/artefato é canônico.
+
+Legado: specs antigas podem conter `draft`/`complete`/`discarded` — leia como
+`gathering`/`ready`/`superseded` (migração lazy; não reescrever specs antigas).
 
 ## Invariantes
 
@@ -142,10 +150,14 @@ discarded
 11. Quem executa a fase atualiza o status da fase. O roteador/orquestrador pode
     inicializar e retomar, mas nao deve marcar `complete` no lugar do executor
     que possui a evidencia.
-12. `decision.prd_status = complete` significa PRD pronto para a proxima fase,
-    nao implementacao pronta.
+12. `decision.prd_status = ready` significa PRD pronto para a proxima fase,
+    nao implementacao pronta. So a skill que produziu/revisou o conteudo do
+    PRD promove `gathering -> ready`; scaffold (script) sempre grava
+    `gathering`, e `ready` nunca deriva de score de keywords.
 13. Se `artifacts.plan = "implementation_plan.json"`, `task_source.path` deve
     apontar para o mesmo arquivo.
+14. Nenhuma fase de execucao roda com `prd_status = gathering`. Promova para
+    `ready` ou marque `blocked` antes de executar.
 
 ## Phase Matrix
 

@@ -7,6 +7,7 @@ work, that source is `specs/NNN-slug/PRD.md`.
 
 Allowed when all are true:
 
+- `decision.prd_status = "ready"` (a `gathering` PRD never executes)
 - `confidence = high`
 - `route = prd_execute`
 - Risk score is 0-1

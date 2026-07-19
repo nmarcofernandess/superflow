@@ -168,6 +168,9 @@ python3 <plugin-root>/scripts/forward_test_superflow.py
 
 - Do not create a local `specs/NNN-*` folder for every thought. Create it when
   the user asks for local taskgen or when the PRD is mature enough to act on.
+- A scaffolded PRD is born `gathering`. Only the skill that wrote or reviewed
+  the PRD content promotes it to `ready`; scripts never do. Do not run
+  execute phases while the PRD is `gathering`.
 - Use the same PRD layout in GitHub issues and local files. A shallow idea is a
   low-confidence PRD, not a different artifact species.
 - Skip `analyst` when the product logic is already clear.

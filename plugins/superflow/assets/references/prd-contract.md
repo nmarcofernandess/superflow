@@ -71,6 +71,24 @@ confidence fields say how ready it is.
 | `medium` | Implementable after plan/build | plan, build, analyst |
 | `high` | Ready for direct execution or plan | execute, plan |
 
+## PRD States
+
+`decision.prd_status` in `status.json` tracks the deliverable state of the
+PRD itself:
+
+| State | Meaning |
+|---|---|
+| `gathering` | Still collecting decisions/evidence. Every scaffold is born here. |
+| `ready` | Fulfills this contract and can feed the next phase. |
+| `blocked` | Depends on an external decision or missing evidence. |
+| `superseded` | Another version/artifact is canonical now. |
+
+Promotion `gathering -> ready` is an act of the skill that wrote or reviewed
+the PRD content against this contract — never of a script or keyword score. A
+structurally complete file that is semantically empty ("To be filled...")
+stays `gathering`. Legacy specs may contain `draft`/`complete`/`discarded`;
+read them as `gathering`/`ready`/`superseded` (lazy migration).
+
 ## Acceptance Criteria Rules
 
 - Criteria must be observable.

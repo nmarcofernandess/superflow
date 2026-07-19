@@ -280,38 +280,31 @@ def current_phase(classification: dict) -> str:
 
 
 def decision_payload(classification: dict) -> dict:
+    """Scaffold-time decision only. The script never promotes a PRD:
+    prd_status is always "gathering". Promotion to "ready" (or "blocked"/
+    "superseded") is an act of the skill that wrote or reviewed the PRD
+    content against the PRD contract — never of a keyword score."""
     route = classification["route"]
-    maturity = classification["maturity_score"]
-    confidence = classification["confidence"]
     if route in {"inbox_only", "inbox_prd"}:
         verdict = "inbox"
-        prd_status = "draft"
         reason = "Captured for inbox/backlog; not committed to local execution."
         prd_path = None
     elif route == "analyst_prd":
         verdict = "needs_analysis"
-        prd_status = "draft"
-        reason = "Product/domain ambiguity must be resolved before PRD completion."
+        reason = "Product/domain ambiguity must be resolved before PRD promotion."
         prd_path = "PRD.md"
     elif route == "investigate_first":
         verdict = "needs_analysis"
-        prd_status = "draft"
         reason = "Bug or behavior lacks proven cause; Analyst must investigate before the fix is scoped."
-        prd_path = "PRD.md"
-    elif maturity >= 5 and confidence in {"medium", "high"}:
-        verdict = "prd_ready"
-        prd_status = "complete"
-        reason = "PRD has enough shape for the selected next phase."
         prd_path = "PRD.md"
     else:
         verdict = "prd_draft"
-        prd_status = "draft"
-        reason = "PRD package exists, but it needs refinement before execution."
+        reason = "Scaffolded by taskgen; the PRD-owning skill must review the content and promote gathering -> ready."
         prd_path = "PRD.md"
 
     return {
         "verdict": verdict,
-        "prd_status": prd_status,
+        "prd_status": "gathering",
         "reason": reason,
         "prd_path": prd_path,
         "discard_path": None,

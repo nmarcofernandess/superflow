@@ -46,6 +46,15 @@ desired behavior, system pattern/contract, acceptance criteria, and definition
 of complete. A shallow idea can have low confidence, but it still uses the same
 shape as a mature PRD.
 
+## PRD Gate
+
+Every scaffolded package is born with `decision.prd_status = "gathering"`. The
+script only scaffolds; it never promotes. Promotion to `ready` is this skill's
+act after reviewing and filling the PRD content against
+`../../assets/references/prd-contract.md` — record it in `status.json` with the
+reason. A structurally complete but semantically empty PRD ("To be filled...")
+stays `gathering`.
+
 ## Mermaid
 
 PRD diagrams use `../../assets/references/mermaid-contract.md`. Do not generate

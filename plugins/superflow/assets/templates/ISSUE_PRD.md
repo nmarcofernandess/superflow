@@ -71,7 +71,7 @@ Local package: {local_package}
 ## Definition of Complete
 
 - [ ] {definition_of_complete}
-- [ ] `status.json` or issue metadata reflects whether this is inbox, PRD-ready, blocked, or discarded.
+- [ ] `status.json` or issue metadata reflects whether this is inbox, gathering, ready, blocked, or superseded.
 
 ## Technical Context
 
