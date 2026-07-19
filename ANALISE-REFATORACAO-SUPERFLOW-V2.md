@@ -2,7 +2,8 @@
 
 > Data: 2026-07-15
 >
-> Atualizado: 2026-07-18 — taxonomia de prova e fronteira de `superflow:proof`
+> Atualizado: 2026-07-19 — task board: a sprint precisa de um painel de
+> execução que o humano enxerga
 >
 > Estado: proposta de refatoração, ainda não implementada
 >
@@ -374,6 +375,9 @@ análises necessárias, uma síntese e um Plan Markdown antes de executar.
     atlas.
 12. Validar os três níveis com um caso de fotografia, uma jornada com estados
     positivos e negativos e um atlas regenerável real.
+13. Criar `assets/task-board/` (`board.html` + `board-data.example.js`) e
+    cravar a atualização do board no boundary do Execute; validar numa spec
+    real antes de acoplar a qualquer script.
 
 Migração de specs antigas deve ser lazy: só quando uma spec for retomada.
 
@@ -807,6 +811,156 @@ A formulação essencial é:
 
 ---
 
+## Insight — A sprint precisa de um painel de tasks que o humano enxerga
+
+O sintoma que revelou o buraco: durante a execução, a IA frequentemente
+esquece de manter as tasks — e o humano fica sem saber onde o trabalho está.
+Não é falta de artefato. `status.json`, `PLAN.md` e WARLOG existem, mas são
+interfaces agente-agente: o humano não vai abrir JSON nem parsear Markdown
+para descobrir se a task 3 de 7 terminou. E o HTML de acompanhamento
+(`html-didatico`) não cobre esse papel: ele é narrativa pontual — explica uma
+solução ou fecha uma entrega — e apodrece no instante em que a execução
+avança um passo.
+
+> O plano precisa de um local explícito que o humano possa ver. Não importa
+> qual HTML de acompanhamento exista na spec: as tasks da sprint ativa
+> merecem uma superfície própria, viva, separada da narrativa.
+
+### O que o mapa do 076 provou
+
+A referência concreta é o `MAPA-DO-CAMINHO-076.html` (spec de ontologia de
+alimentos do DietFlow): uma linha de metrô vertical com estações `done`,
+`aqui` (pulsando, "VOCÊ ESTÁ AQUI") e futuras, cada estação com nome e uma
+linha dizendo **o que ela entrega**. Em um scroll o humano entende passado,
+presente e futuro da sprint.
+
+O que ele acertou:
+
+- estados visuais imediatos (feito / aqui / futuro), sem legenda;
+- cada estação descreve resultado ("CLI dry-run com gates verdes"), não
+  atividade ("implementar CLI");
+- uma página, zero seções supérfluas.
+
+O que ele errou: é artesanal. Dados entrelaçados no markup — atualizar o
+estado de uma task custa reescrever HTML. Quando atualizar custa caro,
+ninguém atualiza, e o painel mente. É a mesma lição do falso-verde: artefato
+que não acompanha a realidade é pior que artefato nenhum.
+
+### Separar template de dados
+
+A correção é a mesma que separa renderer de manifest no nível `atlas`:
+
+```text
+board.html       → layout congelado. Nunca editado por spec.
+board-data.js    → uma constante. Única coisa que a IA toca.
+```
+
+O detalhe técnico que destrava a "auto-atualização" barata: `<script
+src="board-data.js">` clássico **funciona em `file://`** — diferente de
+`fetch` e de ES modules, que o browser bloqueia por CORS fora de um servidor.
+Então o `board.html` renderiza a constante em runtime, o humano deixa a aba
+aberta e dá refresh, e a IA nunca gasta token com markup. Atualizar o painel
+é reescrever um arquivo de ~30 linhas — um `Write` pequeno e à prova de erro
+de edição, não um `Edit` cirúrgico dentro de um HTML de 300 linhas.
+
+### Modelo de dados mínimo
+
+```js
+const BOARD = {
+  spec: "076-ontologia-alimentos",
+  sprint: "E1 — apply seco + fusão",
+  updated: "2026-07-19 14:30",
+  next: "Rodar o apply real depois do gate verde",
+  tasks: [
+    { name: "Decisões congeladas",  delivers: "10 decisões com lineage em decisions/marco-f1.json", state: "done" },
+    { name: "CLI apply-decisions",  delivers: "dry-run com gates de identidade e precedência",      state: "done" },
+    { name: "Fusões par-a-par",     delivers: "65 colisões julgadas com evidência",                 state: "active" },
+    { name: "Pitstop — gate rejeitou", delivers: "decisão sobre precedência C>B>A revisada",        state: "added" },
+    { name: "Preview final",        delivers: "732 conceitos, 0 pendências, exit 0",                state: "queued" },
+  ],
+};
+```
+
+Cinco estados e nada mais: `done`, `active`, `queued`, `blocked` e `added` —
+o último para pitstops, conversas e descobertas inseridas no meio da corrida,
+que hoje somem porque não têm onde existir. `delivers` é obrigatório: é o que
+torna o painel explicativo (o que esta task entrega) em vez de um checklist
+de atividades. Campo extra é ontologia nova; se a constante ficar grande, o
+problema é sprint mal fatiada, não schema pequeno.
+
+### Contrato de atualização — piggyback, não ritual novo
+
+O board não cria um boundary novo; ele pega carona no que já existe:
+
+- **Plan** (ou Execute na primeira task, quando Plan não existir) cria o
+  board: copia o template para a sprint e escreve o primeiro `board-data.js`
+  a partir das tasks do `PLAN.md`.
+- **Execute** atualiza `board-data.js` no MESMO boundary em que já atualiza o
+  `status.json`: terminou task, inseriu pitstop, bloqueou. Se o status mudou
+  e o board não, o boundary não terminou.
+- **QA** marca o fechamento da última estação.
+
+O board é projeção, nunca fonte. `PLAN.md`, `status.json` e WARLOG continuam
+canônicos; divergência se resolve regenerando o board a partir deles — nunca
+o contrário.
+
+### Por que isso conserta o esquecimento
+
+A IA esquece de manter tasks porque hoje elas vivem em artefatos que ninguém
+abre — custo de manutenção sem feedback de ninguém olhando. Um painel que o
+humano de fato olha inverte o incentivo em dois sentidos: o custo de manter
+caiu para um `Write` de 30 linhas, e a cobrança ficou natural — "o board diz
+que você está na task 2, mas você acabou de dizer que terminou a 4". A
+superfície visível é o mecanismo de enforcement, não mais uma obrigação.
+
+### Fronteiras com as outras superfícies
+
+| Superfície | Papel | Pergunta que responde |
+|---|---|---|
+| Task board | posição | "Onde a execução está agora?" |
+| `superflow:proof` | evidência | "O comportamento foi provado?" |
+| `html-didatico` | explicação | "Como esta solução funciona?" |
+| WARLOG | campanha | "Como as sprints se encadeiam?" |
+
+Não misturar: o board não vira mural de prova, não ganha narrativa editorial
+e não duplica o quadro macro do WARLOG. Escopo do board é a sprint ativa.
+
+### Onde mora no plugin
+
+```text
+assets/task-board/
+├── board.html             # template congelado — linha de metrô, 5 estados,
+│                          #   "você está aqui", lê BOARD de board-data.js
+└── board-data.example.js  # constante de exemplo que documenta o schema
+```
+
+E na spec, por sprint:
+
+```text
+specs/NNN-slug/sprints/SX-slug/
+├── board.html         # cópia do template (autocontido, sobrevive ao plugin)
+└── board-data.js      # o único arquivo que a execução reescreve
+```
+
+Duplicar o template por sprint é deliberado: o artefato fica autocontido no
+repo da spec e uma evolução futura do template não reescreve a história das
+sprints já fechadas.
+
+### Guardrails
+
+- Sprint `direct` trivial não precisa de board — dois passos não merecem
+  painel.
+- `board.html` da spec nunca é editado; melhoria de layout acontece no
+  template do plugin e vale para sprints futuras.
+- O board não substitui `status.json` como GPS do agente — agente lê status,
+  humano olha board.
+- Task sem `delivers` honesto é atividade disfarçada; reescrever antes de
+  entrar no painel.
+- Board desatualizado descoberto em QA é falha de boundary do Execute, com o
+  mesmo peso de um `status.json` estragado.
+
+---
+
 ## Decisões ainda a cravar
 
 Defaults recomendados:
@@ -822,6 +976,11 @@ Defaults recomendados:
 9. `html-didatico`: apresentação e narrativa, nunca autoridade de execução.
 10. Atlas portátil: scaffold somente quando não houver harness nativo e a
     recorrência justificar o custo.
+11. Task board: superfície viva da sprint ativa — `board.html` congelado +
+    `board-data.js` como único arquivo mutável, estados
+    `done|active|queued|blocked|added` e `delivers` obrigatório.
+12. Dono da atualização do board: Execute, no mesmo boundary do
+    `status.json`; Plan cria, QA fecha. Board é projeção, nunca fonte.
 
 ## Próximo passo
 
