@@ -55,6 +55,12 @@ nao vira documento narrativo.
 }
 ```
 
+When `artifacts.plan` is set it must be `implementation_plan.json` and code
+subtasks follow `tdd-contract.md`. When `artifacts.implementation_log` is set
+it must be `implementation_log.json` with red/green evidence for completed
+`tdd.required` tasks.
+
+
 ## Valores
 
 ### `route`

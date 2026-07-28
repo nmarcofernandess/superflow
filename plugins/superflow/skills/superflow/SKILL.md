@@ -23,11 +23,11 @@ can produce a durable artifact or a verified implementation.
 6. If writing a PRD or issue body, follow `../../assets/references/prd-contract.md` and
    `../../assets/references/github-issue-contract.md`.
 7. If maintaining a WARLOG, follow `../../assets/references/warlog-contract.md`.
-8. If executing, follow `../../assets/references/execution-contract.md` and keep
-   `status.json` current.
+8. If executing, follow `../../assets/references/execution-contract.md` and
+   `../../assets/references/tdd-contract.md`, and keep `status.json` current.
 9. Treat Build and Plan as different phases: Build writes the technical spec
    (`SPEC.md`; legacy `technical_blueprint.md` stays valid); Plan writes
-   executable tasks in `implementation_plan.json`.
+   executable tasks in `implementation_plan.json` with TDD pre-compile (I1).
 10. The phase executor owns its own status update. The router initializes and
     resumes from `status.json`; it does not mark a phase complete without the
     phase artifact and evidence.
@@ -76,10 +76,11 @@ Superflow exposes the router and each major phase:
 - `taskgen`: create or promote local PRD packages.
 - `analyst`: product/domain ambiguity analysis before PRD hardening.
 - `build`: technical blueprint/spec for risky or architectural work.
-- `plan`: executable `implementation_plan.json` from PRD/blueprint.
+- `plan`: executable `implementation_plan.json` from PRD/blueprint with TDD
+  RED/GREEN pre-compile.
 - `warlog`: long-running Mermaid WARLOG creation and updates.
-- `execute`: implementation from a durable Superflow source.
-- `qa`: acceptance and proof closure.
+- `execute`: implementation from a durable Superflow source under iron-law TDD.
+- `qa`: acceptance matrix and RED/GREEN proof closure.
 - `audit`: no-write route/readiness/gap analysis.
 - `html-didatico`: self-contained visual HTML docs with CSS dioramas —
   manuals, murals, and verification wireframes.
@@ -181,6 +182,9 @@ python3 <plugin-root>/scripts/forward_test_superflow.py
 - Keep executable tasks in `implementation_plan.json`, not `status.json`.
 - Keep execution evidence in `implementation_log.json`; do not rewrite the plan
   as a progress log.
+- Code tasks follow `tdd-contract.md`: plan pre-compiles RED/GREEN (I1),
+  execute observes RED before production code (I2), QA maps PRD criteria to
+  evidence including red+green (I3).
 - Build is a technical blueprint, not a super PRD and not the final task list.
 - Plan is the task list, not an architecture decision phase.
 - Use `WARLOG.md` for product/plugin, forensic, deep, or multi-session work;
@@ -202,5 +206,7 @@ python3 <plugin-root>/scripts/forward_test_superflow.py
 - Read `../../assets/references/status-schema.md` before editing `status.json`.
 - Read `../../assets/references/execution-contract.md` before executing from a Superflow
   package.
+- Read `../../assets/references/tdd-contract.md` before planning or executing
+  code tasks.
 - Read `../../assets/references/backlog-status-protocol.md` before verifying
   existing issues against merged PRs.

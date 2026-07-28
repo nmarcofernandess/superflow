@@ -36,7 +36,8 @@ Ground the decision in real files, docs, schemas, commands, or marked unknowns.
 - [ ] Step 1
 
 This sequence explains dependency order for Plan. The Plan phase still owns the
-granular executable subtasks in `implementation_plan.json`.
+granular executable subtasks in `implementation_plan.json` (with TDD RED/GREEN
+pre-compile for code tasks — see plugin `tdd-contract.md`).
 
 ## Verification
 

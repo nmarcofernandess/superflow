@@ -86,10 +86,13 @@ terrain into Product -> Backend -> Frontend contracts before execution.
 
 PRDs always carry both `Story de Usuario` and `Story Tecnica`, plus current vs
 desired behavior, system contract, acceptance criteria, and definition of
-complete. Build is the technical blueprint phase (`technical_blueprint.md`).
-Plan is the executable task phase (`implementation_plan.json`). `status.json`
-is only the GPS for current phase, decision, and artifact pointers; task
-progress belongs in `implementation_log.json`.
+complete. Build is the technical blueprint/spec phase (`SPEC.md`; legacy
+`technical_blueprint.md` stays valid). Plan is the executable task phase
+(`implementation_plan.json`) and pre-compiles TDD RED/GREEN for code tasks.
+`status.json` is only the GPS for current phase, decision, and artifact
+pointers; task progress and red/green evidence belong in
+`implementation_log.json`. Canonical TDD rules:
+`plugins/superflow/assets/references/tdd-contract.md`.
 
 ## Validate
 

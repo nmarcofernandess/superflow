@@ -1,7 +1,7 @@
 {
   "name": "superflow",
-  "version": "0.1.0+codex.20260704210013",
-  "description": "Phase-budget workflow for routing ideas, GitHub issues, PRDs, analyst notes, specs, plans, WARLOGs, execution, and QA without forcing a rigid chain.",
+  "version": "0.1.1+tdd.20260728",
+  "description": "Phase-budget workflow for routing ideas, GitHub issues, PRDs, analyst notes, specs, plans, WARLOGs, execution, and QA without forcing a rigid chain. Code tasks follow the Superflow TDD contract (plan RED/GREEN, execute iron law, QA evidence).",
   "author": {
     "name": "Marco Antonio"
   },

@@ -25,6 +25,7 @@
 
 - PRD source: `PRD.md`
 - Build output when needed: `SPEC.md`
-- Executable plan when needed: `implementation_plan.json`
-- Execution evidence when code runs: `implementation_log.json`
+- Executable plan when needed: `implementation_plan.json` (TDD RED/GREEN on code tasks)
+- Execution evidence when code runs: `implementation_log.json` (red+green excerpts)
+- TDD rules: plugin `assets/references/tdd-contract.md`
 - QA evidence when closed: `qa_report.md` or repo-native equivalent

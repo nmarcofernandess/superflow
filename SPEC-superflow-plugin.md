@@ -70,10 +70,10 @@ artifact species.
 
 Build writes `technical_blueprint.md`: architecture, contracts, boundaries,
 risks, validation strategy, rollback, and dependency sequence. Plan writes
-`implementation_plan.json`: executable subtasks, file targets, verification,
-acceptance mapping, owner classification, and `pending` task state. `status.json`
-tracks phase/current state and artifact pointers; it does not store detailed
-tasks.
+`implementation_plan.json`: executable subtasks, file targets, TDD RED/GREEN
+pre-compile (`tdd-contract.md`), verification, acceptance mapping, owner
+classification, and `pending` task state. `status.json` tracks phase/current
+state and artifact pointers; it does not store detailed tasks.
 
 ## 3. Lifecycle
 
@@ -121,10 +121,10 @@ superflow/
 | `taskgen` | Local PRD package creation and issue promotion |
 | `analyst` | Product/domain ambiguity before PRD hardening |
 | `build` | Technical blueprint/spec for risky work |
-| `plan` | Executable `implementation_plan.json` from PRD or blueprint |
+| `plan` | Executable `implementation_plan.json` from PRD or blueprint (TDD I1) |
 | `warlog` | Mermaid-first long-running work log |
-| `execute` | Implementation from durable Superflow artifacts |
-| `qa` | Acceptance and proof closure |
+| `execute` | Implementation under iron-law TDD (I2) with log evidence |
+| `qa` | PRD acceptance matrix + red/green proof (I3) |
 | `audit` | Read-only route/readiness/gap analysis |
 
 ## 6. Validation
@@ -139,6 +139,7 @@ The script must run the Superflow validators and smoke tests from the package:
 
 - `validate_superflow.py`;
 - `test_superflow_routes.py`;
+- `test_tdd_contract.py`;
 - `forward_test_superflow.py`.
 
 The validator also protects the Analyst contract: it fails if

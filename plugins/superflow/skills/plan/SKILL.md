@@ -12,18 +12,19 @@ architecture; Plan creates the task catalog.
 ## Procedure
 
 1. Read `../../assets/references/execution-contract.md`.
-2. Read `../../assets/references/status-schema.md`.
-3. Read local `PRD.md` first. Then read `SPEC.md` (or legacy
+2. Read `../../assets/references/tdd-contract.md` (I1 — plan pre-compiles proof).
+3. Read `../../assets/references/status-schema.md`.
+4. Read local `PRD.md` first. Then read `SPEC.md` (or legacy
    `technical_blueprint.md`), `analysis.md` / `ANALYSIS-*.md`, or repo-native
    equivalents when present.
-4. Read `../../assets/templates/implementation_plan.json` before writing a
+5. Read `../../assets/templates/implementation_plan.json` before writing a
    local plan.
-5. Write `implementation_plan.json` as the executable task source. Optionally
+6. Write `implementation_plan.json` as the executable task source. Optionally
    write `implementation_plan.md` only as a human-readable summary.
-6. Update `status.json`: `phases.plan = "complete"`,
+7. Update `status.json`: `phases.plan = "complete"`,
    `artifacts.plan = "implementation_plan.json"`, and
    `task_source.path = "implementation_plan.json"`.
-7. Create the human-facing task board: copy
+8. Create the human-facing task board: copy
    `../../assets/task-board/board.html` into the package and write
    `board-data.js` from the plan tasks (schema in
    `../../assets/task-board/board-data.example.js`). The board is a projection
@@ -36,12 +37,24 @@ architecture; Plan creates the task catalog.
 - Ordered tasks.
 - File targets.
 - Change per task.
-- Validation per task.
-- Done criteria mapped back to PRD acceptance criteria.
+- **TDD pre-compile per code task (I1):** `behavior`, `tdd.red.command`,
+  `tdd.red.expected_failure`, `tdd.green.command`. Prefer real test file and
+  test name when known.
+- Validation per task (`verification` may mirror `tdd.green`).
+- Done criteria mapped back to PRD acceptance criteria (`acceptance_criteria`
+  on each task).
 - Owner classification per task: `main_agent`, `explorer`, `worker`, or
   `reviewer`.
 - `status: "pending"` for every task at plan creation. Execution progress goes
   to `implementation_log.json`, not into the plan.
+
+## TDD rules (summary)
+
+- Code tasks: `tdd.required: true` by default. Iron law is enforced at Execute.
+- Docs/chore-only tasks: `tdd.required: false` with non-empty `skip_reason`.
+- Forbidden: "write tests later", empty RED for production code, TBD
+  verification.
+- Full rules: `../../assets/references/tdd-contract.md`.
 
 ## Task Ownership
 
@@ -56,6 +69,8 @@ Plan is not complete if:
 
 - a PRD acceptance criterion has no mapped task or verification;
 - a task has no file target, creation target, or explicit discovery target;
+- a `tdd.required` task is missing RED command, expected failure, or GREEN
+  command;
 - verification is vague or non-runnable when a runnable check exists;
 - architecture choices are still unresolved and should return to Build;
 - task boundaries would cause overlapping write ownership.

@@ -48,6 +48,7 @@ REQUIRED_PLUGIN_FILES = [
     "assets/references/prd-contract.md",
     "assets/references/github-issue-contract.md",
     "assets/references/execution-contract.md",
+    "assets/references/tdd-contract.md",
     "assets/references/mermaid-contract.md",
     "assets/references/warlog-contract.md",
     "assets/references/status-schema.md",
@@ -57,6 +58,7 @@ REQUIRED_PLUGIN_FILES = [
     "assets/templates/progress.md",
     "assets/templates/implementation_plan.json",
     "assets/templates/implementation_plan.md",
+    "assets/templates/implementation_log.json",
     "assets/templates/SPEC.md",
     "assets/templates/WARLOG.md",
     "assets/templates/qa_report.md",
@@ -67,6 +69,48 @@ REQUIRED_PLUGIN_FILES = [
     "scripts/superflow_audit.py",
     "scripts/superflow_warlog.py",
 ]
+
+PLAN_TDD_MARKERS = [
+    "tdd-contract.md",
+    "tdd.red",
+    "tdd.green",
+    "expected_failure",
+    "Ready Gate",
+]
+
+EXECUTE_TDD_MARKERS = [
+    "tdd-contract.md",
+    "Iron law",
+    "RED",
+    "GREEN",
+    "implementation_log.json",
+]
+
+QA_TDD_MARKERS = [
+    "tdd-contract.md",
+    "acceptance matrix",
+    "red+green",
+    "Ready Gate",
+]
+
+TDD_CONTRACT_MARKERS = [
+    "I1",
+    "I2",
+    "I3",
+    "Iron law",
+    "expected_failure",
+    "implementation_log.json",
+]
+
+DOCS_WORKFLOW_TYPES = {"docs", "docs_only"}
+PLACEHOLDER_VERIFICATION = (
+    "write tests later",
+    "add unit tests",
+    "add tests later",
+    "tbd",
+    "todo",
+    "test later",
+)
 
 EXPECTED_PLUGIN_SKILLS = [
     "superflow",
@@ -227,9 +271,181 @@ def validate_plugin_root(root: Path) -> None:
             fail(f"assets/templates/ISSUE_PRD.md missing heading: {heading}")
 
     plan_template = read(root / "assets" / "templates" / "implementation_plan.json")
-    for marker in ["schema_version", "superflow.plan.v1", "subtasks", "verification", "status"]:
+    for marker in [
+        "schema_version",
+        "superflow.plan.v1",
+        "subtasks",
+        "verification",
+        "status",
+        "tdd",
+        "expected_failure",
+        "behavior",
+        "tdd_contract",
+    ]:
         if marker not in plan_template:
             fail(f"assets/templates/implementation_plan.json missing marker: {marker}")
+
+    log_template = read(root / "assets" / "templates" / "implementation_log.json")
+    for marker in ["superflow.log.v1", "red", "green", "excerpt", "command"]:
+        if marker not in log_template:
+            fail(f"assets/templates/implementation_log.json missing marker: {marker}")
+
+    tdd_contract = read(root / "assets" / "references" / "tdd-contract.md")
+    for marker in TDD_CONTRACT_MARKERS:
+        if marker not in tdd_contract:
+            fail(f"assets/references/tdd-contract.md missing marker: {marker}")
+
+    plan_skill = read(root / "skills" / "plan" / "SKILL.md")
+    for marker in PLAN_TDD_MARKERS:
+        if marker not in plan_skill:
+            fail(f"skills/plan/SKILL.md missing TDD marker: {marker}")
+
+    execute_skill = read(root / "skills" / "execute" / "SKILL.md")
+    for marker in EXECUTE_TDD_MARKERS:
+        if marker not in execute_skill:
+            fail(f"skills/execute/SKILL.md missing TDD marker: {marker}")
+
+    qa_skill = read(root / "skills" / "qa" / "SKILL.md")
+    for marker in QA_TDD_MARKERS:
+        if marker not in qa_skill:
+            fail(f"skills/qa/SKILL.md missing TDD marker: {marker}")
+
+    execution_contract = read(root / "assets" / "references" / "execution-contract.md")
+    for marker in ["tdd-contract.md", "I1", "I2", "I3", "red+green"]:
+        if marker not in execution_contract:
+            fail(f"assets/references/execution-contract.md missing TDD marker: {marker}")
+
+
+def iter_plan_subtasks(plan: dict) -> list[dict]:
+    out: list[dict] = []
+    plan_body = plan.get("plan") if isinstance(plan.get("plan"), dict) else plan
+    phases = plan_body.get("phases") if isinstance(plan_body, dict) else None
+    if not isinstance(phases, list):
+        return out
+    for phase in phases:
+        if not isinstance(phase, dict):
+            continue
+        subtasks = phase.get("subtasks")
+        if not isinstance(subtasks, list):
+            continue
+        for sub in subtasks:
+            if isinstance(sub, dict):
+                out.append(sub)
+    return out
+
+
+def tdd_required_for_subtask(subtask: dict, workflow_type: str) -> bool:
+    tdd = subtask.get("tdd")
+    if isinstance(tdd, dict) and "required" in tdd:
+        return bool(tdd.get("required"))
+    if workflow_type in DOCS_WORKFLOW_TYPES:
+        return False
+    verification = subtask.get("verification") if isinstance(subtask.get("verification"), dict) else {}
+    vtype = str(verification.get("type") or "").lower()
+    if vtype == "manual" and not subtask.get("files_to_modify") and not subtask.get("files_to_create"):
+        return False
+    return True
+
+
+def validate_plan_tdd(plan: dict, *, label: str) -> None:
+    if plan.get("schema_version") != "superflow.plan.v1":
+        fail(f"{label}: unexpected schema_version (expected superflow.plan.v1)")
+    plan_body = plan.get("plan")
+    if not isinstance(plan_body, dict):
+        fail(f"{label}: missing plan object")
+    workflow_type = str(plan_body.get("workflow_type") or "feature").split("|")[0].strip()
+    subtasks = iter_plan_subtasks(plan)
+    if not subtasks:
+        fail(f"{label}: plan has no subtasks")
+    for sub in subtasks:
+        sid = sub.get("id") or "<missing-id>"
+        tdd = sub.get("tdd") if isinstance(sub.get("tdd"), dict) else {}
+        required = tdd_required_for_subtask(sub, workflow_type)
+        if not required:
+            skip_reason = tdd.get("skip_reason")
+            if tdd.get("required") is False and not skip_reason:
+                fail(f"{label}: subtask {sid} has tdd.required=false without skip_reason")
+            continue
+        behavior = (sub.get("behavior") or "").strip()
+        if not behavior or behavior.startswith("One-sentence") or behavior.startswith("Replace with"):
+            # Template placeholders are only allowed in the plugin template file itself.
+            if "assets/templates" not in label:
+                fail(f"{label}: subtask {sid} missing concrete behavior for TDD")
+        red = tdd.get("red") if isinstance(tdd.get("red"), dict) else {}
+        green = tdd.get("green") if isinstance(tdd.get("green"), dict) else {}
+        red_cmd = str(red.get("command") or "").strip()
+        red_fail = str(red.get("expected_failure") or "").strip()
+        green_cmd = str(green.get("command") or "").strip()
+        if not red_cmd or red_cmd.startswith("repo-native"):
+            if "assets/templates" not in label:
+                fail(f"{label}: subtask {sid} missing tdd.red.command")
+        if not red_fail or red_fail.startswith("feature missing"):
+            if "assets/templates" not in label and red_fail == "":
+                fail(f"{label}: subtask {sid} missing tdd.red.expected_failure")
+            if "assets/templates" not in label and red_fail.startswith("feature missing or assertion"):
+                # Template default phrase alone is not a concrete plan.
+                if red_fail == "feature missing or assertion that proves the gap":
+                    fail(f"{label}: subtask {sid} has placeholder tdd.red.expected_failure")
+        if not green_cmd or green_cmd.startswith("same as") or green_cmd.startswith("same targeted"):
+            if "assets/templates" not in label:
+                fail(f"{label}: subtask {sid} missing tdd.green.command")
+        verification = sub.get("verification") if isinstance(sub.get("verification"), dict) else {}
+        vcmd = str(verification.get("command") or "").strip().lower()
+        for bad in PLACEHOLDER_VERIFICATION:
+            if bad in vcmd or bad in red_cmd.lower():
+                fail(f"{label}: subtask {sid} has forbidden verification placeholder {bad!r}")
+
+
+def validate_log_tdd(log: dict, plan: dict | None, *, label: str) -> None:
+    if log.get("schema_version") != "superflow.log.v1":
+        fail(f"{label}: unexpected schema_version (expected superflow.log.v1)")
+    tasks = log.get("tasks")
+    if not isinstance(tasks, list):
+        fail(f"{label}: tasks must be a list")
+    required_ids: set[str] = set()
+    if plan is not None:
+        plan_body = plan.get("plan") if isinstance(plan.get("plan"), dict) else {}
+        workflow_type = str(plan_body.get("workflow_type") or "feature").split("|")[0].strip()
+        for sub in iter_plan_subtasks(plan):
+            if tdd_required_for_subtask(sub, workflow_type):
+                sid = sub.get("id")
+                if sid:
+                    required_ids.add(str(sid))
+    by_id = {}
+    for entry in tasks:
+        if not isinstance(entry, dict):
+            continue
+        tid = str(entry.get("id") or "")
+        if tid:
+            by_id[tid] = entry
+        status = str(entry.get("status") or "").upper()
+        if status not in {"DONE", "DONE_WITH_CONCERNS"}:
+            continue
+        tdd_needed = tid in required_ids if required_ids else True
+        # Direct execution entries (direct-*) always need evidence when done as code.
+        if tid.startswith("direct-"):
+            tdd_needed = True
+        if not tdd_needed:
+            continue
+        for gate in ("red", "green"):
+            block = entry.get(gate)
+            if not isinstance(block, dict):
+                fail(f"{label}: task {tid} DONE without {gate} evidence object")
+            cmd = str(block.get("command") or "").strip()
+            excerpt = str(block.get("excerpt") or "").strip()
+            if not cmd or not excerpt:
+                fail(f"{label}: task {tid} DONE without {gate}.command and {gate}.excerpt")
+            if block.get("ok") is not True:
+                fail(f"{label}: task {tid} DONE but {gate}.ok is not true")
+    if plan is not None:
+        for sid in required_ids:
+            entry = by_id.get(sid)
+            if entry is None:
+                continue
+            status = str(entry.get("status") or "").upper()
+            if status in {"DONE", "DONE_WITH_CONCERNS"}:
+                # already validated above
+                pass
 
 
 def scan_forbidden_diagrams(root: Path) -> None:
@@ -268,7 +484,20 @@ def validate_mermaid(root: Path) -> None:
                 check=False,
             )
             if result.returncode != 0:
-                fail(f"Mermaid failed in {source} block {idx}:\n{result.stdout}")
+                out = result.stdout or ""
+                # Local machines without puppeteer chrome cannot render; do not
+                # treat that as a Superflow contract failure unless forced.
+                if (
+                    "chrome-headless-shell" in out
+                    or "Could not find chrome" in out
+                    or "Browser was not found" in out
+                ):
+                    print(
+                        f"WARN: Mermaid render skipped (browser missing) in {source} block {idx}",
+                        file=sys.stderr,
+                    )
+                    continue
+                fail(f"Mermaid failed in {source} block {idx}:\n{out}")
 
 
 def validate_package(path: Path) -> None:
@@ -300,6 +529,20 @@ def validate_package(path: Path) -> None:
     for heading in PRD_REQUIRED_HEADINGS:
         if heading not in prd_text:
             fail(f"{path}/PRD.md missing heading: {heading}")
+
+    plan_data: dict | None = None
+    plan_path = path / "implementation_plan.json"
+    if plan_path.exists():
+        plan_data = json.loads(read(plan_path))
+        validate_plan_tdd(plan_data, label=str(plan_path))
+
+    log_path = path / "implementation_log.json"
+    if log_path.exists():
+        log_data = json.loads(read(log_path))
+        validate_log_tdd(log_data, plan_data, label=str(log_path))
+        log_artifact = status["artifacts"].get("implementation_log")
+        if log_artifact and log_artifact != "implementation_log.json":
+            fail(f"{path}/status.json artifacts.implementation_log must be implementation_log.json")
 
 
 def main() -> int:

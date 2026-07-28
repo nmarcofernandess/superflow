@@ -3,16 +3,19 @@
   "status": "complete",
   "source": {
     "prd": "PRD.md",
-    "blueprint": null
+    "blueprint": null,
+    "spec": null
   },
   "plan": {
     "feature": "{title}",
-    "workflow_type": "feature|refactor|bug_fix|simple",
+    "workflow_type": "feature|refactor|bug_fix|simple|docs|docs_only",
     "strategy": "{execution_strategy}",
+    "tdd_contract": "assets/references/tdd-contract.md",
     "preconditions": [
       "PRD reviewed",
       "Route confirmed: {route}",
-      "Phase budget confirmed: {phase_budget}"
+      "Phase budget confirmed: {phase_budget}",
+      "TDD contract read for code tasks"
     ],
     "phases": [
       {
@@ -24,13 +27,29 @@
           {
             "id": "subtask-1-1",
             "description": "Replace with one executable task.",
+            "behavior": "One-sentence guarantee this task proves.",
             "files_to_modify": [],
             "files_to_create": [],
             "patterns_from": [],
+            "tdd": {
+              "required": true,
+              "skip_reason": null,
+              "red": {
+                "test_file": "path/to/test.ext",
+                "test_name": "describes the behavior",
+                "command": "repo-native test command targeting this test",
+                "expected_failure": "feature missing or assertion that proves the gap"
+              },
+              "green": {
+                "command": "same targeted test command",
+                "expected": "PASS"
+              },
+              "negatives": []
+            },
             "verification": {
-              "type": "command|test|typecheck|manual",
-              "command": "",
-              "expected": ""
+              "type": "test",
+              "command": "same as tdd.green.command when tdd.required",
+              "expected": "PASS"
             },
             "acceptance_criteria": [],
             "owner": "main_agent",
@@ -47,7 +66,7 @@
   },
   "done_criteria": [
     "All mapped PRD acceptance criteria have evidence.",
-    "Each completed subtask has implementation_log evidence.",
+    "Each completed tdd.required subtask has red+green evidence in implementation_log.json.",
     "status.json and progress.md are updated by the phase executor."
   ]
 }

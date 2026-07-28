@@ -47,10 +47,11 @@ superflow/
   handoff.
 - `superflow:build` writes the technical blueprint/spec from analyst/PRD terrain
   using code recon and Product -> Backend -> Frontend contracts.
-- `superflow:plan` writes executable `implementation_plan.json` task catalogs.
+- `superflow:plan` writes executable `implementation_plan.json` task catalogs
+  with TDD RED/GREEN pre-compile (`tdd-contract.md` I1).
 - `superflow:warlog` maintains Mermaid-first WARLOGs.
-- `superflow:execute` implements from durable artifacts.
-- `superflow:qa` closes acceptance/proof.
+- `superflow:execute` implements from durable artifacts under iron-law TDD (I2).
+- `superflow:qa` closes acceptance matrix + RED/GREEN evidence (I3).
 - `superflow:audit` performs read-only route/readiness/gap checks.
 
 ## Validate
@@ -58,6 +59,7 @@ superflow/
 ```bash
 python3 scripts/validate_superflow.py .
 python3 scripts/test_superflow_routes.py
+python3 scripts/test_tdd_contract.py
 python3 scripts/forward_test_superflow.py
 ```
 
@@ -72,8 +74,9 @@ verdicts.
 The validator also fails generated packages whose PRD lacks `Story de Usuario`,
 `Story Tecnica`, current/desired behavior, system contract, or definition of
 complete. `status.json` is the phase GPS; detailed tasks live in
-`implementation_plan.json`, and execution evidence lives in
-`implementation_log.json`.
+`implementation_plan.json` (with `tdd.red` / `tdd.green` on code tasks), and
+execution evidence lives in `implementation_log.json` (red+green excerpts).
+Canonical TDD rules: `assets/references/tdd-contract.md`.
 
 ## Marketplace Distribution
 
