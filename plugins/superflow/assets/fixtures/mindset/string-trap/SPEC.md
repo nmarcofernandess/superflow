@@ -31,15 +31,15 @@ DTO number.
 
 ### Product
 
-Honest value display.
+Honest plan-value display on the drawer; no social-agreement prose as system copy.
 
 ### Backend
 
-planValueOverride number path drawer-actions.ts:88
+planValueOverride number at path drawer-actions.ts:88 (DTO payload).
 
 ### Frontend
 
-reuse drawer row
+reuse drawer row / density label; no new shell.
 
 ### Copy (strings-safadas)
 

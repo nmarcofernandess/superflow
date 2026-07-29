@@ -49,10 +49,15 @@ abrir o item), não modal de onboarding. Non-goal: não “explicar o que é pla
 
 ## Faceta — Backend (dados reais)
 
-| Path | Lines | Payload / fact | Confidence |
-|---|---:|---|---|
-| `src/lib/actions/agenda/drawer-actions.ts` | 88 | `planValueOverride: number \| null` no DTO do drawer | high |
-| `prisma/schema.prisma` | 1204 | campo numérico no atendimento | high |
+Evidence (path:line, not backticks alone):
+
+- `src/lib/actions/agenda/drawer-actions.ts:88` — `planValueOverride: number | null` no DTO do drawer (high)
+- `prisma/schema.prisma:1204` — campo numérico no atendimento (high)
+
+| Path:line | Payload / fact | Confidence |
+|---|---|---|
+| `drawer-actions.ts:88` | `planValueOverride: number \| null` | high |
+| `schema.prisma:1204` | campo numérico no atendimento | high |
 
 A tela recebe número ou null — não recebe “combinado”.
 

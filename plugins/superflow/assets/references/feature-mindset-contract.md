@@ -120,14 +120,16 @@ Pronto só se:
 
 - existe **Síntese** (não colagem);
 - quatro facetas com conteúdo real ou skip_reason proporcional;
-- **Recode Log** presente (deep: ≥1 entrada com trigger+facet reescrita; docs-only: `skip_reason` honesto);
-- claims técnicos com `path:line` ou `UNPROVEN`;
+- **Recode Log** presente (deep: ≥1 entrada real **ou** `coherence_proof: <por quê a síntese inicial já casou com o terreno>`; docs-only: `skip_reason` honesto — `skip_reason` **não** dispensa deep);
+- claims técnicos com `path:line` (regex `file.ext:N`) ou token literal `UNPROVEN` — crase solta não conta;
 - quando há UI/código: **Reuse Guard** (`reuse-guard-protocol.md`) documentado
-  — graph e/ou grep — e `new` só com justificação de por que o canônico não estende;
+  — graph e/ou grep — e `new` **exige** tabela Need|Source|Decision|path na mesma seção;
 - inventário Copy quando há UI/copy;
-- sem string safada como “copy aprovada”.
+- sem string safada como “copy aprovada” (detecção por **forma**: moeda/contagem/data/geometria/2ª pessoa, não por literal de fixture).
 
 **Não ready:** headings P/B/F tipograficamente cheios e semanticamente vazios.
+
+**Depth do validator:** derivado de `status.json` (`phase_budget` / `route` / `workflow_type`) — **não** de `mindset-depth.txt` (arquivo de fixture legado; `skip` proibido; não rebaixa deep→docs).
 
 ### Build ready
 
@@ -156,11 +158,13 @@ Proibido: pular path:line em deep “porque o template já tem heading”.
 - Waterfall freeze P→B→F como processo.
 - Ready por checklist de heading.
 - Recode Log fake (“N/A”) em deep sem prova de coerência inicial.
+- Inventar trigger de recode quando a síntese já casou (use `coherence_proof:`).
 - Symlink para `~/.claude/skills/strings-safadas` (portar a lei).
 - Dogma de shell de um monorepo em todo mundo.
 - Manifesto sem gate no validator/fixture.
 - Nova skill/fase se um gate no protocol resolve (B6).
 - Inventar comando TDD no blueprint (D1–D2).
+- Apagar `status.json` para silenciar o validator (pacote parcial = fail).
 
 ## IDs de coverage (auditoria)
 

@@ -39,9 +39,7 @@ Mostrar valor sem inventar acordo.
 
 ## Faceta — Backend (dados reais)
 
-| Path | Lines | Payload / fact | Confidence |
-|---|---:|---|---|
-| `src/lib/actions/agenda/drawer-actions.ts` | 88 | number override only | high |
+Evidence: `src/lib/actions/agenda/drawer-actions.ts:88` — number override only (high).
 
 ## Faceta — Frontend (reuso antes de criar)
 
