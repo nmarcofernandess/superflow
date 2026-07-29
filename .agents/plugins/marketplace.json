@@ -6,6 +6,8 @@
   "plugins": [
     {
       "name": "superflow",
+      "version": "0.2.0",
+      "description": "Production phase-budget Agent Skills workflow with faceted Analyst/Build, Reuse Guard, package validator Ready gates, and TDD I1–I3.",
       "source": {
         "source": "local",
         "path": "./plugins/superflow"

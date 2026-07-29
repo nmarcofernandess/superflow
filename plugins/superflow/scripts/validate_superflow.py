@@ -146,12 +146,15 @@ ANALYST_REQUIRED_MARKERS = [
     "Implementation Map",
     "Blueprint Handoff",
     "Ready Gate",
+    "validate_superflow.py",
+    "path-to-package",
     "path:line",
     "Síntese",
     "Recode Log",
     "strings-safadas",
     "Reuse Guard",
     "reuse",
+    "behavior names",
 ]
 
 BUILD_REQUIRED_MARKERS = [
@@ -161,12 +164,15 @@ BUILD_REQUIRED_MARKERS = [
     "code-recon-protocol.md",
     "technical-blueprint-protocol.md",
     "Ready Gate",
+    "validate_superflow.py",
+    "path-to-package",
     "Synthesis",
     "facetas",
     "Copy",
     "Cross-facet",
     "tdd-contract.md",
     "Reuse Guard",
+    "behavior names",
 ]
 
 ANALYSIS_TEMPLATE_HEADINGS = [
@@ -301,6 +307,15 @@ def validate_plugin_root(root: Path) -> None:
         fail("skills/superflow/SKILL.md missing YAML frontmatter")
     if "name: superflow" not in skill:
         fail("skills/superflow/SKILL.md frontmatter must include name: superflow")
+    for marker in (
+        "validate_superflow.py",
+        "path-to-package",
+        "feature-mindset-contract.md",
+        "tdd-contract.md",
+        "reuse-guard-protocol.md",
+    ):
+        if marker not in skill:
+            fail(f"skills/superflow/SKILL.md missing production marker: {marker}")
     for skill_name in EXPECTED_PLUGIN_SKILLS:
         skill_path = root / "skills" / skill_name / "SKILL.md"
         skill_text = read(skill_path)

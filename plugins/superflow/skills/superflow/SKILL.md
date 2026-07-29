@@ -31,8 +31,12 @@ can produce a durable artifact or a verified implementation.
 10. The phase executor owns its own status update. The router initializes and
     resumes from `status.json`; it does not mark a phase complete without the
     phase artifact and evidence.
-11. Validate the package with `../../scripts/validate_superflow.py` before declaring it
-   ready.
+11. **Ready boundary:** run
+    `python3 <plugin-root>/scripts/validate_superflow.py <path-to-package>`
+    on the real package directory before declaring Analyst, Build, or package
+    **ready**. Exit 0 is required. Hollow headings, partial packages (missing
+    `status.json`), fake Recode, and strings-safadas fail the gate. Analyst and
+    Build skills restate this Ready Gate; do not skip it.
 12. If the deliverable is a visual mural/one-pager for a non-technical reader
     (status wall, feature explainer, or a proof-final wireframe), use the
     `html-didatico` skill; use Direction C when a verification wireframe is
@@ -156,14 +160,22 @@ python3 <plugin-root>/scripts/superflow_warlog.py \
   --event "Build approved; execution can start."
 ```
 
-Validate a Superflow skill/package:
+Validate the **plugin root** (doctrine + manifests) or a **user package**:
 
 ```bash
-python3 <plugin-root>/scripts/validate_superflow.py \
-  <plugin-root> --mermaid
+# Plugin install integrity (CI / after pull)
+python3 <plugin-root>/scripts/validate_superflow.py <plugin-root>
+python3 <plugin-root>/scripts/test_feature_mindset.py
+python3 <plugin-root>/scripts/test_tdd_contract.py
 python3 <plugin-root>/scripts/test_superflow_routes.py
 python3 <plugin-root>/scripts/forward_test_superflow.py
+
+# Real work package (required before Analyst/Build ready)
+python3 <plugin-root>/scripts/validate_superflow.py \
+  path/to/specs/NNN-slug
 ```
+
+Full tree gate from this marketplace repo: `./scripts/validate-all.sh`.
 
 ## Non-Negotiables
 

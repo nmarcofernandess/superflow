@@ -57,6 +57,8 @@ the active analysis. Build synthesizes the canonical SPEC from all analyses.
 9. Blueprint handoff with testable **behavior names** only — no fake test
    commands (`tdd-contract.md` owns RED/GREEN later).
 10. Grill verdict; update `status.json` (`phases.analyst`, `artifacts.analysis`).
+11. **Run the package validator** on the package directory (see Ready Gate).
+    Non-zero exit = not ready. Do not skip this step.
 
 ## Mandatory Output
 
@@ -73,17 +75,36 @@ Mandatory for existing-system / UI work:
 
 ## Ready Gate
 
-Do not declare `ready for taskgen` or `ready for build` if:
+**Package validator is mandatory.** Before declaring `ready for taskgen` or
+`ready for build`, run the shipped validator on the **real package path**
+(the folder that contains `analysis.md` / `status.json` / `PRD.md`):
 
+```bash
+python3 <plugin-root>/scripts/validate_superflow.py <path-to-package>
+```
+
+- Exit code **must be 0**. Non-zero means **not ready** — fix the package and
+  re-run until green.
+- Filled headings alone are never ready. The validator rejects hollow
+  synthesis, fake Recode, instance-prose Copy, backtick-only Backend, and
+  `new` without Reuse Guard table.
+- Depth is derived from `status.json` (`phase_budget` / `route` /
+  `workflow_type`), not from agent-written depth markers.
+
+Do not declare ready if any of the following hold (even if the validator was
+not run — run it anyway):
+
+- package validator not run or exit ≠ 0;
 - source-backed evidence missing for a technical claim;
 - Synthesis missing or is heading-collage only;
 - implementation map absent for existing codebase;
 - `new` UI/code without Reuse Guard (graph or grep) evidence;
 - Copy still approves instance/mock prose as system copy;
-- Recode Log dishonest for depth (fake N/A on deep);
+- Recode Log dishonest for depth (fake N/A on deep without `coherence_proof`);
 - product promise needs data that is UNPROVEN without non-goal;
 - ready would only mean “sections filled”;
-- TDD commands invented in handoff.
+- TDD commands invented in handoff (behavior names only — `tdd-contract.md`
+  owns RED/GREEN in Plan/Execute).
 
 ## Mermaid
 

@@ -1,8 +1,9 @@
-# Tribunal — feat/superflow-fatality-analyst-build (Claude APPROVE-WITH-FIXES)
+# Tribunal — Superflow 0.2.0 production reference
 
 Date: 2026-07-29  
-Branch: `feat/superflow-fatality-analyst-build`  
-Scope: close validator exploits A–E with the 5 ordered patches + `coherence_proof` bonus.
+Branch: `feat/superflow-fatality-analyst-build` (ship-ready; `main` promotion is Marco-gated)  
+Version: **0.2.0** (all plugin + marketplace manifests)  
+Scope: fatality gates + Ready boundary (skills require package validator) + marketplace hygiene.
 
 This file is a **repro log**, not a self-attestation. Every claim has command + exit-class + excerpt.
 

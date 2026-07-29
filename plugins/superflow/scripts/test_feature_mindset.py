@@ -49,10 +49,37 @@ def assert_fail(result: subprocess.CompletedProcess, *, why: str, needles: list[
         raise AssertionError(f"{why}: expected one of {needles} in:\n{result.stdout}")
 
 
+def assert_ready_gates_require_validator() -> None:
+    """Production boundary: Analyst/Build/Superflow Ready must name the shipped validator."""
+    for skill_name in ("analyst", "build", "superflow"):
+        path = PLUGIN_ROOT / "skills" / skill_name / "SKILL.md"
+        text = path.read_text(encoding="utf-8")
+        if "validate_superflow.py" not in text:
+            raise AssertionError(f"{path} must require validate_superflow.py")
+        if skill_name in {"analyst", "build"}:
+            if "## Ready Gate" not in text:
+                raise AssertionError(f"{path} missing ## Ready Gate")
+            # Ready section must point at real package path, not only plugin root
+            ready_idx = text.index("## Ready Gate")
+            ready_blob = text[ready_idx : ready_idx + 1200]
+            if "path-to-package" not in ready_blob and "<path-to-package>" not in ready_blob:
+                raise AssertionError(
+                    f"{path} Ready Gate must instruct validate on <path-to-package>"
+                )
+            if "must be 0" not in ready_blob.lower() and "exit code" not in ready_blob.lower():
+                raise AssertionError(f"{path} Ready Gate must require exit 0")
+        # TDD boundary: Analyst/Build must not invent test commands as ready criteria
+        if skill_name in {"analyst", "build"}:
+            if "behavior names" not in text.lower() and "behavior name" not in text.lower():
+                raise AssertionError(f"{path} must keep TDD boundary (behavior names only)")
+
+
 def main() -> int:
     plugin = run_validate(PLUGIN_ROOT)
     if plugin.returncode != 0:
         raise AssertionError(f"plugin root must validate:\n{plugin.stdout}")
+
+    assert_ready_gates_require_validator()
 
     coverage = json.loads(COVERAGE.read_text(encoding="utf-8"))
     units = {u["id"]: u for u in coverage["units"]}

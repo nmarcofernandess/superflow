@@ -39,7 +39,9 @@ Copy). Plan later owns executable tasks and TDD pre-compile (`tdd-contract.md`).
 8. Write `SPEC.md` (default; legacy `technical_blueprint.md` ok).
 9. List testable **behaviors** for Plan — **no fake test commands** (D1–D2).
 10. Grill; update `status.json` build complete + blueprint artifact.
-11. Leave granular tasks to Plan.
+11. **Run the package validator** on the package directory (see Ready Gate).
+    Non-zero exit = not ready.
+12. Leave granular tasks to Plan.
 
 ## Required Blueprint
 
@@ -58,8 +60,23 @@ Copy). Plan later owns executable tasks and TDD pre-compile (`tdd-contract.md`).
 
 ## Ready Gate
 
+**Package validator is mandatory.** Before declaring Build ready, run the
+shipped validator on the **real package path** (folder with `SPEC.md` /
+`status.json` / `PRD.md`):
+
+```bash
+python3 <plugin-root>/scripts/validate_superflow.py <path-to-package>
+```
+
+- Exit code **must be 0**. Non-zero means **not ready**.
+- The same gates that reject hollow `analysis.md` apply to `SPEC.md`
+  (facet placeholders, path:line|UNPROVEN, Recode honesty, strings-safadas).
+- Do not invent TDD commands here — hand Plan **behavior names** only
+  (`tdd-contract.md` owns RED/GREEN).
+
 Build is not ready if:
 
+- package validator not run or exit ≠ 0;
 - technical claims lack source proof;
 - Synthesis missing or is section-collage;
 - local patterns not searched before `new` (Reuse Guard missing);
