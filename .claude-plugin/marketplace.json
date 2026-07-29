@@ -9,8 +9,8 @@
     {
       "name": "superflow",
       "source": "./plugins/superflow",
-      "description": "Routes work through the smallest honest phase set: inbox, PRD, analyst, build, plan, execute, and QA — with TDD contract on code tasks.",
-      "version": "0.1.1+tdd.20260728",
+      "description": "Routes work through the smallest honest phase set with faceted Analyst/Build mindset and TDD on code tasks.",
+      "version": "0.1.2+mindset.20260729",
       "author": {
         "name": "Marco Antonio",
         "url": "https://github.com/nmarcofernandess"

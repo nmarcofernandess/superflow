@@ -8,11 +8,18 @@
 - Confidence: {confidence}
 - Created: {created_at}
 - Verdict: pending
+- Mindset: `feature-mindset-contract.md` (facetas, não waterfall)
 
 ## TL;DR
 
-Write the conclusion in 2-4 direct sentences. Include whether this is ready for
-taskgen, ready for build, needs recon, needs human decision, or must split.
+2–4 frases: o que é, o que o terreno prova, se está ready for build/taskgen
+ou o que bloqueia.
+
+## Síntese
+
+Um parágrafo que **amarra** Produto + Backend + Frontend + Copy.  
+Se remover qualquer faceta o parágrafo deve quebrar. Colagem de três
+seções soltas = análise falha (F4).
 
 ## Phase 0 Grill
 
@@ -31,9 +38,51 @@ taskgen, ready for build, needs recon, needs human decision, or must split.
 - Out of scope:
 - Assumptions:
 
+## Faceta — Produto
+
+Promessa, jornada, superfície (tela/modal/editor/dashboard), non-goals.
+Modal só para consequência real — não onboarding.
+
+## Faceta — Backend (dados reais)
+
+| Path | Lines | Payload / fact | Confidence |
+|---|---:|---|---|
+| `UNPROVEN` | - | Substituir por path:line do action/hook/schema ou manter UNPROVEN | low |
+
+O que a tela **realmente** recebe (shape), não só “model existe” (T1–T2).
+
+## Faceta — Frontend (reuso antes de criar)
+
+| Need | Scan (grep/family) | Decision `reuse` \| `mode` \| `new` | Evidence path |
+|---|---|---|---|
+|  |  |  |  |
+
+O plugin manda **procurar** equivalente no repo; não prescreve shell dogmático (T4–T6).
+
+## Faceta — Copy (strings-safadas)
+
+| Superfície | Texto candidato / mock | Pecado? | Destino: invariante \| estrutura \| morte |
+|---|---|---|---|
+|  |  |  |  |
+
+Prosa só para invariantes. Dado em label/chip/contador. Teste do cartesiano
+antes de aprovar copy (S1–S5).
+
+## Recode Log
+
+| When | Trigger (evidence) | Facet that broke | What was recoded |
+|---|---|---|---|
+|  |  |  |  |
+
+Deep/existing-code: ≥1 entrada real se a síntese mudou, ou registro de que
+a síntese inicial já casou com o terreno.  
+Docs-only: `skip_reason` honesto (B3).  
+Append-only sem revisit = FAIL (F5–F6).
+
 ## Product Promise
 
 Who needs what outcome, what is broken today, and what success looks like.
+Promise sem dado de Backend → UNPROVEN ou non-goal (T3).
 
 ## Story de Usuario
 
@@ -80,43 +129,27 @@ ENTITY: <Name>
 
 ## Runtime / Data Flow
 
-```mermaid
-flowchart TD
-  input["Input"] --> process["Process"]
-  process --> output["Output"]
-```
+Mermaid when it reduces ambiguity.
 
 ## Rules And Invariants
 
-- MUST:
-- MUST NOT:
-- IF / THEN:
-- Edge cases:
-
-## Architecture Risks
-
-| Severity | Risk | Evidence | Fix direction |
-|---|---|---|---|
+Machine-executable rules. Edge cases: empty, duplicate, archived, permission,
+stale cache.
 
 ## Blueprint Handoff
 
-| Path/Area | Action | Reason | Validation |
-|---|---|---|---|
-
-## Acceptance Criteria
-
-- [ ] Criteria with verification path.
-
-## Open Questions
-
-- None, or precise decisions Marco must make.
+- Files / areas:
+- Product / Backend / Frontend / Copy contracts (summary):
+- Testable behaviors for Plan (names only — no fake test commands) (D2):
+- Sequence:
+- Validation:
+- Risks / rollback:
 
 ## Grill Verdict
 
-- Verdict:
-- Why:
-- Next stage:
+- ready for taskgen | ready for build | needs recon | needs human decision |
+  split required | capture only | blocked: insufficient evidence
+
+## Open Questions
 
 ## Recommended Next Phase
-
-State the next Superflow phase and why.

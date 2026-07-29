@@ -43,10 +43,11 @@ superflow/
 - `superflow:capture` captures ideas into GitHub-ready PRD issues.
 - `superflow:taskgen` creates or promotes local PRD packages.
 - `superflow:analyst` handles product/domain/system ambiguity with native grill,
-  code recon, evidence matrix, implementation map, entities/state, and blueprint
-  handoff.
-- `superflow:build` writes the technical blueprint/spec from analyst/PRD terrain
-  using code recon and Product -> Backend -> Frontend contracts.
+  faceted recon (Produto/Backend/Frontend/Copy), Síntese, Recode Log,
+  strings-safadas, evidence matrix, and blueprint handoff — see
+  `assets/references/feature-mindset-contract.md`.
+- `superflow:build` writes the technical blueprint/spec as a **synthesis** of
+  those facets (not a freeze-waterfall of headings).
 - `superflow:plan` writes executable `implementation_plan.json` task catalogs
   with TDD RED/GREEN pre-compile (`tdd-contract.md` I1).
 - `superflow:warlog` maintains Mermaid-first WARLOGs.
@@ -60,6 +61,7 @@ superflow/
 python3 scripts/validate_superflow.py .
 python3 scripts/test_superflow_routes.py
 python3 scripts/test_tdd_contract.py
+python3 scripts/test_feature_mindset.py
 python3 scripts/forward_test_superflow.py
 ```
 

@@ -49,9 +49,11 @@ REQUIRED_PLUGIN_FILES = [
     "assets/references/github-issue-contract.md",
     "assets/references/execution-contract.md",
     "assets/references/tdd-contract.md",
+    "assets/references/feature-mindset-contract.md",
     "assets/references/mermaid-contract.md",
     "assets/references/warlog-contract.md",
     "assets/references/status-schema.md",
+    "assets/fixtures/mindset/coverage.json",
     "assets/templates/PRD.md",
     "assets/templates/ISSUE_PRD.md",
     "assets/templates/analysis.md",
@@ -134,30 +136,45 @@ FORBIDDEN_DIAGRAM_TOKENS = [
 
 ANALYST_REQUIRED_MARKERS = [
     "analyst-protocol.md",
+    "feature-mindset-contract.md",
     "code-recon-protocol.md",
     "technical-blueprint-protocol.md",
     "Phase 0 grill",
     "Evidence Matrix",
     "Implementation Map",
-    "Entities And State",
     "Blueprint Handoff",
     "Ready Gate",
     "path:line",
+    "Síntese",
+    "Recode Log",
+    "strings-safadas",
+    "reuse",
 ]
 
 BUILD_REQUIRED_MARKERS = [
     "build-protocol.md",
+    "feature-mindset-contract.md",
     "code-recon-protocol.md",
     "technical-blueprint-protocol.md",
-    "Product -> Backend -> Frontend",
     "Ready Gate",
+    "Synthesis",
+    "facetas",
+    "Copy",
+    "Cross-facet",
+    "tdd-contract.md",
 ]
 
 ANALYSIS_TEMPLATE_HEADINGS = [
     "## State",
     "## TL;DR",
+    "## Síntese",
     "## Phase 0 Grill",
     "## Source And Scope",
+    "## Faceta — Produto",
+    "## Faceta — Backend",
+    "## Faceta — Frontend",
+    "## Faceta — Copy",
+    "## Recode Log",
     "## Product Promise",
     "## Story de Usuario",
     "## Story Tecnica",
@@ -167,12 +184,45 @@ ANALYSIS_TEMPLATE_HEADINGS = [
     "## Entities And State",
     "## Runtime / Data Flow",
     "## Rules And Invariants",
-    "## Architecture Risks",
     "## Blueprint Handoff",
-    "## Acceptance Criteria",
-    "## Open Questions",
     "## Grill Verdict",
+    "## Open Questions",
     "## Recommended Next Phase",
+]
+
+MINDSET_CONTRACT_MARKERS = [
+    "Fatality",
+    "facetas",
+    "waterfall",
+    "Recode",
+    "Síntese",
+    "strings-safadas",
+    "cartesiano",
+    "path:line",
+    "UNPROVEN",
+    "Ready gates",
+    "Proporcionalidade",
+]
+
+SPEC_TEMPLATE_MARKERS = [
+    "## Synthesis",
+    "### Product",
+    "### Backend",
+    "### Frontend",
+    "### Copy",
+    "Cross-facet",
+    "Recode Log",
+    "Testable behaviors",
+    "Coherence check",
+]
+
+COVERAGE_REQUIRED_IDS = [
+    "F1", "F2", "F3", "F4", "F5", "F6", "F7",
+    "T1", "T2", "T3", "T4", "T5", "T6", "T7",
+    "S1", "S2", "S3", "S4", "S5", "S6",
+    "B1", "B2", "B3", "B4", "B5", "B6",
+    "H1", "H2", "H3", "H4",
+    "D1", "D2",
 ]
 
 PRD_REQUIRED_HEADINGS = [
@@ -314,6 +364,180 @@ def validate_plugin_root(root: Path) -> None:
     for marker in ["tdd-contract.md", "I1", "I2", "I3", "red+green"]:
         if marker not in execution_contract:
             fail(f"assets/references/execution-contract.md missing TDD marker: {marker}")
+
+    mindset = read(root / "assets" / "references" / "feature-mindset-contract.md")
+    for marker in MINDSET_CONTRACT_MARKERS:
+        if marker not in mindset:
+            fail(f"assets/references/feature-mindset-contract.md missing marker: {marker}")
+
+    spec_template = read(root / "assets" / "templates" / "SPEC.md")
+    for marker in SPEC_TEMPLATE_MARKERS:
+        if marker not in spec_template:
+            fail(f"assets/templates/SPEC.md missing mindset marker: {marker}")
+
+    coverage_path = root / "assets" / "fixtures" / "mindset" / "coverage.json"
+    coverage = json.loads(read(coverage_path))
+    units = coverage.get("units")
+    if not isinstance(units, list):
+        fail("coverage.json units must be a list")
+    by_id = {u.get("id"): u for u in units if isinstance(u, dict)}
+    for uid in COVERAGE_REQUIRED_IDS:
+        if uid not in by_id:
+            fail(f"coverage.json missing unit id {uid}")
+        if by_id[uid].get("estado_atual") != "present":
+            fail(f"coverage.json unit {uid} must be present (got {by_id[uid].get('estado_atual')})")
+        if not by_id[uid].get("gate_type"):
+            fail(f"coverage.json unit {uid} missing gate_type")
+
+
+def _section_body(text: str, heading: str) -> str:
+    """Return body after a markdown heading until the next same-or-higher heading.
+
+    Heading may be a prefix (e.g. ``## Faceta — Backend`` matches
+    ``## Faceta — Backend (dados reais)``).
+    """
+    # Exact line or prefix before optional trailing title detail
+    pattern = re.compile(
+        rf"^{re.escape(heading)}(?:\s|$|[—(])",
+        re.M,
+    )
+    m = pattern.search(text)
+    if not m:
+        # fallback: line that starts with heading
+        pattern2 = re.compile(rf"^{re.escape(heading)}.*$", re.M)
+        m = pattern2.search(text)
+    if not m:
+        return ""
+    rest = text[m.end() :]
+    next_h = re.search(r"^#{1,3}\s+\S", rest, re.M)
+    body = rest[: next_h.start()] if next_h else rest
+    return body.strip()
+
+
+def _is_placeholder_body(body: str) -> bool:
+    if not body or len(body) < 24:
+        return True
+    low = body.lower().strip()
+    # Whole-body placeholders only (avoid matching "substituir a frase" in real prose)
+    if low in {"tbd", "todo", "pending", "n/a", "unproven", "-", "—", "...", "…"}:
+        return True
+    if low.startswith("tbd") and len(low) < 40:
+        return True
+    if low.startswith("replace with") or low.startswith("substituir por"):
+        return True
+    lines = [ln.strip() for ln in body.splitlines() if ln.strip()]
+    # Only a markdown table with empty/placeholder cells
+    if len(lines) <= 3 and all(
+        ln.startswith("|") or set(ln) <= {"|", "-", ":", " "} for ln in lines
+    ):
+        cell_text = " ".join(lines).lower()
+        if "unproven" in cell_text or cell_text.count("|") > 4 and len(cell_text) < 120:
+            # header-only or stub table
+            if "high" not in cell_text and "path" in cell_text and "88" not in cell_text:
+                return True
+    return False
+
+
+def validate_analysis_mindset(text: str, *, label: str, depth: str = "deep") -> None:
+    """depth: deep | docs | trap — structural gates for analysis.md."""
+    required = [
+        "## TL;DR",
+        "## Síntese",
+        "## Faceta — Produto",
+        "## Faceta — Backend",
+        "## Faceta — Frontend",
+        "## Faceta — Copy",
+        "## Recode Log",
+    ]
+    for h in required:
+        if h not in text:
+            fail(f"{label}: missing required mindset heading {h}")
+
+    synthesis = _section_body(text, "## Síntese")
+    if _is_placeholder_body(synthesis):
+        fail(f"{label}: Síntese empty or placeholder (ready ≠ filled headings)")
+
+    if depth == "docs":
+        recode = _section_body(text, "## Recode Log")
+        if "skip_reason" not in recode.lower() and "skip" not in recode.lower():
+            # docs may use skip_reason in the table or prose
+            if _is_placeholder_body(recode) and "docs" not in recode.lower():
+                fail(f"{label}: docs-only Recode Log needs skip_reason or honest skip")
+        return
+
+    if depth == "deep":
+        for h in (
+            "## Faceta — Produto",
+            "## Faceta — Backend",
+            "## Faceta — Frontend",
+            "## Faceta — Copy",
+        ):
+            body = _section_body(text, h)
+            if _is_placeholder_body(body):
+                fail(f"{label}: {h} empty/placeholder (typographic completeness is not ready)")
+        backend = _section_body(text, "## Faceta — Backend")
+        if "path:" not in backend.lower() and "`" not in backend and "unproven" not in backend.lower():
+            # require some evidence marker
+            if not re.search(r"\.\w{1,10}:\d+", backend):
+                fail(f"{label}: Backend facet needs path:line-style evidence or UNPROVEN")
+        recode = _section_body(text, "## Recode Log")
+        if _is_placeholder_body(recode):
+            fail(f"{label}: deep package needs Recode Log with real content")
+        # at least one data row in recode table (pipe with non-header)
+        data_rows = [
+            ln
+            for ln in recode.splitlines()
+            if ln.strip().startswith("|") and "---" not in ln and "When" not in ln and "Trigger" not in ln
+        ]
+        if len(data_rows) < 1:
+            fail(f"{label}: deep Recode Log needs ≥1 real entry")
+        frontend = _section_body(text, "## Faceta — Frontend")
+        if "reuse" not in frontend.lower() and "mode" not in frontend.lower() and "new" not in frontend.lower():
+            fail(f"{label}: Frontend facet needs reuse|mode|new decision")
+        copy = _section_body(text, "## Faceta — Copy")
+        if "morte" not in copy.lower() and "estrutura" not in copy.lower() and "invariante" not in copy.lower():
+            fail(f"{label}: Copy facet needs invariante|estrutura|morte")
+
+    if depth == "trap":
+        # Instance prose must not be approved as system UI copy.
+        # Table headers may mention "estrutura|morte" as column names — ignore that;
+        # fail on explicit approval or a row that lacks morte/estrutura as destination.
+        low = text.lower()
+        if "continua retorno por r$" in low or "como foi combinado" in low:
+            if "ui copy aprovada" in low or "copy aprovada" in low:
+                fail(f"{label}: string-safada trap — instance prose marked approved UI copy")
+            # Row-level: if phrase appears and the same line does not contain morte/estrutura
+            for ln in text.splitlines():
+                ll = ln.lower()
+                if "continua retorno" in ll or ("r$ 180" in ll and "combinado" in ll):
+                    if "morte" not in ll and "estrutura" not in ll and "invariante" not in ll:
+                        fail(
+                            f"{label}: string-safada trap — instance prose row lacks "
+                            "invariante|estrutura|morte destination"
+                        )
+
+
+
+def validate_spec_mindset(text: str, *, label: str, depth: str = "deep") -> None:
+    for h in ("## Synthesis", "### Product", "### Backend", "### Frontend", "### Copy"):
+        if h not in text:
+            fail(f"{label}: missing SPEC mindset heading {h}")
+    synthesis = _section_body(text, "## Synthesis")
+    if _is_placeholder_body(synthesis):
+        fail(f"{label}: SPEC Synthesis empty/placeholder")
+    if depth == "deep":
+        if "## Cross-facet dependencies" not in text and "Cross-facet" not in text:
+            fail(f"{label}: deep SPEC needs Cross-facet dependencies")
+        if "## Recode Log" not in text:
+            fail(f"{label}: deep SPEC needs Recode Log")
+        if "Testable behaviors" not in text:
+            fail(f"{label}: SPEC needs Testable behaviors handoff (no fake commands required)")
+    if depth == "trap":
+        low = text.lower()
+        if ("continua retorno por r$" in low or "como foi combinado" in low) and "morte" not in low:
+            fail(f"{label}: SPEC still carries safada instance prose without morte")
+        if "ui copy aprovada" in low:
+            fail(f"{label}: SPEC approves safada instance prose as UI copy")
 
 
 def iter_plan_subtasks(plan: dict) -> list[dict]:
@@ -543,6 +767,22 @@ def validate_package(path: Path) -> None:
         log_artifact = status["artifacts"].get("implementation_log")
         if log_artifact and log_artifact != "implementation_log.json":
             fail(f"{path}/status.json artifacts.implementation_log must be implementation_log.json")
+
+    # Optional mindset depth marker for fixtures / packages
+    depth = "deep"
+    marker = path / "mindset-depth.txt"
+    if marker.exists():
+        depth = read(marker).strip().lower() or "deep"
+    if depth not in {"deep", "docs", "trap", "skip"}:
+        fail(f"{path}/mindset-depth.txt unknown depth {depth!r}")
+
+    analysis_path = path / "analysis.md"
+    if analysis_path.exists() and depth != "skip":
+        validate_analysis_mindset(read(analysis_path), label=str(analysis_path), depth=depth)
+
+    spec_path = path / "SPEC.md"
+    if spec_path.exists() and depth != "skip":
+        validate_spec_mindset(read(spec_path), label=str(spec_path), depth=depth)
 
 
 def main() -> int:

@@ -208,5 +208,7 @@ python3 <plugin-root>/scripts/forward_test_superflow.py
   package.
 - Read `../../assets/references/tdd-contract.md` before planning or executing
   code tasks.
+- Read `../../assets/references/feature-mindset-contract.md` before Analyst or
+  Build (facetas, recode, strings-safadas, truth-seeking).
 - Read `../../assets/references/backlog-status-protocol.md` before verifying
   existing issues against merged PRs.

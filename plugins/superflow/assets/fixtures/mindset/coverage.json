@@ -1,0 +1,263 @@
+{
+  "schema_version": "superflow.mindset.coverage.v1",
+  "goal": "feat/superflow-fatality-analyst-build",
+  "updated_at": "2026-07-29T00:00:00Z",
+  "units": [
+    {
+      "id": "F1",
+      "title": "Tríade = facetas Produto|Backend|Frontend (não waterfall)",
+      "fonte": "N+B+G",
+      "estado_atual": "present",
+      "target_file": "assets/references/feature-mindset-contract.md",
+      "gate_type": "protocol"
+    },
+    {
+      "id": "F2",
+      "title": "Copy/strings-safadas = faceta própria",
+      "fonte": "A+N",
+      "estado_atual": "present",
+      "target_file": "assets/references/feature-mindset-contract.md",
+      "gate_type": "protocol"
+    },
+    {
+      "id": "F3",
+      "title": "P→B→F = atenção, não freeze",
+      "fonte": "N+B",
+      "estado_atual": "present",
+      "target_file": "assets/references/feature-mindset-contract.md",
+      "gate_type": "protocol"
+    },
+    {
+      "id": "F4",
+      "title": "Síntese amarra facetas; colagem = FAIL",
+      "fonte": "N",
+      "estado_atual": "present",
+      "target_file": "assets/templates/analysis.md",
+      "gate_type": "template"
+    },
+    {
+      "id": "F5",
+      "title": "Recode Log obrigatório; append-only = FAIL",
+      "fonte": "N",
+      "estado_atual": "present",
+      "target_file": "assets/templates/analysis.md",
+      "gate_type": "template"
+    },
+    {
+      "id": "F6",
+      "title": "Nova evidência revisita facetas anteriores",
+      "fonte": "N",
+      "estado_atual": "present",
+      "target_file": "assets/references/analyst-protocol.md",
+      "gate_type": "protocol"
+    },
+    {
+      "id": "F7",
+      "title": "Cross-facet dependencies no SPEC",
+      "fonte": "N",
+      "estado_atual": "present",
+      "target_file": "assets/templates/SPEC.md",
+      "gate_type": "template"
+    },
+    {
+      "id": "T1",
+      "title": "Backend path:line ou UNPROVEN",
+      "fonte": "G+J",
+      "estado_atual": "present",
+      "target_file": "assets/references/code-recon-protocol.md",
+      "gate_type": "protocol"
+    },
+    {
+      "id": "T2",
+      "title": "Payload/shape real da tela",
+      "fonte": "B+J",
+      "estado_atual": "present",
+      "target_file": "assets/references/code-recon-protocol.md",
+      "gate_type": "protocol"
+    },
+    {
+      "id": "T3",
+      "title": "Promise sem dado = UNPROVEN ou non-goal",
+      "fonte": "B",
+      "estado_atual": "present",
+      "target_file": "assets/references/analyst-protocol.md",
+      "gate_type": "protocol"
+    },
+    {
+      "id": "T4",
+      "title": "Reuso scan antes de new",
+      "fonte": "B+E",
+      "estado_atual": "present",
+      "target_file": "assets/references/feature-mindset-contract.md",
+      "gate_type": "protocol"
+    },
+    {
+      "id": "T5",
+      "title": "reuse|mode|new + evidence path",
+      "fonte": "B",
+      "estado_atual": "present",
+      "target_file": "assets/templates/analysis.md",
+      "gate_type": "template"
+    },
+    {
+      "id": "T6",
+      "title": "Plugin manda procurar, não prescreve shell",
+      "fonte": "goal B4",
+      "estado_atual": "present",
+      "target_file": "assets/references/feature-mindset-contract.md",
+      "gate_type": "protocol"
+    },
+    {
+      "id": "T7",
+      "title": "DietFlow-aware se existir; senão recon genérico",
+      "fonte": "B+E",
+      "estado_atual": "present",
+      "target_file": "assets/references/code-recon-protocol.md",
+      "gate_type": "protocol"
+    },
+    {
+      "id": "S1",
+      "title": "Cinco pecados nomeados",
+      "fonte": "A",
+      "estado_atual": "present",
+      "target_file": "assets/references/feature-mindset-contract.md",
+      "gate_type": "protocol"
+    },
+    {
+      "id": "S2",
+      "title": "Prosa só invariante; dado em estrutura",
+      "fonte": "A",
+      "estado_atual": "present",
+      "target_file": "assets/references/feature-mindset-contract.md",
+      "gate_type": "protocol"
+    },
+    {
+      "id": "S3",
+      "title": "Teste do cartesiano",
+      "fonte": "A",
+      "estado_atual": "present",
+      "target_file": "assets/references/feature-mindset-contract.md",
+      "gate_type": "protocol"
+    },
+    {
+      "id": "S4",
+      "title": "Mockup ≠ literal a|b|c",
+      "fonte": "A",
+      "estado_atual": "present",
+      "target_file": "assets/references/feature-mindset-contract.md",
+      "gate_type": "protocol"
+    },
+    {
+      "id": "S5",
+      "title": "Inventário de superfícies de copy na analysis",
+      "fonte": "A",
+      "estado_atual": "present",
+      "target_file": "assets/templates/analysis.md",
+      "gate_type": "template"
+    },
+    {
+      "id": "S6",
+      "title": "SPEC Copy contract table",
+      "fonte": "A",
+      "estado_atual": "present",
+      "target_file": "assets/templates/SPEC.md",
+      "gate_type": "template"
+    },
+    {
+      "id": "B1",
+      "title": "Ready ≠ headings preenchidos",
+      "fonte": "goal",
+      "estado_atual": "present",
+      "target_file": "assets/references/feature-mindset-contract.md",
+      "gate_type": "validator"
+    },
+    {
+      "id": "B2",
+      "title": "Ready = coerência + recode honesto",
+      "fonte": "goal",
+      "estado_atual": "present",
+      "target_file": "assets/references/analyst-protocol.md",
+      "gate_type": "protocol"
+    },
+    {
+      "id": "B3",
+      "title": "Lean/docs proporcional skip_reason",
+      "fonte": "goal",
+      "estado_atual": "present",
+      "target_file": "assets/fixtures/mindset",
+      "gate_type": "fixture"
+    },
+    {
+      "id": "B4",
+      "title": "Não dogma de shell; procure equivalente",
+      "fonte": "goal",
+      "estado_atual": "present",
+      "target_file": "assets/references/feature-mindset-contract.md",
+      "gate_type": "protocol"
+    },
+    {
+      "id": "B5",
+      "title": "UNPROVEN > chute confiante",
+      "fonte": "G",
+      "estado_atual": "present",
+      "target_file": "assets/references/analyst-protocol.md",
+      "gate_type": "protocol"
+    },
+    {
+      "id": "B6",
+      "title": "Proibido metawork de skill nova se gate resolve",
+      "fonte": "goal",
+      "estado_atual": "present",
+      "target_file": "assets/references/feature-mindset-contract.md",
+      "gate_type": "protocol"
+    },
+    {
+      "id": "H1",
+      "title": "analysis legível: TL;DR + Síntese no topo",
+      "fonte": "goal",
+      "estado_atual": "present",
+      "target_file": "assets/templates/analysis.md",
+      "gate_type": "template"
+    },
+    {
+      "id": "H2",
+      "title": "SPEC Synthesis first",
+      "fonte": "goal",
+      "estado_atual": "present",
+      "target_file": "assets/templates/SPEC.md",
+      "gate_type": "template"
+    },
+    {
+      "id": "H3",
+      "title": "Sem glossário-mural no topo dos protocols",
+      "fonte": "goal",
+      "estado_atual": "present",
+      "target_file": "assets/references/feature-mindset-contract.md",
+      "gate_type": "protocol"
+    },
+    {
+      "id": "H4",
+      "title": "Anti-exemplos concretos",
+      "fonte": "A+N",
+      "estado_atual": "present",
+      "target_file": "assets/references/feature-mindset-contract.md",
+      "gate_type": "protocol"
+    },
+    {
+      "id": "D1",
+      "title": "Analyst/Build não substituem tdd-contract",
+      "fonte": "F",
+      "estado_atual": "present",
+      "target_file": "assets/references/feature-mindset-contract.md",
+      "gate_type": "protocol"
+    },
+    {
+      "id": "D2",
+      "title": "Handoff lista comportamentos testáveis sem comando falso",
+      "fonte": "F",
+      "estado_atual": "present",
+      "target_file": "assets/templates/SPEC.md",
+      "gate_type": "template"
+    }
+  ]
+}
