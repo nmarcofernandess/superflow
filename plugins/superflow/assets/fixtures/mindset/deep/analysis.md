@@ -58,10 +58,12 @@ A tela recebe número ou null — não recebe “combinado”.
 
 ## Faceta — Frontend (reuso antes de criar)
 
-| Need | Scan (grep/family) | Decision `reuse` \| `mode` \| `new` | Evidence path |
+**Reuse Guard** (antes da Síntese):
+
+| Need | Guard source `graph` \| `grep` \| `both` \| `stale-hint` | Decision `reuse` \| `mode` \| `new` | Evidence path / canônico |
 |---|---|---|---|
-| Drawer shell | `rg UnifiedAgendaDrawer` | reuse | `src/components/features/agenda/UnifiedAgendaDrawer.tsx:1` |
-| Label+value row | `rg DensityLabel` | reuse | existing density primitives |
+| Drawer shell | both (`.context` patterns/drawer + `rg UnifiedAgendaDrawer`) | reuse | `src/components/features/agenda/UnifiedAgendaDrawer.tsx:1` |
+| Label+value row | grep | reuse | density / label primitives |
 
 ## Faceta — Copy (strings-safadas)
 

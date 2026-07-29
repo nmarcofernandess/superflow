@@ -45,9 +45,11 @@ Mostrar valor sem inventar acordo.
 
 ## Faceta — Frontend (reuso antes de criar)
 
-| Need | Scan | Decision | Evidence path |
+**Reuse Guard:**
+
+| Need | Guard source | Decision | Evidence path |
 |---|---|---|---|
-| row | grep Density | reuse | ui/density |
+| value row | grep | reuse | ui/density |
 
 ## Faceta — Copy (strings-safadas)
 

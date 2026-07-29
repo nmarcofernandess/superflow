@@ -68,10 +68,24 @@ Perguntas: entidades? action/hook/query? **shape do payload que a tela recebe**?
 
 ### Frontend
 
-Perguntas: existe shell/primitivo/composição no repo? `reuse` | `mode`/`wrapper` | `new`? evidence do grep?
+Perguntas: existe shell/primitivo/composição no repo? `reuse` | `mode`/`wrapper` | `new`?
 
-**Evidência mínima:** decisão de reuso com path ou “não há equivalente — gap”.  
-**Fail:** `new` sem scan; plugin mandando “use CRUDForDashboard” em todo repo.
+**Guard obrigatório (anti-fork):** rodar `reuse-guard-protocol.md` **antes** de
+fechar `new` e **antes** da Síntese final. Ordem:
+
+1. Se `.context/` Tier-2 existe e não está stale → consult canônico
+   (trees/patterns/index) — protocolo roubado do **crystallize-guard**.
+2. Senão ou stale → `rg` de famílias no repo.
+3. Registrar na tabela need → source (graph|grep|both) → decision → path.
+
+**Evidência mínima:** decisão de reuso com path ou “não há equivalente — gap”
+**com** linha do guard.  
+**Fail:** `new` sem guard; plugin mandando shell dogmático em todo repo.
+
+### Backend (reuso de actions/services)
+
+Mesmo guard quando a feature inventaria action/service/helper novo: consulte
+`.context` / grep de actions do domínio antes de `new`.
 
 ### Copy (faceta irmã)
 
@@ -108,7 +122,8 @@ Pronto só se:
 - quatro facetas com conteúdo real ou skip_reason proporcional;
 - **Recode Log** presente (deep: ≥1 entrada com trigger+facet reescrita; docs-only: `skip_reason` honesto);
 - claims técnicos com `path:line` ou `UNPROVEN`;
-- reuse decision com evidence quando há UI;
+- quando há UI/código: **Reuse Guard** (`reuse-guard-protocol.md`) documentado
+  — graph e/ou grep — e `new` só com justificação de por que o canônico não estende;
 - inventário Copy quando há UI/copy;
 - sem string safada como “copy aprovada”.
 

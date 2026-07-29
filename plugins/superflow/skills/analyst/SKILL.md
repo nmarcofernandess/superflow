@@ -20,11 +20,12 @@ Read completely before producing or updating analysis:
 1. `../../assets/references/routing-protocol.md`
 2. `../../assets/references/prd-contract.md`
 3. `../../assets/references/feature-mindset-contract.md`
-4. `../../assets/references/analyst-protocol.md`
-5. `../../assets/references/code-recon-protocol.md`
-6. `../../assets/references/technical-blueprint-protocol.md`
-7. `../../assets/references/mermaid-contract.md`
-8. `../../assets/templates/analysis.md`
+4. `../../assets/references/reuse-guard-protocol.md`
+5. `../../assets/references/analyst-protocol.md`
+6. `../../assets/references/code-recon-protocol.md`
+7. `../../assets/references/technical-blueprint-protocol.md`
+8. `../../assets/references/mermaid-contract.md`
+9. `../../assets/templates/analysis.md`
 
 ## Investigation Mode
 
@@ -43,16 +44,19 @@ the active analysis. Build synthesizes the canonical SPEC from all analyses.
 3. Faceted recon (`code-recon-protocol.md`) before technical conclusions —
    attention order often P→B→F→Copy; **never freeze** when later evidence
    contradicts; append Recode Log and rewrite the set.
-4. Write four facets (or proportional skip_reason): Produto, Backend
-   (payload + path:line|UNPROVEN), Frontend (reuse|mode|new + scan), Copy
+4. **Reuse Guard** (`reuse-guard-protocol.md`) for each UI/code need before
+   closing Frontend/Backend with `new` — graph Tier-2 if fresh, else grep;
+   table need → source → reuse|mode|new → path. Run **before** final Síntese.
+5. Write four facets (or proportional skip_reason): Produto, Backend
+   (payload + path:line|UNPROVEN), Frontend (guard + reuse|mode|new), Copy
    (invariante|estrutura|morte).
-5. Write **Síntese** that binds facets (not a paste of three sections).
-6. Maintain **Recode Log** (deep: real entries when synthesis moves; docs-only:
+6. Write **Síntese** that binds facets (not a paste of three sections).
+7. Maintain **Recode Log** (deep: real entries when synthesis moves; docs-only:
    skip_reason ok).
-7. Stories de Usuario e Técnica; entities; implementation map.
-8. Blueprint handoff with testable **behavior names** only — no fake test
+8. Stories de Usuario e Técnica; entities; implementation map.
+9. Blueprint handoff with testable **behavior names** only — no fake test
    commands (`tdd-contract.md` owns RED/GREEN later).
-9. Grill verdict; update `status.json` (`phases.analyst`, `artifacts.analysis`).
+10. Grill verdict; update `status.json` (`phases.analyst`, `artifacts.analysis`).
 
 ## Mandatory Output
 
@@ -74,7 +78,7 @@ Do not declare `ready for taskgen` or `ready for build` if:
 - source-backed evidence missing for a technical claim;
 - Synthesis missing or is heading-collage only;
 - implementation map absent for existing codebase;
-- `new` UI without reuse scan evidence;
+- `new` UI/code without Reuse Guard (graph or grep) evidence;
 - Copy still approves instance/mock prose as system copy;
 - Recode Log dishonest for depth (fake N/A on deep);
 - product promise needs data that is UNPROVEN without non-goal;

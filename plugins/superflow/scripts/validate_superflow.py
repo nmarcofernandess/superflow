@@ -50,6 +50,7 @@ REQUIRED_PLUGIN_FILES = [
     "assets/references/execution-contract.md",
     "assets/references/tdd-contract.md",
     "assets/references/feature-mindset-contract.md",
+    "assets/references/reuse-guard-protocol.md",
     "assets/references/mermaid-contract.md",
     "assets/references/warlog-contract.md",
     "assets/references/status-schema.md",
@@ -137,6 +138,7 @@ FORBIDDEN_DIAGRAM_TOKENS = [
 ANALYST_REQUIRED_MARKERS = [
     "analyst-protocol.md",
     "feature-mindset-contract.md",
+    "reuse-guard-protocol.md",
     "code-recon-protocol.md",
     "technical-blueprint-protocol.md",
     "Phase 0 grill",
@@ -148,12 +150,14 @@ ANALYST_REQUIRED_MARKERS = [
     "Síntese",
     "Recode Log",
     "strings-safadas",
+    "Reuse Guard",
     "reuse",
 ]
 
 BUILD_REQUIRED_MARKERS = [
     "build-protocol.md",
     "feature-mindset-contract.md",
+    "reuse-guard-protocol.md",
     "code-recon-protocol.md",
     "technical-blueprint-protocol.md",
     "Ready Gate",
@@ -162,6 +166,7 @@ BUILD_REQUIRED_MARKERS = [
     "Copy",
     "Cross-facet",
     "tdd-contract.md",
+    "Reuse Guard",
 ]
 
 ANALYSIS_TEMPLATE_HEADINGS = [
@@ -202,6 +207,17 @@ MINDSET_CONTRACT_MARKERS = [
     "UNPROVEN",
     "Ready gates",
     "Proporcionalidade",
+    "reuse-guard-protocol.md",
+    "crystallize-guard",
+]
+
+REUSE_GUARD_MARKERS = [
+    "Anti-fork",
+    "Tier-2",
+    "Reuse, don't fork",
+    "stale",
+    "grep",
+    "new",
 ]
 
 SPEC_TEMPLATE_MARKERS = [
@@ -369,6 +385,11 @@ def validate_plugin_root(root: Path) -> None:
     for marker in MINDSET_CONTRACT_MARKERS:
         if marker not in mindset:
             fail(f"assets/references/feature-mindset-contract.md missing marker: {marker}")
+
+    reuse_guard = read(root / "assets" / "references" / "reuse-guard-protocol.md")
+    for marker in REUSE_GUARD_MARKERS:
+        if marker not in reuse_guard:
+            fail(f"assets/references/reuse-guard-protocol.md missing marker: {marker}")
 
     spec_template = read(root / "assets" / "templates" / "SPEC.md")
     for marker in SPEC_TEMPLATE_MARKERS:

@@ -1,7 +1,7 @@
 {
   "name": "superflow",
   "displayName": "Superflow",
-  "version": "0.1.2+mindset.20260729",
+  "version": "0.1.3+reuse-guard.20260729",
   "description": "Routes work through the smallest honest phase set with faceted Analyst/Build mindset (truth-seeking, strings-safadas, recode) and TDD on code tasks.",
   "author": {
     "name": "Marco Antonio",

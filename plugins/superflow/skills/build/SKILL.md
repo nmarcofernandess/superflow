@@ -17,18 +17,20 @@ Copy). Plan later owns executable tasks and TDD pre-compile (`tdd-contract.md`).
 1. `../../assets/references/execution-contract.md`
 2. `../../assets/references/status-schema.md`
 3. `../../assets/references/feature-mindset-contract.md`
-4. `../../assets/references/build-protocol.md`
-5. `../../assets/references/code-recon-protocol.md`
-6. `../../assets/references/technical-blueprint-protocol.md`
-7. `../../assets/references/mermaid-contract.md`
-8. `../../assets/templates/SPEC.md`
+4. `../../assets/references/reuse-guard-protocol.md`
+5. `../../assets/references/build-protocol.md`
+6. `../../assets/references/code-recon-protocol.md`
+7. `../../assets/references/technical-blueprint-protocol.md`
+8. `../../assets/references/mermaid-contract.md`
+9. `../../assets/templates/SPEC.md`
 
 ## Procedure
 
 1. Confirm mature input (PRD, analyses, or explicit blueprint ask).
 2. If promise/entities/evidence weak → route to `analyst`.
 3. Read ALL analyses; Build is the single canonical synthesis listing sources.
-4. Recon real files (payload, reuse scan, copy) before boundaries.
+4. Recon real files (payload, **Reuse Guard**, copy) before boundaries —
+   re-run guard if analysis has `new` without evidence.
 5. Close **facets** Product, Backend, Frontend, Copy — attention order may be
    P→B→F→Copy; if evidence breaks an earlier facet, **recode** and log it.
    Do not freeze waterfall stages.
@@ -60,7 +62,7 @@ Build is not ready if:
 
 - technical claims lack source proof;
 - Synthesis missing or is section-collage;
-- local patterns not searched before `new`;
+- local patterns not searched before `new` (Reuse Guard missing);
 - Copy approves safada instance prose;
 - Cross-facet table missing when multiple facets change;
 - sequence not dependency-ordered;

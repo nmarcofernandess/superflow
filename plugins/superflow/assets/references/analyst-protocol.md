@@ -37,7 +37,8 @@ is a failed analysis (B1).
 - Every code/system claim: `path:line` or `UNPROVEN` (T1, B5).
 - Backend claims include **payload/shape** the UI receives when UI is in scope
   (T2).
-- Before `new` UI: reuse scan with evidence (T4–T6). Plugin **searches**; it
+- Before `new` UI/action: **Reuse Guard** (`reuse-guard-protocol.md`) with
+  evidence — graph Tier-2 if fresh, else grep (T4–T6). Plugin **searches**; it
   does not prescribe a universal shell name.
 - Copy inventory when UI/copy is in scope; apply strings-safadas (S1–S5).
 - **Síntese** paragraph binds facets (F4). Paste of three sections = fail.

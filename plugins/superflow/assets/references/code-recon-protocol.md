@@ -19,8 +19,10 @@ recode. See `feature-mindset-contract.md`.
 - Start from the user's concrete boundary.
 - Use `path:line` for evidence wherever possible (T1).
 - Capture **payload/shape** that UI actually receives, not only model names (T2).
-- Before proposing `new` UI, **scan** for existing shells/primitives/compositions
-  in the repo (T4–T6). Do not prescribe a fixed shell name as universal dogma.
+- Before proposing `new` UI or new action/service, run **Reuse Guard**
+  (`reuse-guard-protocol.md`) — crystallize-guard style: Tier-2 `.context` if
+  fresh, else grep families (T4–T6). Do not prescribe a fixed shell name as
+  universal dogma.
 - If subagents are available, use explorer lanes for independent discovery, but
   the final artifact must cite the files directly.
 - Do not edit files from recon.
@@ -60,8 +62,12 @@ What the system actually does.
 ## Payload / data path
 What the screen receives (fields, counts, nullability).
 
-## Reuse scan
-Commands/greps run and candidates found (or none).
+## Reuse Guard (anti-fork)
+- Need named:
+- Graph (`.context` Tier-2) result: reuse path | none | stale-hint
+- Grep families / commands:
+- Decision: reuse | mode | new (+ justification if new)
+- Evidence paths:
 
 ## Copy inventory
 UI strings / mock phrases that need invariant|structure|death.

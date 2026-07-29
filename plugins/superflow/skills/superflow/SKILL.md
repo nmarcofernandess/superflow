@@ -210,5 +210,7 @@ python3 <plugin-root>/scripts/forward_test_superflow.py
   code tasks.
 - Read `../../assets/references/feature-mindset-contract.md` before Analyst or
   Build (facetas, recode, strings-safadas, truth-seeking).
+- Read `../../assets/references/reuse-guard-protocol.md` before creating UI or
+  actions (anti-fork: .context Tier-2 or grep — crystallize-guard slice).
 - Read `../../assets/references/backlog-status-protocol.md` before verifying
   existing issues against merged PRs.

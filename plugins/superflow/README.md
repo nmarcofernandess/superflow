@@ -43,9 +43,11 @@ superflow/
 - `superflow:capture` captures ideas into GitHub-ready PRD issues.
 - `superflow:taskgen` creates or promotes local PRD packages.
 - `superflow:analyst` handles product/domain/system ambiguity with native grill,
-  faceted recon (Produto/Backend/Frontend/Copy), Síntese, Recode Log,
-  strings-safadas, evidence matrix, and blueprint handoff — see
-  `assets/references/feature-mindset-contract.md`.
+  faceted recon (Produto/Backend/Frontend/Copy), **Reuse Guard** (anti-fork
+  via `.context` or grep — crystallize-guard slice), Síntese, Recode Log,
+  strings-safadas, and blueprint handoff — see
+  `assets/references/feature-mindset-contract.md` +
+  `assets/references/reuse-guard-protocol.md`.
 - `superflow:build` writes the technical blueprint/spec as a **synthesis** of
   those facets (not a freeze-waterfall of headings).
 - `superflow:plan` writes executable `implementation_plan.json` task catalogs

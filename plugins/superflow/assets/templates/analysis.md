@@ -53,11 +53,14 @@ O que a tela **realmente** recebe (shape), não só “model existe” (T1–T2)
 
 ## Faceta — Frontend (reuso antes de criar)
 
-| Need | Scan (grep/family) | Decision `reuse` \| `mode` \| `new` | Evidence path |
+**Reuse Guard** (`reuse-guard-protocol.md`) — rodar **antes** da Síntese se há UI.
+
+| Need | Guard source `graph` \| `grep` \| `both` \| `stale-hint` | Decision `reuse` \| `mode` \| `new` | Evidence path / canônico |
 |---|---|---|---|
 |  |  |  |  |
 
-O plugin manda **procurar** equivalente no repo; não prescreve shell dogmático (T4–T6).
+Se `new`: por que o canônico (se houver) não estende?  
+O plugin manda **procurar** (graph Tier-2 ou grep); não prescreve shell dogmático (T4–T6).
 
 ## Faceta — Copy (strings-safadas)
 

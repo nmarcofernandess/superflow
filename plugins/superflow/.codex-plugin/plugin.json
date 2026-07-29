@@ -1,6 +1,6 @@
 {
   "name": "superflow",
-  "version": "0.1.2+mindset.20260729",
+  "version": "0.1.3+reuse-guard.20260729",
   "description": "Phase-budget workflow with faceted Analyst/Build mindset (Produto/Backend/Frontend/Copy, recode, strings-safadas) and TDD contract on code tasks.",
   "author": {
     "name": "Marco Antonio"
