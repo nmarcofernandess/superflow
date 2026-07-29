@@ -3,7 +3,8 @@
 Date: 2026-07-29  
 Branch: `feat/superflow-fatality-analyst-build` (ship-ready; `main` promotion is Marco-gated)  
 Version: **0.2.0** (all plugin + marketplace manifests)  
-Scope: fatality gates + Ready boundary (skills require package validator) + marketplace hygiene.
+Scope: fatality gates + Ready boundary (skills require package validator) + marketplace hygiene.  
+Install pin: README primary Codex/Claude blocks use **`--ref v0.2.0`** (not `main`); main stays older until PR merge.
 
 This file is a **repro log**, not a self-attestation. Every claim has command + exit-class + excerpt.
 

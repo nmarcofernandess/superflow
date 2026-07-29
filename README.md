@@ -37,19 +37,29 @@ Guard table **fail**.
 DietFlow-shaped paths may appear in fixtures/examples; the contracts are
 portable.
 
-## Install (Codex)
+## Install (Codex) — pin `v0.2.0`
+
+**Canonical install ref is the release tag `v0.2.0`.**  
+`origin/main` may still be older (pre-fatality). Do **not** use `--ref main`
+until that commit is merged and `main`’s plugin version is also `0.2.0`.
 
 ```bash
-codex plugin marketplace add nmarcofernandess/superflow --ref main
+codex plugin marketplace add nmarcofernandess/superflow --ref v0.2.0
 codex plugin add superflow@superflow
 ```
 
-Until `0.2.0` is merged to `main`, install the ship-ready ref explicitly:
+Fallback while developing on the ship branch (moving tip — prefer the tag):
 
 ```bash
 codex plugin marketplace add nmarcofernandess/superflow --ref feat/superflow-fatality-analyst-build
-# or, after the release tag exists:
-# codex plugin marketplace add nmarcofernandess/superflow --ref v0.2.0
+codex plugin add superflow@superflow
+```
+
+Only after PR merge when `main` carries `0.2.0`:
+
+```bash
+# post-merge only — verify plugin.json version is 0.2.0 on main first
+codex plugin marketplace add nmarcofernandess/superflow --ref main
 codex plugin add superflow@superflow
 ```
 
@@ -61,23 +71,37 @@ codex plugin marketplace upgrade superflow
 
 Start a **new thread** after install/update so skills reload.
 
-## Install (Claude Code)
+## Install (Claude Code) — pin `v0.2.0`
+
+Same rule: pin the tag until `main` is promoted. Unpinned marketplace add
+typically resolves `main` and will **not** give you `0.2.0` today.
+
+Preferred (tag):
 
 ```text
-/plugin marketplace add nmarcofernandess/superflow
+/plugin marketplace add nmarcofernandess/superflow@v0.2.0
 /plugin install superflow@superflow
 /reload-plugins
 ```
 
-Or:
+Or from the shell:
 
 ```bash
-claude plugin marketplace add nmarcofernandess/superflow
+claude plugin marketplace add nmarcofernandess/superflow --ref v0.2.0
+# if your Claude Code build only accepts a git URL + ref:
+# claude plugin marketplace add https://github.com/nmarcofernandess/superflow --ref v0.2.0
 claude plugin install superflow@superflow
 ```
 
-Pin a branch/tag the same way your Claude Code version supports for marketplace
-sources (this repo’s default publish ref is `main` once promoted).
+Fallback (ship branch tip — prefer tag):
+
+```bash
+claude plugin marketplace add nmarcofernandess/superflow --ref feat/superflow-fatality-analyst-build
+claude plugin install superflow@superflow
+```
+
+After merge, unpinned `main` is fine only when `plugins/superflow/.claude-plugin/plugin.json`
+on `main` reports `"version": "0.2.0"`.
 
 ## Repository shape
 
