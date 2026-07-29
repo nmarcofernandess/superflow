@@ -202,7 +202,7 @@ ANALYSIS_TEMPLATE_HEADINGS = [
 ]
 
 MINDSET_CONTRACT_MARKERS = [
-    "Fatality",
+    "Critério de pronto",
     "facetas",
     "waterfall",
     "Recode",
@@ -215,6 +215,7 @@ MINDSET_CONTRACT_MARKERS = [
     "Proporcionalidade",
     "reuse-guard-protocol.md",
     "crystallize-guard",
+    "validate_superflow.py",
 ]
 
 REUSE_GUARD_MARKERS = [
@@ -474,7 +475,7 @@ def _is_placeholder_body(body: str) -> bool:
     return False
 
 
-# path:line evidence — backticks alone do NOT count (Claude exploit A)
+# path:line evidence — backticks alone do not count
 PATH_LINE_RE = re.compile(r"\b[\w./-]+\.\w{1,10}:\d+\b")
 
 # Form-based strings-safadas (not fixture literals)

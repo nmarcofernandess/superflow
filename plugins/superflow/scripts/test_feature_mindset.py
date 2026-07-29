@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Structural tests for Superflow feature-mindset (Analyst/Build faceted truth).
 
-Includes Claude APPROVE-WITH-FIXES exploit suite (A–E) with phrases that do NOT
-share literals with the golden fixtures.
+Includes adversarial package cases (A–E) with phrases that do not share
+literals with the golden fixtures.
 """
 
 from __future__ import annotations
@@ -75,11 +75,10 @@ def assert_ready_gates_require_validator() -> None:
 
 
 def assert_readme_install_pins_release_tag() -> None:
-    """Third-party install must pin v0.2.0 while main may still be pre-fatality."""
+    """Third-party install must pin v0.2.0 while main may still be older."""
     readme = (PLUGIN_ROOT.parent.parent / "README.md").read_text(encoding="utf-8")
     if "Version `0.2.0`" not in readme and "**Version `0.2.0`**" not in readme:
         raise AssertionError("README must declare Version 0.2.0")
-    # Primary Codex install block must use --ref v0.2.0 (not main as first path)
     codex_idx = readme.find("## Install (Codex)")
     if codex_idx < 0:
         raise AssertionError("README missing ## Install (Codex)")
@@ -90,7 +89,6 @@ def assert_readme_install_pins_release_tag() -> None:
     claude_section = readme[claude_idx : claude_idx + 1800]
     if "--ref v0.2.0" not in codex_section:
         raise AssertionError("Codex install section must pin --ref v0.2.0")
-    # First marketplace-add in Codex section must be the tag, not main
     first_add = None
     for line in codex_section.splitlines():
         if "marketplace add" in line and "nmarcofernandess/superflow" in line:
@@ -103,12 +101,11 @@ def assert_readme_install_pins_release_tag() -> None:
             f"first Codex marketplace add must pin v0.2.0, got: {first_add}"
         )
     if "--ref main" in first_add:
-        raise AssertionError("first Codex install must not use --ref main pre-merge")
+        raise AssertionError("first Codex install must not use --ref main while main is older")
     if "v0.2.0" not in claude_section:
         raise AssertionError("Claude Code install section must pin v0.2.0 explicitly")
     if "Do **not** use `--ref main`" not in codex_section and "Do not use `--ref main`" not in codex_section:
-        # allow bold markdown variant already checked above
-        if "Do **not** use" not in codex_section and "pre-fatality" not in codex_section.lower():
+        if "older" not in codex_section.lower() and "0.2.0" not in codex_section:
             raise AssertionError("Codex section must warn that main may be older than 0.2.0")
 
 
@@ -162,7 +159,7 @@ def main() -> int:
         bad_deep = root / "bad-deep-safada"
         shutil.copytree(FIXTURES / "deep", bad_deep)
         analysis = (bad_deep / "analysis.md").read_text(encoding="utf-8")
-        # Inject four form-based safadas (Claude exploit B paraphrases)
+        # Form-based safada rows (novel phrases, not fixture literals)
         inject = """
 | Drawer | "Voce ainda tem 3 consultas restantes neste mes, aproveite!" | nenhum | manter |
 | Toast  | "O plano Premium custa 249,90 conforme acertamos na reuniao." | nenhum | manter |
@@ -228,7 +225,7 @@ def main() -> int:
             needles=["safada", "instance-form", "aprovada"],
         )
 
-        # --- Claude exploits A–E must FAIL ---
+        # --- Adversarial packages A–E must FAIL ---
 
         # C: remove status.json → partial package fail (never silent OK)
         exploit_c = root / "exploit-c-no-status"

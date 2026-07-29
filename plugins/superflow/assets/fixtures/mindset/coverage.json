@@ -1,6 +1,6 @@
 {
   "schema_version": "superflow.mindset.coverage.v1",
-  "goal": "feat/superflow-fatality-analyst-build",
+  "goal": "feature-mindset-analyst-build-gates",
   "updated_at": "2026-07-29T00:00:00Z",
   "units": [
     {

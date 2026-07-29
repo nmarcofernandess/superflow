@@ -3,7 +3,7 @@
 Contrato canônico do Superflow para **Analyst → Build**.  
 Portável: não depende de `~/.claude` nem de DietFlow instalado.
 
-## 1. Fatality (vitória)
+## 1. Critério de pronto
 
 Analyst e Build só estão prontos quando:
 
@@ -11,11 +11,12 @@ Analyst e Build só estão prontos quando:
 2. **Síntese, não colagem** — um parágrafo amarra as facetas; três seções soltas = falha.
 3. **Recode o conjunto** — evidência nova revisita facetas anteriores; proibido entulho de decisões.
 4. **Verdade no terreno** — `path:line` ou `UNPROVEN` explícito; proibido chute confiante.
-5. **Procurar, não prescrever** — o plugin manda grepar equivalente no repo; não escolhe shell dogmático.
+5. **Procurar, não prescrever** — grepar equivalente no repo; sem shell dogmático de monorepo alheio.
 6. **Prosa só invariante** — strings-safadas; dado mora em estrutura (label, chip, contador).
 7. **Ready = coerência** — não “headings preenchidos”.
+8. **Validator no pacote** — `validate_superflow.py <path-to-package>` exit 0.
 
-TDD (`tdd-contract.md`) é fronteira: Analyst/Build **preparam** comportamentos testáveis; **não** substituem RED/GREEN nem inventam comando de teste falso.
+TDD (`tdd-contract.md`) é fronteira: Analyst/Build **preparam** comportamentos testáveis; **não** substituem RED/GREEN nem inventam comando de teste.
 
 ## 2. Facetas vs waterfall (Colon em uma tela)
 

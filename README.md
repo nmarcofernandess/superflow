@@ -1,17 +1,16 @@
 # Superflow
 
-**Version `0.2.0`** — production-ready Agent Skills marketplace plugin.
-
-Superflow routes raw requests into the **smallest honest phase set**:
+**Version `0.2.0`**. Agent Skills marketplace plugin for routing work by maturity
+and risk.
 
 ```text
 request → route → inbox/PRD → optional analyst → optional build → optional plan → execute → QA
 ```
 
-Install from **this Git marketplace** (`nmarcofernandess/superflow`). Product
-repositories **consume** the plugin; they do not host a copy of it.
+Install from this Git marketplace (`nmarcofernandess/superflow`). Product repos
+consume the plugin; they do not host a copy.
 
-Codex and Claude Code are distribution surfaces. The source of truth is
+Codex and Claude Code are install surfaces. Source of truth:
 `plugins/superflow/{skills,assets,scripts}`.
 
 ## What you get
@@ -39,26 +38,25 @@ portable.
 
 ## Install (Codex) — pin `v0.2.0`
 
-**Canonical install ref is the release tag `v0.2.0`.**  
-`origin/main` may still be older (pre-fatality). Do **not** use `--ref main`
-until that commit is merged and `main`’s plugin version is also `0.2.0`.
+Canonical ref: tag **`v0.2.0`**.  
+`main` may still report an older plugin version. Do **not** use `--ref main`
+until `main`’s `plugin.json` also says `0.2.0`.
 
 ```bash
 codex plugin marketplace add nmarcofernandess/superflow --ref v0.2.0
 codex plugin add superflow@superflow
 ```
 
-Fallback while developing on the ship branch (moving tip — prefer the tag):
+Development tip (moving branch — prefer the tag):
 
 ```bash
 codex plugin marketplace add nmarcofernandess/superflow --ref feat/superflow-fatality-analyst-build
 codex plugin add superflow@superflow
 ```
 
-Only after PR merge when `main` carries `0.2.0`:
+After `main` carries `0.2.0`:
 
 ```bash
-# post-merge only — verify plugin.json version is 0.2.0 on main first
 codex plugin marketplace add nmarcofernandess/superflow --ref main
 codex plugin add superflow@superflow
 ```
@@ -69,14 +67,12 @@ Refresh:
 codex plugin marketplace upgrade superflow
 ```
 
-Start a **new thread** after install/update so skills reload.
+Start a new thread after install or update so skills reload.
 
 ## Install (Claude Code) — pin `v0.2.0`
 
-Same rule: pin the tag until `main` is promoted. Unpinned marketplace add
-typically resolves `main` and will **not** give you `0.2.0` today.
-
-Preferred (tag):
+Pin the tag. Unpinned marketplace add usually resolves `main` and will not
+install `0.2.0` until that branch is updated.
 
 ```text
 /plugin marketplace add nmarcofernandess/superflow@v0.2.0
@@ -84,24 +80,23 @@ Preferred (tag):
 /reload-plugins
 ```
 
-Or from the shell:
+Shell:
 
 ```bash
 claude plugin marketplace add nmarcofernandess/superflow --ref v0.2.0
-# if your Claude Code build only accepts a git URL + ref:
-# claude plugin marketplace add https://github.com/nmarcofernandess/superflow --ref v0.2.0
 claude plugin install superflow@superflow
 ```
 
-Fallback (ship branch tip — prefer tag):
+Branch tip (prefer tag):
 
 ```bash
 claude plugin marketplace add nmarcofernandess/superflow --ref feat/superflow-fatality-analyst-build
 claude plugin install superflow@superflow
 ```
 
-After merge, unpinned `main` is fine only when `plugins/superflow/.claude-plugin/plugin.json`
-on `main` reports `"version": "0.2.0"`.
+After merge, unpinned `main` is fine only when
+`plugins/superflow/.claude-plugin/plugin.json` on `main` reports
+`"version": "0.2.0"`.
 
 ## Repository shape
 
@@ -163,9 +158,8 @@ python3 plugins/superflow/scripts/validate_superflow.py plugins/superflow/assets
 python3 plugins/superflow/scripts/validate_superflow.py plugins/superflow/assets/fixtures/mindset/string-trap
 ```
 
-Exploit regression (must FAIL): see
-`artifacts/proofs/superflow-fatality/tribunal.md` and
-`plugins/superflow/scripts/test_feature_mindset.py`.
+Negative cases (must FAIL): `plugins/superflow/scripts/test_feature_mindset.py`
+and the command log in `artifacts/proofs/superflow-fatality/tribunal.md`.
 
 ## Core contracts (read these)
 
