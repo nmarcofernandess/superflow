@@ -438,8 +438,103 @@ def _is_placeholder_body(body: str) -> bool:
     return False
 
 
+def _reject_strings_safadas_approved(text: str, *, label: str) -> None:
+    """Always-on: instance prose must not be approved as system UI copy.
+
+    Applies at every depth (deep/docs/trap). Table column headers may list
+    'estrutura|morte' as schema — checks are row/approval-phrase based.
+    """
+    low = text.lower()
+    if "ui copy aprovada" in low or "copy aprovada" in low:
+        if (
+            "continua retorno" in low
+            or "como foi combinado" in low
+            or "r$ 180" in low
+            or "prosa-instância" in low
+            or "prosa-instancia" in low
+        ):
+            fail(f"{label}: strings-safadas — instance prose marked as approved UI copy")
+        if "aprovada" in low and re.search(r"r\$\s*\d+", low):
+            fail(f"{label}: strings-safadas — currency instance prose approved as UI copy")
+
+    for ln in text.splitlines():
+        ll = ln.lower().strip()
+        if not ll.startswith("|"):
+            continue
+        if ("continua retorno" in ll or ("r$ 180" in ll and "combinado" in ll)) and (
+            "aprovad" in ll or "usar como copy" in ll or "copy de sistema" in ll
+        ):
+            if "morte" not in ll:
+                fail(f"{label}: strings-safadas — instance prose row approved without morte")
+        if "continua retorno" in ll or ("r$ 180" in ll and "combinado" in ll):
+            if "morte" not in ll and "estrutura" not in ll and "invariante" not in ll:
+                fail(
+                    f"{label}: strings-safadas — instance prose row lacks "
+                    "invariante|estrutura|morte destination"
+                )
+
+
+def _recode_rows_real(recode: str) -> list[str]:
+    """Return non-header Recode Log table rows that are not fake N/A stubs."""
+    fake_tokens = {
+        "n/a",
+        "n.a.",
+        "nenhuma recode",
+        "nenhum recode",
+        "none",
+        "no recode",
+        "—",
+        "-",
+        "tbd",
+        "todo",
+        "placeholder",
+        "",
+    }
+    rows: list[str] = []
+    for ln in recode.splitlines():
+        s = ln.strip()
+        if not s.startswith("|"):
+            continue
+        if "---" in s:
+            continue
+        if re.search(r"\|\s*when\s*\|", s, re.I) or re.search(r"\|\s*trigger\s*\|", s, re.I):
+            continue
+        low = s.lower()
+        if re.search(r"\|\s*t\d+\s*\|\s*n/a\s*\|\s*n/a\s*\|", low):
+            continue
+        if "nenhuma recode" in low and "n/a" in low:
+            continue
+        if re.search(r"n/a.*n/a.*nenhuma", low):
+            continue
+        cells = [c.strip().lower() for c in s.strip("|").split("|")]
+        meaningful = [
+            c
+            for c in cells
+            if c
+            and c not in fake_tokens
+            and c
+            not in {
+                "when",
+                "trigger",
+                "facet",
+                "recode",
+                "facet that broke",
+                "what was recoded",
+            }
+        ]
+        # Require a real trigger-like cell (not only ids like t1)
+        non_id = [c for c in meaningful if not re.fullmatch(r"t\d+", c)]
+        if len(non_id) < 2:
+            continue
+        rows.append(s)
+    return rows
+
+
 def validate_analysis_mindset(text: str, *, label: str, depth: str = "deep") -> None:
     """depth: deep | docs | trap — structural gates for analysis.md."""
+    if depth == "skip":
+        fail(f"{label}: mindset-depth 'skip' is not allowed (escape hatch removed)")
+
     required = [
         "## TL;DR",
         "## Síntese",
@@ -457,15 +552,17 @@ def validate_analysis_mindset(text: str, *, label: str, depth: str = "deep") -> 
     if _is_placeholder_body(synthesis):
         fail(f"{label}: Síntese empty or placeholder (ready ≠ filled headings)")
 
+    # Always-on strings-safadas (every depth)
+    _reject_strings_safadas_approved(text, label=label)
+
     if depth == "docs":
         recode = _section_body(text, "## Recode Log")
         if "skip_reason" not in recode.lower() and "skip" not in recode.lower():
-            # docs may use skip_reason in the table or prose
             if _is_placeholder_body(recode) and "docs" not in recode.lower():
                 fail(f"{label}: docs-only Recode Log needs skip_reason or honest skip")
         return
 
-    if depth == "deep":
+    if depth in {"deep", "trap"}:
         for h in (
             "## Faceta — Produto",
             "## Faceta — Backend",
@@ -477,20 +574,17 @@ def validate_analysis_mindset(text: str, *, label: str, depth: str = "deep") -> 
                 fail(f"{label}: {h} empty/placeholder (typographic completeness is not ready)")
         backend = _section_body(text, "## Faceta — Backend")
         if "path:" not in backend.lower() and "`" not in backend and "unproven" not in backend.lower():
-            # require some evidence marker
             if not re.search(r"\.\w{1,10}:\d+", backend):
                 fail(f"{label}: Backend facet needs path:line-style evidence or UNPROVEN")
         recode = _section_body(text, "## Recode Log")
         if _is_placeholder_body(recode):
             fail(f"{label}: deep package needs Recode Log with real content")
-        # at least one data row in recode table (pipe with non-header)
-        data_rows = [
-            ln
-            for ln in recode.splitlines()
-            if ln.strip().startswith("|") and "---" not in ln and "When" not in ln and "Trigger" not in ln
-        ]
+        data_rows = _recode_rows_real(recode)
         if len(data_rows) < 1:
-            fail(f"{label}: deep Recode Log needs ≥1 real entry")
+            fail(
+                f"{label}: deep Recode Log needs ≥1 real entry "
+                "(fake N/A / 'nenhuma recode' rows do not count)"
+            )
         frontend = _section_body(text, "## Faceta — Frontend")
         if "reuse" not in frontend.lower() and "mode" not in frontend.lower() and "new" not in frontend.lower():
             fail(f"{label}: Frontend facet needs reuse|mode|new decision")
@@ -498,46 +592,35 @@ def validate_analysis_mindset(text: str, *, label: str, depth: str = "deep") -> 
         if "morte" not in copy.lower() and "estrutura" not in copy.lower() and "invariante" not in copy.lower():
             fail(f"{label}: Copy facet needs invariante|estrutura|morte")
 
-    if depth == "trap":
-        # Instance prose must not be approved as system UI copy.
-        # Table headers may mention "estrutura|morte" as column names — ignore that;
-        # fail on explicit approval or a row that lacks morte/estrutura as destination.
-        low = text.lower()
-        if "continua retorno por r$" in low or "como foi combinado" in low:
-            if "ui copy aprovada" in low or "copy aprovada" in low:
-                fail(f"{label}: string-safada trap — instance prose marked approved UI copy")
-            # Row-level: if phrase appears and the same line does not contain morte/estrutura
-            for ln in text.splitlines():
-                ll = ln.lower()
-                if "continua retorno" in ll or ("r$ 180" in ll and "combinado" in ll):
-                    if "morte" not in ll and "estrutura" not in ll and "invariante" not in ll:
-                        fail(
-                            f"{label}: string-safada trap — instance prose row lacks "
-                            "invariante|estrutura|morte destination"
-                        )
-
-
 
 def validate_spec_mindset(text: str, *, label: str, depth: str = "deep") -> None:
+    if depth == "skip":
+        fail(f"{label}: mindset-depth 'skip' is not allowed (escape hatch removed)")
+
     for h in ("## Synthesis", "### Product", "### Backend", "### Frontend", "### Copy"):
         if h not in text:
             fail(f"{label}: missing SPEC mindset heading {h}")
     synthesis = _section_body(text, "## Synthesis")
     if _is_placeholder_body(synthesis):
         fail(f"{label}: SPEC Synthesis empty/placeholder")
-    if depth == "deep":
+
+    _reject_strings_safadas_approved(text, label=label)
+
+    if depth in {"deep", "trap"}:
         if "## Cross-facet dependencies" not in text and "Cross-facet" not in text:
             fail(f"{label}: deep SPEC needs Cross-facet dependencies")
         if "## Recode Log" not in text:
             fail(f"{label}: deep SPEC needs Recode Log")
+        recode = _section_body(text, "## Recode Log")
+        raw_rows = [
+            ln
+            for ln in recode.splitlines()
+            if ln.strip().startswith("|") and "---" not in ln and "When" not in ln and "Trigger" not in ln
+        ]
+        if raw_rows and not _recode_rows_real(recode) and "skip_reason" not in recode.lower():
+            fail(f"{label}: SPEC Recode Log only has fake N/A rows")
         if "Testable behaviors" not in text:
             fail(f"{label}: SPEC needs Testable behaviors handoff (no fake commands required)")
-    if depth == "trap":
-        low = text.lower()
-        if ("continua retorno por r$" in low or "como foi combinado" in low) and "morte" not in low:
-            fail(f"{label}: SPEC still carries safada instance prose without morte")
-        if "ui copy aprovada" in low:
-            fail(f"{label}: SPEC approves safada instance prose as UI copy")
 
 
 def iter_plan_subtasks(plan: dict) -> list[dict]:
@@ -773,15 +856,17 @@ def validate_package(path: Path) -> None:
     marker = path / "mindset-depth.txt"
     if marker.exists():
         depth = read(marker).strip().lower() or "deep"
-    if depth not in {"deep", "docs", "trap", "skip"}:
-        fail(f"{path}/mindset-depth.txt unknown depth {depth!r}")
+    if depth == "skip":
+        fail(f"{path}/mindset-depth.txt: 'skip' is forbidden (no mindset escape hatch)")
+    if depth not in {"deep", "docs", "trap"}:
+        fail(f"{path}/mindset-depth.txt unknown depth {depth!r} (allowed: deep|docs|trap)")
 
     analysis_path = path / "analysis.md"
-    if analysis_path.exists() and depth != "skip":
+    if analysis_path.exists():
         validate_analysis_mindset(read(analysis_path), label=str(analysis_path), depth=depth)
 
     spec_path = path / "SPEC.md"
-    if spec_path.exists() and depth != "skip":
+    if spec_path.exists():
         validate_spec_mindset(read(spec_path), label=str(spec_path), depth=depth)
 
 

@@ -1,66 +1,42 @@
-# Tribunal — feat/superflow-fatality-analyst-build
+# Tribunal — feat/superflow-fatality-analyst-build (re-open after skeptic)
 
-HEAD: post-mindset implementation (same suite green).  
+HEAD: post-skeptic gate hardening  
 Date: 2026-07-29  
-Fixtures reviewed: `assets/fixtures/mindset/{deep,docs-only,string-trap,empty-headings-fail}`  
-Suite: `validate-all.sh` + `test_feature_mindset.py` OK.
+Suite: `validate-all.sh` + `test_feature_mindset.py` green on this HEAD.
 
-Roles run as independent critical passes (orchestrator authored doctrine;
-tribunal re-read artifacts without re-authoring).
+## Skeptic gaps closed
 
-## 1. editor-doctrine — APPROVE
+| Exploit | Before | After |
+|---|---|---|
+| Approved instance prose on default **deep** | OPEN (trap-only check) | CLOSED — `_reject_strings_safadas_approved` always-on |
+| Fake Recode `\| T1 \| N/A \| N/A \| nenhuma recode \|` | OPEN (any table row counted) | CLOSED — `_recode_rows_real` rejects N/A stubs |
+| `mindset-depth.txt=skip` | OPEN (disabled all gates) | CLOSED — skip forbidden |
+| Tests only under trap depth | gap | deep safada + fake N/A + skip cases in `test_feature_mindset.py` |
 
-- Facetas ≠ waterfall present in `feature-mindset-contract.md` + analyst/build protocols.
-- Recode Log + Síntese + Copy facet in templates.
-- PT-BR with accents; Colon limited to one explanatory sentence.
-- No contradictory “Product -> Backend -> Frontend” freeze as process in build skill.
-- **fatal:** false
+Re-probe log: exploit-reprobe on orchestrator scratch (A/B/C all rc≠0).
 
-## 2. usability-human — APPROVE
+## Roles (re-APPROVE same HEAD)
 
-- Deep fixture: TL;DR + Síntese first; 3-minute read for promise, DTO path, reuse, copy death.
-- SPEC Synthesis first; cross-facet table present.
-- **fatal:** false
+### 1. editor-doctrine — APPROVE
+Facets/recode/strings-safadas still coherent; no waterfall process.
 
-## 3. usability-ia / exploit — APPROVE (after gates)
+### 2. usability-human — APPROVE
+Deep fixture still TL;DR + Síntese first; gates did not force metawork into docs.
 
-Exploits considered and closed:
+### 3. usability-ia / exploit — APPROVE
+Exploits A/B/C re-probed closed. Empty headings still fail.
 
-| Exploit | Gate |
-|---|---|
-| Fill empty headings TBD | `validate_analysis_mindset` rejects placeholder Síntese/facets |
-| Docs forced epic Recode | `depth=docs` allows skip_reason |
-| Approve safada as UI copy | trap depth + row-level morte/estrutura check |
-| Skip coverage units | plugin validate requires all ids `present` |
+### 4. devil-advocate — APPROVE
+Typographic-only ready closed; fake Recode closed; skip hatch closed.
 
-**fatal:** false
+### 5. overthinking-hunter — APPROVE
+docs-only still proportional; no new skill phase.
 
-## 4. devil-advocate — APPROVE
+### 6. bias-truth-auditor — APPROVE
+Still “procure equivalente”; no forced DietFlow shell dogma.
 
-- Empty-headings-fail package returns non-zero from validator (proven in test).
-- Surviving “UI copy aprovada” for R$ 180 row fails trap validation (proven in test).
-- No path to ready with only typographic completeness.
-- **fatal:** false
-
-## 5. overthinking-hunter — APPROVE
-
-- No new skill `superflow:triade`.
-- Docs-only fixture passes without deep Recode rows.
-- No WARLOG v2 / ECC catalog / proof atlas stacked.
-- **fatal:** false
-
-## 6. bias-truth-auditor — APPROVE
-
-- Contract/recon: “procure equivalente”, no mandatory CRUDForDashboard.
-- T7: DietFlow chain only if AGENTS/.context exist; else generic recon.
-- UNPROVEN preferred over invention.
-- **fatal:** false
-
-## 7. strings-safadas-auditor — APPROVE
-
-- Five sins + cartesian + mock≠literal ported into contract (not ~/.claude symlink).
-- Deep + string-trap fixtures kill instance prose; bad injection fails.
-- **fatal:** false
+### 7. strings-safadas-auditor — APPROVE
+Always-on reject for approved instance prose on deep/trap/docs; compliant fixtures pass.
 
 ## Summary
 
@@ -74,4 +50,4 @@ Exploits considered and closed:
 | bias-truth-auditor | APPROVE |
 | strings-safadas-auditor | APPROVE |
 
-Zero fatal REJECT. Structural caveats: none.
+Zero fatal REJECT. Zero structural caveats.
