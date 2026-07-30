@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.1 — 2026-07-29
+
+### WARLOG campaign board
+
+- Official WARLOG absorbs Warlog Minimal DNA: mission, WBS/deps, sprints,
+  chronology, next action — Mermaid only.
+- Sprint cards: state, deps, budget (`direct|plan|spec`), green contract,
+  artifacts, next action.
+- Package gate: if `WARLOG.md` exists, diary-only / PlantUML fail.
+- Fixture `assets/fixtures/warlog/campaign` + `test_warlog_contract.py`.
+- Root `WARLOG.md` rewritten as real campaign board (not publish checklist).
+- `warlog-minimal` command deprecated for Superflow packages (pointer only).
+
 ## 0.2.0 — 2026-07-29
 
 ### Ready boundary

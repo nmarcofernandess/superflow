@@ -239,6 +239,54 @@ SPEC_TEMPLATE_MARKERS = [
     "Coherence check",
 ]
 
+WARLOG_CONTRACT_MARKERS = [
+    "campaign board",
+    "mergeable",
+    "Budget",
+    "direct",
+    "plan",
+    "spec",
+    "Green contract",
+    "Mermaid only",
+    "PlantUML",
+    "Sprints",
+    "Next Action",
+    "warlog-minimal",
+]
+
+WARLOG_SKILL_MARKERS = [
+    "warlog-contract.md",
+    "campaign board",
+    "Sprint cards",
+    "direct",
+    "plan",
+    "spec",
+    "Green contract",
+    "PlantUML",
+    "Ready Gate",
+    "validate_superflow.py",
+]
+
+WARLOG_TEMPLATE_MARKERS = [
+    "## Mission",
+    "## Scope",
+    "## Campaign map",
+    "## Sprints",
+    "### S1 —",
+    "Budget:",
+    "Green contract:",
+    "## Event Log",
+    "## Next Action",
+    "```mermaid",
+]
+
+WARLOG_PACKAGE_HEADINGS = [
+    "## Mission",
+    "## Sprints",
+    "## Event Log",
+    "## Next Action",
+]
+
 COVERAGE_REQUIRED_IDS = [
     "F1", "F2", "F3", "F4", "F5", "F6", "F7",
     "T1", "T2", "T3", "T4", "T5", "T6", "T7",
@@ -406,6 +454,28 @@ def validate_plugin_root(root: Path) -> None:
     for marker in REUSE_GUARD_MARKERS:
         if marker not in reuse_guard:
             fail(f"assets/references/reuse-guard-protocol.md missing marker: {marker}")
+
+    warlog_contract = read(root / "assets" / "references" / "warlog-contract.md")
+    for marker in WARLOG_CONTRACT_MARKERS:
+        if marker not in warlog_contract:
+            fail(f"assets/references/warlog-contract.md missing marker: {marker}")
+    if "plantuml" in warlog_contract.lower() and "forbidden" not in warlog_contract.lower():
+        # PlantUML may appear only as forbidden word
+        pass
+    if "@startuml" in warlog_contract or "@startmindmap" in warlog_contract:
+        fail("assets/references/warlog-contract.md must not embed PlantUML")
+
+    warlog_skill = read(root / "skills" / "warlog" / "SKILL.md")
+    for marker in WARLOG_SKILL_MARKERS:
+        if marker not in warlog_skill:
+            fail(f"skills/warlog/SKILL.md missing marker: {marker}")
+
+    warlog_template = read(root / "assets" / "templates" / "WARLOG.md")
+    for marker in WARLOG_TEMPLATE_MARKERS:
+        if marker not in warlog_template:
+            fail(f"assets/templates/WARLOG.md missing marker: {marker}")
+    if "@startuml" in warlog_template or "plantuml" in warlog_template.lower():
+        fail("assets/templates/WARLOG.md must stay Mermaid-only")
 
     spec_template = read(root / "assets" / "templates" / "SPEC.md")
     for marker in SPEC_TEMPLATE_MARKERS:
@@ -1063,6 +1133,28 @@ def validate_mermaid(root: Path) -> None:
                 fail(f"Mermaid failed in {source} block {idx}:\n{out}")
 
 
+def validate_package_warlog(text: str, *, label: str) -> None:
+    """When WARLOG.md exists, require campaign-board shape (not diary-only)."""
+    for h in WARLOG_PACKAGE_HEADINGS:
+        if h not in text:
+            fail(f"{label}: missing required WARLOG heading {h}")
+    if "### S1" not in text and "### S1 —" not in text:
+        # accept ### S1 — title or ### S1)
+        if not re.search(r"^###\s+S\d+", text, re.M):
+            fail(f"{label}: WARLOG needs at least one sprint card (### S1 — …)")
+    if "Budget:" not in text and "budget:" not in text.lower():
+        fail(f"{label}: sprint card needs Budget (direct|plan|spec)")
+    if "Green contract" not in text and "green contract" not in text.lower():
+        fail(f"{label}: sprint card needs Green contract")
+    if "```mermaid" not in text:
+        fail(f"{label}: campaign map requires a mermaid fence")
+    low = text.lower()
+    if "@startuml" in low or "@startmindmap" in low or "@startwbs" in low:
+        fail(f"{label}: PlantUML is forbidden in WARLOG (Mermaid only)")
+    if "```plantuml" in low or "```puml" in low:
+        fail(f"{label}: PlantUML fences are forbidden in WARLOG")
+
+
 def validate_package(path: Path) -> None:
     required = ["PRD.md", "status.json", "progress.md"]
     missing = [rel for rel in required if not (path / rel).exists()]
@@ -1140,6 +1232,10 @@ def validate_package(path: Path) -> None:
 
     if spec_path.exists():
         validate_spec_mindset(read(spec_path), label=str(spec_path), depth=depth)
+
+    warlog_path = path / "WARLOG.md"
+    if warlog_path.exists():
+        validate_package_warlog(read(warlog_path), label=str(warlog_path))
 
 
 def main() -> int:

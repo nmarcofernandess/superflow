@@ -1,6 +1,6 @@
 # Superflow
 
-**Version `0.2.0`**. Agent Skills marketplace plugin for routing work by maturity
+**Version `0.2.1`**. Agent Skills marketplace plugin for routing work by maturity
 and risk.
 
 ```text
@@ -36,14 +36,14 @@ Guard table **fail**.
 DietFlow-shaped paths may appear in fixtures/examples; the contracts are
 portable.
 
-## Install (Codex) — pin `v0.2.0`
+## Install (Codex) — pin `v0.2.1`
 
-Canonical ref: tag **`v0.2.0`**.  
+Canonical ref: tag **`v0.2.1`**.  
 `main` may still report an older plugin version. Do **not** use `--ref main`
-until `main`’s `plugin.json` also says `0.2.0`.
+until `main`’s `plugin.json` also says `0.2.1`.
 
 ```bash
-codex plugin marketplace add nmarcofernandess/superflow --ref v0.2.0
+codex plugin marketplace add nmarcofernandess/superflow --ref v0.2.1
 codex plugin add superflow@superflow
 ```
 
@@ -54,7 +54,7 @@ codex plugin marketplace add nmarcofernandess/superflow --ref feat/superflow-fat
 codex plugin add superflow@superflow
 ```
 
-After `main` carries `0.2.0`:
+After `main` carries `0.2.1`:
 
 ```bash
 codex plugin marketplace add nmarcofernandess/superflow --ref main
@@ -69,13 +69,13 @@ codex plugin marketplace upgrade superflow
 
 Start a new thread after install or update so skills reload.
 
-## Install (Claude Code) — pin `v0.2.0`
+## Install (Claude Code) — pin `v0.2.1`
 
 Pin the tag. Unpinned marketplace add usually resolves `main` and will not
-install `0.2.0` until that branch is updated.
+install `0.2.1` until that branch is updated.
 
 ```text
-/plugin marketplace add nmarcofernandess/superflow@v0.2.0
+/plugin marketplace add nmarcofernandess/superflow@v0.2.1
 /plugin install superflow@superflow
 /reload-plugins
 ```
@@ -83,7 +83,7 @@ install `0.2.0` until that branch is updated.
 Shell:
 
 ```bash
-claude plugin marketplace add nmarcofernandess/superflow --ref v0.2.0
+claude plugin marketplace add nmarcofernandess/superflow --ref v0.2.1
 claude plugin install superflow@superflow
 ```
 
@@ -96,21 +96,23 @@ claude plugin install superflow@superflow
 
 After merge, unpinned `main` is fine only when
 `plugins/superflow/.claude-plugin/plugin.json` on `main` reports
-`"version": "0.2.0"`.
+`"version": "0.2.1"`.
 
 ## Repository shape
 
 ```text
-.agents/plugins/marketplace.json      # Codex marketplace catalog (v0.2.0)
-.claude-plugin/marketplace.json       # Claude Code marketplace catalog (v0.2.0)
+.agents/plugins/marketplace.json      # Codex marketplace catalog (v0.2.1)
+.claude-plugin/marketplace.json       # Claude Code marketplace catalog (v0.2.1)
 plugins/superflow/
-  .codex-plugin/plugin.json           # version 0.2.0
-  .claude-plugin/plugin.json          # version 0.2.0
+  .codex-plugin/plugin.json           # version 0.2.1
+  .claude-plugin/plugin.json          # version 0.2.1
   skills/                             # portable Agent Skills
-  assets/references/                  # contracts (mindset, TDD, reuse, …)
+  assets/references/                  # contracts (mindset, TDD, reuse, warlog)
   assets/fixtures/mindset/            # golden + negative package fixtures
+  assets/fixtures/warlog/             # campaign WARLOG fixture
   scripts/validate_superflow.py       # package + plugin validator
-  scripts/test_feature_mindset.py     # A–E exploit regression
+  scripts/test_feature_mindset.py
+  scripts/test_warlog_contract.py
   scripts/test_tdd_contract.py
 ```
 
@@ -129,7 +131,7 @@ from Git.
 | `plan` | `implementation_plan.json` + TDD I1 |
 | `execute` | Implementation + TDD I2 |
 | `qa` | Acceptance + red+green I3 |
-| `warlog` | Long-running Mermaid status |
+| `warlog` | Campaign board (sprints, budget, green contract) |
 | `audit` | No-write readiness/gaps |
 | `backlog-status` | Issue vs merged PR truth |
 | `html-didatico` | Visual HTML docs |
@@ -179,5 +181,5 @@ and the command log in `artifacts/proofs/superflow-fatality/tribunal.md`.
 
 ## Version
 
-All marketplace and plugin manifests ship **`0.2.0`** together. See
+All marketplace and plugin manifests ship **`0.2.1`** together. See
 `CHANGELOG.md`.

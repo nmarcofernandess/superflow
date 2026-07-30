@@ -22,7 +22,8 @@ can produce a durable artifact or a verified implementation.
 5. If generating diagrams, follow `../../assets/references/mermaid-contract.md`; Mermaid only.
 6. If writing a PRD or issue body, follow `../../assets/references/prd-contract.md` and
    `../../assets/references/github-issue-contract.md`.
-7. If maintaining a WARLOG, follow `../../assets/references/warlog-contract.md`.
+7. If maintaining a WARLOG, follow `../../assets/references/warlog-contract.md`
+   (campaign board: sprints, budget, green contract — not a microtask diary).
 8. If executing, follow `../../assets/references/execution-contract.md` and
    `../../assets/references/tdd-contract.md`, and keep `status.json` current.
 9. Treat Build and Plan as different phases: Build writes the technical spec
@@ -82,7 +83,7 @@ Superflow exposes the router and each major phase:
 - `build`: technical blueprint/spec for risky or architectural work.
 - `plan`: executable `implementation_plan.json` from PRD/blueprint with TDD
   RED/GREEN pre-compile.
-- `warlog`: long-running Mermaid WARLOG creation and updates.
+- `warlog`: campaign board (sprints, deps, budget, green contract, Mermaid).
 - `execute`: implementation from a durable Superflow source under iron-law TDD.
 - `qa`: acceptance matrix and RED/GREEN proof closure.
 - `audit`: no-write route/readiness/gap analysis.

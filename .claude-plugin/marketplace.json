@@ -10,7 +10,7 @@
       "name": "superflow",
       "source": "./plugins/superflow",
       "description": "Routes work through the smallest honest phase set with faceted Analyst/Build, Reuse Guard, package validator Ready boundary, and TDD on code tasks.",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "author": {
         "name": "Marco Antonio",
         "url": "https://github.com/nmarcofernandess"

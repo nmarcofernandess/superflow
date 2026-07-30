@@ -1,0 +1,48 @@
+{
+  "schema_version": "superflow.status.v1",
+  "id": "fixture-warlog-campaign",
+  "title": "Campaign board fixture",
+  "route": "build_plan_execute",
+  "phase_budget": "deep",
+  "execution_strategy": "single",
+  "source": {
+    "type": "fixture",
+    "github_issue": null,
+    "file": null
+  },
+  "confidence": "high",
+  "current_phase": "plan",
+  "decision": {
+    "verdict": "prd_ready",
+    "prd_status": "ready",
+    "reason": "fixture",
+    "prd_path": "PRD.md",
+    "discard_path": null
+  },
+  "phases": {
+    "inbox": "skipped",
+    "analyst": "complete",
+    "taskgen": "complete",
+    "build": "complete",
+    "critic": "skipped",
+    "plan": "pending",
+    "execute": "pending",
+    "qa": "pending"
+  },
+  "artifacts": {
+    "prd": "PRD.md",
+    "analysis": null,
+    "blueprint": null,
+    "progress": "progress.md",
+    "warlog": "WARLOG.md",
+    "plan": null,
+    "implementation_log": null,
+    "qa": null
+  },
+  "task_source": {
+    "type": "none",
+    "path": null,
+    "progress": null
+  },
+  "updated_at": "2026-07-29T00:00:00Z"
+}

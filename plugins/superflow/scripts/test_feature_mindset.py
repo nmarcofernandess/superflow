@@ -75,10 +75,18 @@ def assert_ready_gates_require_validator() -> None:
 
 
 def assert_readme_install_pins_release_tag() -> None:
-    """Third-party install must pin v0.2.0 while main may still be older."""
+    """Third-party install must pin the current plugin version tag (not main first)."""
+    manifest = json.loads(
+        (PLUGIN_ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8")
+    )
+    ver = str(manifest.get("version") or "").strip()
+    if not ver:
+        raise AssertionError("plugin.json missing version")
+    tag = f"v{ver}"
+    ref = f"--ref {tag}"
     readme = (PLUGIN_ROOT.parent.parent / "README.md").read_text(encoding="utf-8")
-    if "Version `0.2.0`" not in readme and "**Version `0.2.0`**" not in readme:
-        raise AssertionError("README must declare Version 0.2.0")
+    if f"Version `{ver}`" not in readme and f"**Version `{ver}`**" not in readme:
+        raise AssertionError(f"README must declare Version {ver}")
     codex_idx = readme.find("## Install (Codex)")
     if codex_idx < 0:
         raise AssertionError("README missing ## Install (Codex)")
@@ -87,8 +95,8 @@ def assert_readme_install_pins_release_tag() -> None:
         raise AssertionError("README missing ## Install (Claude Code)")
     codex_section = readme[codex_idx:claude_idx]
     claude_section = readme[claude_idx : claude_idx + 1800]
-    if "--ref v0.2.0" not in codex_section:
-        raise AssertionError("Codex install section must pin --ref v0.2.0")
+    if ref not in codex_section:
+        raise AssertionError(f"Codex install section must pin {ref}")
     first_add = None
     for line in codex_section.splitlines():
         if "marketplace add" in line and "nmarcofernandess/superflow" in line:
@@ -96,17 +104,15 @@ def assert_readme_install_pins_release_tag() -> None:
             break
     if first_add is None:
         raise AssertionError("Codex section missing marketplace add line")
-    if "--ref v0.2.0" not in first_add:
-        raise AssertionError(
-            f"first Codex marketplace add must pin v0.2.0, got: {first_add}"
-        )
+    if ref not in first_add:
+        raise AssertionError(f"first Codex marketplace add must pin {tag}, got: {first_add}")
     if "--ref main" in first_add:
         raise AssertionError("first Codex install must not use --ref main while main is older")
-    if "v0.2.0" not in claude_section:
-        raise AssertionError("Claude Code install section must pin v0.2.0 explicitly")
+    if tag not in claude_section and ver not in claude_section:
+        raise AssertionError(f"Claude Code install section must pin {tag}")
     if "Do **not** use `--ref main`" not in codex_section and "Do not use `--ref main`" not in codex_section:
-        if "older" not in codex_section.lower() and "0.2.0" not in codex_section:
-            raise AssertionError("Codex section must warn that main may be older than 0.2.0")
+        if "older" not in codex_section.lower():
+            raise AssertionError("Codex section must warn that main may be older")
 
 
 def main() -> int:
