@@ -5,6 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 python3 "$ROOT/plugins/superflow/scripts/validate_superflow.py" "$ROOT/plugins/superflow"
 python3 "$ROOT/plugins/superflow/scripts/test_superflow_routes.py"
+python3 "$ROOT/plugins/superflow/scripts/test_writing_contract.py"
 python3 "$ROOT/plugins/superflow/scripts/forward_test_superflow.py"
 
 if command -v claude >/dev/null 2>&1; then

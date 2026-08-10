@@ -40,6 +40,8 @@ REQUIRED_PLUGIN_FILES = [
     "skills/execute/SKILL.md",
     "skills/qa/SKILL.md",
     "skills/audit/SKILL.md",
+    "skills/writing-clearly-and-concisely/SKILL.md",
+    "skills/writing-clearly-and-concisely/elements-of-style.md",
     "assets/references/analyst-protocol.md",
     "assets/references/code-recon-protocol.md",
     "assets/references/technical-blueprint-protocol.md",
@@ -79,6 +81,7 @@ EXPECTED_PLUGIN_SKILLS = [
     "execute",
     "qa",
     "audit",
+    "writing-clearly-and-concisely",
 ]
 
 FORBIDDEN_DIAGRAM_TOKENS = [
@@ -198,7 +201,7 @@ def validate_plugin_root(root: Path) -> None:
             fail(f"skills/{skill_name}/SKILL.md missing YAML frontmatter")
         if f"name: {skill_name}" not in skill_text:
             fail(f"skills/{skill_name}/SKILL.md frontmatter must include name: {skill_name}")
-        if skill_name != "audit" and "mermaid" not in skill_text.lower():
+        if skill_name not in {"audit", "writing-clearly-and-concisely"} and "mermaid" not in skill_text.lower():
             fail(f"skills/{skill_name}/SKILL.md must mention Mermaid contract")
 
     analyst_text = read(root / "skills" / "analyst" / "SKILL.md")
