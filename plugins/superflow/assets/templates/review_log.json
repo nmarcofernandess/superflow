@@ -1,0 +1,29 @@
+{
+  "schema_version": "superflow.review.v1",
+  "source_plan": "implementation_plan.json",
+  "rounds": [
+    {
+      "id": "review-1",
+      "kind": "spec | code",
+      "target": "SPEC.md | subtask-1-2 | diff origin/main...HEAD",
+      "reviewer": "who reviewed — second agent, fresh pass, or human",
+      "no_findings_reason": "only when findings is empty: what the diff touched and why it carries no emergent risk",
+      "findings": [
+        {
+          "id": "R1",
+          "severity": "blocker | major | minor | nit",
+          "claim": "one sentence: what is wrong and where it bites",
+          "evidence": "path/to/file.ts:42 or the command that shows it",
+          "verdict": "pending | accepted | rejected | deferred",
+          "reason": "required for rejected/deferred — the technical argument, not agreement",
+          "task_id": "subtask-3-1 when accepted and planned",
+          "proof": {
+            "command": "npm test -- path/to/test.ts -t 'name'",
+            "excerpt": "PASS (and the RED excerpt when the finding was a bug)",
+            "ok": true
+          }
+        }
+      ]
+    }
+  ]
+}

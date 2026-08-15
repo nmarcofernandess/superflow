@@ -26,6 +26,8 @@ can produce a durable artifact or a verified implementation.
    (campaign board: sprints, budget, green contract — not a microtask diary).
 8. If executing, follow `../../assets/references/execution-contract.md` and
    `../../assets/references/tdd-contract.md`, and keep `status.json` current.
+   Code goes through `review` (`../../assets/references/review-contract.md`)
+   between GREEN and QA: findings get verdicts, accepted blockers get proof.
 9. Treat Build and Plan as different phases: Build writes the technical spec
    (`SPEC.md`; legacy `technical_blueprint.md` stays valid); Plan writes
    executable tasks in `implementation_plan.json` with TDD pre-compile (I1).
@@ -69,7 +71,7 @@ can produce a durable artifact or a verified implementation.
 | `lean` | taskgen, execute, qa | analyst, build, plan |
 | `standard` | taskgen, plan, execute, qa | analyst, build |
 | `deep` | analyst, taskgen, build, plan, execute, qa | none |
-| `forensic` | analyst (investigation mode), build, critic, plan, execute, qa | none |
+| `forensic` | analyst (investigation mode), build, plan, execute, review, qa | none |
 
 Budget controls phases first. Model strength is secondary and can be chosen
 inside each phase.
@@ -87,6 +89,8 @@ Superflow exposes the router and each major phase:
   RED/GREEN pre-compile.
 - `warlog`: campaign board (sprints, deps, budget, green contract, Mermaid).
 - `execute`: implementation from a durable Superflow source under iron-law TDD.
+- `review`: spec review before Plan, code review after GREEN — findings with
+  verdicts and re-verification in `review_log.json`.
 - `qa`: acceptance matrix and RED/GREEN proof closure.
 - `audit`: no-write route/readiness/gap analysis.
 - `html-didatico`: self-contained visual HTML docs with CSS dioramas —

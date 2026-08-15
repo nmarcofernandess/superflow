@@ -44,7 +44,9 @@ architecture; Plan creates the task catalog.
 - Done criteria mapped back to PRD acceptance criteria (`acceptance_criteria`
   on each task).
 - Owner classification per task: `main_agent`, `explorer`, `worker`, or
-  `reviewer`.
+  `reviewer`. A `reviewer` task runs the `review` skill and writes
+  `review_log.json` — the role is a phase now, not a label
+  (`../../assets/references/review-contract.md`).
 - `status: "pending"` for every task at plan creation. Execution progress goes
   to `implementation_log.json`, not into the plan.
 

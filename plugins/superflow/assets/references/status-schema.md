@@ -31,7 +31,7 @@ nao vira documento narrativo.
     "analyst": "skipped",
     "taskgen": "complete",
     "build": "skipped",
-    "critic": "skipped",
+    "review": "pending",
     "plan": "skipped",
     "execute": "pending",
     "qa": "pending"
@@ -44,6 +44,7 @@ nao vira documento narrativo.
     "warlog": null,
     "plan": null,
     "implementation_log": null,
+    "review": null,
     "qa": null
   },
   "task_source": {

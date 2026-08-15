@@ -1,0 +1,38 @@
+{
+  "schema_version": "superflow.review.v1",
+  "source_plan": "implementation_plan.json",
+  "rounds": [
+    {
+      "id": "review-1",
+      "kind": "code",
+      "target": "subtask-1-1",
+      "reviewer": "second agent, fresh context, diff only",
+      "findings": [
+        {
+          "id": "R1",
+          "severity": "major",
+          "claim": "Archived appointments render the value as editable text, so the header offers an action the action layer refuses",
+          "evidence": "src/components/drawer/DrawerHeader.tsx:31",
+          "verdict": "accepted",
+          "reason": "The test covered null but never covered the archived state, so the gap survived GREEN",
+          "task_id": "subtask-1-2",
+          "proof": {
+            "command": "npm test -- DrawerHeader.test.tsx -t 'archived appointment is read only'",
+            "excerpt": "RED: field was editable; GREEN after fix: PASS (3 assertions)",
+            "ok": true
+          }
+        },
+        {
+          "id": "R2",
+          "severity": "nit",
+          "claim": "Header could memoize the formatter",
+          "evidence": "src/components/drawer/DrawerHeader.tsx:12",
+          "verdict": "rejected",
+          "reason": "The formatter runs once per open and the drawer mounts on demand; memoizing adds a dependency array to keep correct for no measured gain",
+          "task_id": null,
+          "proof": null
+        }
+      ]
+    }
+  ]
+}

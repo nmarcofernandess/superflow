@@ -38,6 +38,7 @@ REQUIRED_PLUGIN_FILES = [
     "skills/plan/SKILL.md",
     "skills/warlog/SKILL.md",
     "skills/execute/SKILL.md",
+    "skills/review/SKILL.md",
     "skills/qa/SKILL.md",
     "skills/audit/SKILL.md",
     "skills/writing-clearly-and-concisely/SKILL.md",
@@ -51,6 +52,7 @@ REQUIRED_PLUGIN_FILES = [
     "assets/references/github-issue-contract.md",
     "assets/references/execution-contract.md",
     "assets/references/tdd-contract.md",
+    "assets/references/review-contract.md",
     "assets/references/feature-mindset-contract.md",
     "assets/references/reuse-guard-protocol.md",
     "assets/references/mermaid-contract.md",
@@ -64,6 +66,7 @@ REQUIRED_PLUGIN_FILES = [
     "assets/templates/implementation_plan.json",
     "assets/templates/implementation_plan.md",
     "assets/templates/implementation_log.json",
+    "assets/templates/review_log.json",
     "assets/templates/SPEC.md",
     "assets/templates/WARLOG.md",
     "assets/templates/qa_report.md",
@@ -126,6 +129,7 @@ EXPECTED_PLUGIN_SKILLS = [
     "plan",
     "warlog",
     "execute",
+    "review",
     "qa",
     "audit",
     "writing-clearly-and-concisely",
@@ -1134,6 +1138,156 @@ def validate_log_tdd(log: dict, plan: dict | None, *, label: str) -> None:
                 pass
 
 
+REVIEW_SEVERITIES = {"blocker", "major", "minor", "nit"}
+REVIEW_VERDICTS = {"pending", "accepted", "rejected", "deferred"}
+REVIEW_PROOF_SEVERITIES = {"blocker", "major"}
+
+# Agreement wearing the clothes of an argument. Measured by residue: strip the
+# agreement phrases and the punctuation, and see whether an argument remains.
+_PERFORMATIVE_TOKENS_RE = re.compile(
+    r"("
+    r"boa\s+(?:observa\w*|coloca\w*|pegada)|voc[eê]\s+tem\s+raz\w*|tem\s+raz\w*|"
+    r"concordo|de\s+acordo|isso\s+mesmo|exatamente|exato|perfeito|verdade|"
+    r"good\s+catch|nice\s+catch|great\s+point|makes\s+sense|fair\s+enough|agreed|"
+    r"obrigad\w*|thanks|valeu|ok|okay|sim|yes|certo"
+    r")",
+    re.I,
+)
+
+
+def _is_performative_reason(text: str) -> bool:
+    residue = _PERFORMATIVE_TOKENS_RE.sub(" ", text)
+    residue = re.sub(r"[^\w\s]", " ", residue)
+    residue = re.sub(r"\s+", " ", residue).strip()
+    return len(residue) < 12
+
+
+def validate_review_log(review: dict, *, label: str) -> None:
+    """R2–R4: findings carry verdicts, verdicts carry arguments, fixes carry proof."""
+    if review.get("schema_version") != "superflow.review.v1":
+        fail(f"{label}: unexpected schema_version (expected superflow.review.v1)")
+    rounds = review.get("rounds")
+    if not isinstance(rounds, list) or not rounds:
+        fail(f"{label}: rounds must be a non-empty list")
+
+    for rnd in rounds:
+        if not isinstance(rnd, dict):
+            fail(f"{label}: each round must be an object")
+        rid = str(rnd.get("id") or "<missing-id>")
+        kind = str(rnd.get("kind") or "").strip().lower()
+        if kind not in {"spec", "code"}:
+            fail(f"{label}: round {rid} kind must be spec or code")
+        if not str(rnd.get("target") or "").strip():
+            fail(f"{label}: round {rid} missing target (SPEC.md, task id, or diff)")
+        if not str(rnd.get("reviewer") or "").strip():
+            fail(f"{label}: round {rid} missing reviewer")
+
+        findings = rnd.get("findings")
+        if not isinstance(findings, list):
+            fail(f"{label}: round {rid} findings must be a list")
+        if not findings:
+            reason = str(rnd.get("no_findings_reason") or "").strip()
+            if len(reason) < 24:
+                fail(
+                    f"{label}: round {rid} has no findings and no no_findings_reason — "
+                    "a silent empty round is a review that never happened"
+                )
+            if _is_performative_reason(reason):
+                fail(f"{label}: round {rid} no_findings_reason is agreement, not an argument")
+            continue
+
+        for finding in findings:
+            if not isinstance(finding, dict):
+                fail(f"{label}: round {rid} findings must be objects")
+            fid = str(finding.get("id") or "<missing-id>")
+            severity = str(finding.get("severity") or "").strip().lower()
+            if severity not in REVIEW_SEVERITIES:
+                fail(
+                    f"{label}: finding {fid} severity must be one of "
+                    f"{sorted(REVIEW_SEVERITIES)}"
+                )
+            claim = str(finding.get("claim") or "").strip()
+            if len(claim) < 12:
+                fail(f"{label}: finding {fid} needs a claim saying what is wrong and where")
+            verdict = str(finding.get("verdict") or "").strip().lower()
+            if verdict not in REVIEW_VERDICTS:
+                fail(
+                    f"{label}: finding {fid} verdict must be one of "
+                    f"{sorted(REVIEW_VERDICTS)}"
+                )
+
+            reason = str(finding.get("reason") or "").strip()
+            if verdict in {"rejected", "deferred"}:
+                if len(reason) < 12:
+                    fail(
+                        f"{label}: finding {fid} {verdict} without reason — "
+                        "say what the reviewer got wrong, or who owns it later"
+                    )
+            if reason and _is_performative_reason(reason):
+                fail(
+                    f"{label}: finding {fid} reason is performative agreement, not an argument"
+                )
+
+            if verdict == "accepted":
+                proof = finding.get("proof") if isinstance(finding.get("proof"), dict) else None
+                task_id = str(finding.get("task_id") or "").strip()
+                if severity in REVIEW_PROOF_SEVERITIES:
+                    if proof is None:
+                        fail(
+                            f"{label}: accepted {severity} finding {fid} needs proof "
+                            "(command + excerpt) that the fix holds"
+                        )
+                elif proof is None and not task_id:
+                    fail(f"{label}: accepted finding {fid} needs task_id or proof")
+                if proof is not None:
+                    cmd = str(proof.get("command") or "").strip()
+                    excerpt = str(proof.get("excerpt") or "").strip()
+                    if not cmd or not excerpt:
+                        fail(
+                            f"{label}: finding {fid} proof needs command and excerpt — "
+                            "a boolean is not evidence"
+                        )
+                    if proof.get("ok") is not True:
+                        fail(f"{label}: finding {fid} proof.ok is not true")
+
+
+def require_review_when_code_shipped(
+    review: dict | None, log: dict | None, *, workflow_type: str, qa_complete: bool, label: str
+) -> None:
+    """R1: code that reached a complete QA must have been reviewed."""
+    if workflow_type in DOCS_WORKFLOW_TYPES:
+        return
+    if not qa_complete or not isinstance(log, dict):
+        return
+    tasks = log.get("tasks") if isinstance(log.get("tasks"), list) else []
+    shipped = [
+        t
+        for t in tasks
+        if isinstance(t, dict) and str(t.get("status") or "").upper().startswith("DONE")
+    ]
+    if not shipped:
+        return
+    if review is None:
+        fail(
+            f"{label}: QA complete over shipped code with no review_log.json — "
+            "code review is a phase, not a courtesy (review-contract.md)"
+        )
+    rounds = review.get("rounds") if isinstance(review.get("rounds"), list) else []
+    if not any(str(r.get("kind") or "").lower() == "code" for r in rounds if isinstance(r, dict)):
+        fail(f"{label}: review_log.json has no kind='code' round for shipped code")
+    for rnd in rounds:
+        if not isinstance(rnd, dict):
+            continue
+        for finding in rnd.get("findings") or []:
+            if not isinstance(finding, dict):
+                continue
+            if str(finding.get("verdict") or "").lower() == "pending":
+                fail(
+                    f"{label}: finding {finding.get('id')} still pending — "
+                    "QA cannot close over an unanswered review verdict"
+                )
+
+
 def scan_forbidden_diagrams(root: Path) -> None:
     for file in root.rglob("*.md"):
         text = read(file)
@@ -1260,6 +1414,7 @@ def validate_package(path: Path) -> None:
         if isinstance(plan_body, dict) and plan_body.get("workflow_type") and not status.get("workflow_type"):
             status = {**status, "workflow_type": plan_body.get("workflow_type")}
 
+    log_data: dict | None = None
     log_path = path / "implementation_log.json"
     if log_path.exists():
         log_data = json.loads(read(log_path))
@@ -1267,6 +1422,25 @@ def validate_package(path: Path) -> None:
         log_artifact = status["artifacts"].get("implementation_log")
         if log_artifact and log_artifact != "implementation_log.json":
             fail(f"{path}/status.json artifacts.implementation_log must be implementation_log.json")
+
+    review_data: dict | None = None
+    review_path = path / "review_log.json"
+    if review_path.exists():
+        review_data = json.loads(read(review_path))
+        validate_review_log(review_data, label=str(review_path))
+        review_artifact = status["artifacts"].get("review")
+        if review_artifact and review_artifact != "review_log.json":
+            fail(f"{path}/status.json artifacts.review must be review_log.json")
+
+    workflow_type = str(status.get("workflow_type") or "").strip().lower()
+    qa_complete = str((status.get("phases") or {}).get("qa") or "").lower() == "complete"
+    require_review_when_code_shipped(
+        review_data,
+        log_data,
+        workflow_type=workflow_type,
+        qa_complete=qa_complete,
+        label=str(path),
+    )
 
     # Patch 2: depth from status.json — mindset-depth.txt is NOT authority
     depth = derive_mindset_depth(status)

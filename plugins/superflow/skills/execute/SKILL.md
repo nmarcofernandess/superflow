@@ -26,7 +26,12 @@ confidence or the route says investigate/build/plan first, do that before code.
    `../../assets/templates/implementation_log.json`).
 7. Record human context in `progress.md`; update `WARLOG.md` for deep,
    forensic, plugin, workflow, or multi-session work.
-8. Run QA according to the risk before declaring done.
+8. Hand the finished slice to `review` (R2) before QA. Code that reached a
+   complete QA with no `kind: "code"` round fails the package validator
+   (`../../assets/references/review-contract.md`).
+9. Fix accepted findings under the same iron law: bug findings get a failing
+   test first, and the proof goes back into `review_log.json`.
+10. Run QA according to the risk before declaring done.
 
 ## TDD cycle per task (I2)
 

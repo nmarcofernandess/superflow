@@ -1,0 +1,21 @@
+{
+  "schema_version": "superflow.log.v1",
+  "source_plan": "implementation_plan.json",
+  "tasks": [
+    {
+      "id": "subtask-1-1",
+      "status": "DONE",
+      "red": {
+        "command": "npm test -- DrawerHeader.test.tsx -t 'renders the stored value'",
+        "excerpt": "FAIL: expected '180' in header, received empty string",
+        "ok": true
+      },
+      "green": {
+        "command": "npm test -- DrawerHeader.test.tsx -t 'renders the stored value'",
+        "excerpt": "PASS (2 assertions)",
+        "ok": true
+      },
+      "notes": "value read from the DTO; null renders nothing"
+    }
+  ]
+}

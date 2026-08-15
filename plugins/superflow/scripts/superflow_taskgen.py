@@ -252,7 +252,7 @@ def phase_status(route: str) -> dict:
         "analyst": "skipped",
         "taskgen": "complete",
         "build": "skipped",
-        "critic": "skipped",
+        "review": "pending",
         "plan": "skipped",
         "execute": "pending",
         "qa": "pending",

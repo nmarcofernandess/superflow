@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.4.0 — 2026-08-14
+
+### Review is a phase
+
+`status.json` carried a `critic` slot in every package: always `skipped`, no
+skill, no artifact, no gate. `plan` could classify a task owner as `reviewer`
+with nothing behind the word. Code shipped, QA closed, and no one had read the
+diff. The slot is now `review`, with an owner and a contract.
+
+- `assets/references/review-contract.md` — R1 spec review before Plan hardens,
+  R2 code review after GREEN, R3 a verdict per finding, R4 re-verification of
+  what was accepted.
+- `skills/review/SKILL.md` — the phase, including the rule that the reviewer
+  reads the **diff**, not the corrected file.
+- `review_log.json` (`superflow.review.v1`) with template and golden fixture
+  (`assets/fixtures/review/reviewed`).
+- Validator gates: findings need `severity`, `claim`, `verdict`; `rejected` and
+  `deferred` need a reason; accepted blockers and majors need `proof` with
+  command and excerpt; an empty round needs `no_findings_reason`.
+- **Agreement is not a verdict.** "Boa observação, você tem razão", "good
+  catch", "makes sense" are refused by measuring what remains after the
+  agreement phrases are stripped — a real argument survives the subtraction.
+- **QA cannot close over an unanswered review.** A package that shipped code
+  with `phases.qa = "complete"` needs a `kind: "code"` round and zero `pending`
+  findings. Docs-only packages are exempt; there is no skip flag — declaring an
+  empty round with a signed reason is the escape.
+- `execute` hands the slice to `review` before QA; `qa` reads `review_log.json`
+  before closing; the router and the taskgen generator expose the phase.
+
+Eight cases in `test_review_contract.py`, each observed RED before the gate
+existed.
+
 ## 0.3.0 — 2026-08-14
 
 ### One line of truth

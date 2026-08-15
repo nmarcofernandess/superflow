@@ -179,3 +179,70 @@ Observed: PASS, PASS, FAIL, FAIL, PASS.
   `acima|à direita`). An English package gets weaker coverage.
 - `coverage.json` remains an inventory, not a semantic proof engine.
 - No OS hook forces the validator; skills instruct, agents run.
+
+---
+
+# Tribunal — Superflow 0.4.0 (review phase)
+
+Date: 2026-08-14  
+Version: **0.4.0**  
+Scope: the `critic` slot becomes the `review` phase, with artifact and gate.
+
+## What was missing in 0.3.0
+
+`status.json` shipped `"critic": "skipped"` in every package. `plan` could
+classify a task owner as `reviewer`. Neither had a skill, an artifact, or a
+gate — the vocabulary existed, the motor did not.
+
+```bash
+grep -rn "critic" plugins/superflow --include="*.md" --include="*.py"
+# → status-schema.md, taskgen generator, one route-table cell. No contract.
+grep -rn "reviewer" plugins/superflow --include="*.md"
+# → skills/plan/SKILL.md:47, a word in a list.
+```
+
+## Suite
+
+```bash
+cd ~/superflow
+./scripts/validate-all.sh
+```
+
+Observed: exit 0, 8 `OK` lines including `OK: superflow review contract tests`.
+
+## Gates (each observed RED before the code existed)
+
+| Probe | Expected |
+|---|---|
+| finding left `pending` while QA is complete | FAIL |
+| `rejected` with empty reason | FAIL |
+| reason = "Boa observação, você tem razão!" | FAIL |
+| accepted `blocker` without proof | FAIL |
+| proof = `{"ok": true}` with no command/excerpt | FAIL |
+| round with `findings: []` and no `no_findings_reason` | FAIL |
+| round with `findings: []` and a signed reason | PASS |
+| shipped code, QA complete, no `review_log.json` | FAIL |
+
+## Re-probe with unseen data
+
+```bash
+# FAIL: reason "Faz sentido, valeu! Perfeito."
+# PASS: reason "Concordo que o formatter roda a cada render, mas o drawer monta
+#       sob demanda e o array de deps custa mais manutencao do que o ganho medido"
+# FAIL: accepted major with task_id but no proof
+# PASS: workflow_type docs_only with no review_log at all
+```
+
+Observed: FAIL, PASS, FAIL, PASS.
+
+The second row is the one that matters: agreement is refused by measuring what
+survives after the agreement phrases are stripped, so a real argument that
+happens to open with "concordo" is not punished for politeness.
+
+## Still out of scope
+
+- Nothing forces a *different* agent to be the reviewer; the contract says it,
+  the validator cannot see it.
+- Review quality is not measured — an honest empty round is accepted on its
+  signed reason.
+- No multi-package campaign motor: review closes one package, not a queue.

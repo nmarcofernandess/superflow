@@ -8,6 +8,7 @@ python3 "$ROOT/plugins/superflow/scripts/test_superflow_routes.py"
 python3 "$ROOT/plugins/superflow/scripts/test_tdd_contract.py"
 python3 "$ROOT/plugins/superflow/scripts/test_feature_mindset.py"
 python3 "$ROOT/plugins/superflow/scripts/test_warlog_contract.py"
+python3 "$ROOT/plugins/superflow/scripts/test_review_contract.py"
 python3 "$ROOT/plugins/superflow/scripts/test_writing_contract.py"
 python3 "$ROOT/plugins/superflow/scripts/forward_test_superflow.py"
 

@@ -1,0 +1,42 @@
+{
+  "schema_version": "superflow.status.v1",
+  "id": "fixture-review",
+  "title": "Review fixture",
+  "route": "prd_plan_execute",
+  "phase_budget": "standard",
+  "workflow_type": "feature",
+  "execution_strategy": "single",
+  "source": {"type": "fixture", "github_issue": null, "file": null},
+  "confidence": "high",
+  "current_phase": "qa",
+  "decision": {
+    "verdict": "prd_ready",
+    "prd_status": "ready",
+    "reason": "fixture",
+    "prd_path": "PRD.md",
+    "discard_path": null
+  },
+  "phases": {
+    "inbox": "skipped",
+    "analyst": "skipped",
+    "taskgen": "complete",
+    "build": "skipped",
+    "plan": "complete",
+    "execute": "complete",
+    "review": "complete",
+    "qa": "complete"
+  },
+  "artifacts": {
+    "prd": "PRD.md",
+    "analysis": null,
+    "blueprint": null,
+    "progress": "progress.md",
+    "warlog": null,
+    "plan": "implementation_plan.json",
+    "implementation_log": "implementation_log.json",
+    "review": "review_log.json",
+    "qa": null
+  },
+  "task_source": {"type": "plan", "path": "implementation_plan.json", "progress": "progress.md"},
+  "updated_at": "2026-08-14T00:00:00Z"
+}
