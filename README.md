@@ -1,6 +1,6 @@
 # Superflow
 
-**Version `0.2.1`**. Agent Skills marketplace plugin for routing work by maturity
+**Version `0.3.0`**. Agent Skills marketplace plugin for routing work by maturity
 and risk.
 
 ```text
@@ -36,14 +36,14 @@ Guard table **fail**.
 DietFlow-shaped paths may appear in fixtures/examples; the contracts are
 portable.
 
-## Install (Codex) — pin `v0.2.1`
+## Install (Codex) — pin `v0.3.0`
 
-Canonical ref: tag **`v0.2.1`**.  
+Canonical ref: tag **`v0.3.0`**.  
 `main` may still report an older plugin version. Do **not** use `--ref main`
-until `main`’s `plugin.json` also says `0.2.1`.
+until `main`’s `plugin.json` also says `0.3.0`.
 
 ```bash
-codex plugin marketplace add nmarcofernandess/superflow --ref v0.2.1
+codex plugin marketplace add nmarcofernandess/superflow --ref v0.3.0
 codex plugin add superflow@superflow
 ```
 
@@ -54,7 +54,7 @@ codex plugin marketplace add nmarcofernandess/superflow --ref feat/superflow-fat
 codex plugin add superflow@superflow
 ```
 
-After `main` carries `0.2.1`:
+After `main` carries `0.3.0`:
 
 ```bash
 codex plugin marketplace add nmarcofernandess/superflow --ref main
@@ -69,13 +69,13 @@ codex plugin marketplace upgrade superflow
 
 Start a new thread after install or update so skills reload.
 
-## Install (Claude Code) — pin `v0.2.1`
+## Install (Claude Code) — pin `v0.3.0`
 
 Pin the tag. Unpinned marketplace add usually resolves `main` and will not
-install `0.2.1` until that branch is updated.
+install `0.3.0` until that branch is updated.
 
 ```text
-/plugin marketplace add nmarcofernandess/superflow@v0.2.1
+/plugin marketplace add nmarcofernandess/superflow@v0.3.0
 /plugin install superflow@superflow
 /reload-plugins
 ```
@@ -83,7 +83,7 @@ install `0.2.1` until that branch is updated.
 Shell:
 
 ```bash
-claude plugin marketplace add nmarcofernandess/superflow --ref v0.2.1
+claude plugin marketplace add nmarcofernandess/superflow --ref v0.3.0
 claude plugin install superflow@superflow
 ```
 
@@ -96,16 +96,16 @@ claude plugin install superflow@superflow
 
 After merge, unpinned `main` is fine only when
 `plugins/superflow/.claude-plugin/plugin.json` on `main` reports
-`"version": "0.2.1"`.
+`"version": "0.3.0"`.
 
 ## Repository shape
 
 ```text
-.agents/plugins/marketplace.json      # Codex marketplace catalog (v0.2.1)
-.claude-plugin/marketplace.json       # Claude Code marketplace catalog (v0.2.1)
+.agents/plugins/marketplace.json      # Codex marketplace catalog (v0.3.0)
+.claude-plugin/marketplace.json       # Claude Code marketplace catalog (v0.3.0)
 plugins/superflow/
-  .codex-plugin/plugin.json           # version 0.2.1
-  .claude-plugin/plugin.json          # version 0.2.1
+  .codex-plugin/plugin.json           # version 0.3.0
+  .claude-plugin/plugin.json          # version 0.3.0
   skills/                             # portable Agent Skills
   assets/references/                  # contracts (mindset, TDD, reuse, warlog)
   assets/fixtures/mindset/            # golden + negative package fixtures
@@ -181,5 +181,5 @@ and the command log in `artifacts/proofs/superflow-fatality/tribunal.md`.
 
 ## Version
 
-All marketplace and plugin manifests ship **`0.2.1`** together. See
+All marketplace and plugin manifests ship **`0.3.0`** together. See
 `CHANGELOG.md`.

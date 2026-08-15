@@ -1,7 +1,7 @@
 {
   "name": "superflow",
-  "version": "0.2.1",
-  "description": "Production phase-budget workflow with faceted Analyst/Build mindset, Reuse Guard, package validator Ready gates, and TDD contract on code tasks.",
+  "version": "0.3.0",
+  "description": "Production phase-budget workflow with faceted Analyst/Build mindset, Reuse Guard, package validator Ready gates, TDD contract on code tasks, and a clear-writing contract.",
   "author": {
     "name": "Marco Antonio"
   },

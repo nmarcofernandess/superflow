@@ -38,11 +38,13 @@ can produce a durable artifact or a verified implementation.
     **ready**. Exit 0 is required. Hollow headings, partial packages (missing
     `status.json`), fake Recode, and strings-safadas fail the gate. Analyst and
     Build skills restate this Ready Gate; do not skip it.
-12. If the deliverable is a visual mural/one-pager for a non-technical reader
+12. For human-facing prose, **REQUIRED SUB-SKILL:** Use
+    `writing-clearly-and-concisely` before finalizing the artifact.
+13. If the deliverable is a visual mural/one-pager for a non-technical reader
     (status wall, feature explainer, or a proof-final wireframe), use the
     `html-didatico` skill; use Direction C when a verification wireframe is
     filled into the proof in the same file.
-13. If asked whether existing issues are truly resolved, use the
+14. If asked whether existing issues are truly resolved, use the
     `backlog-status` skill to reconcile each issue against merged PRs and real
     code; this is not `audit`, which scores one forward request.
 
@@ -89,6 +91,8 @@ Superflow exposes the router and each major phase:
 - `audit`: no-write route/readiness/gap analysis.
 - `html-didatico`: self-contained visual HTML docs with CSS dioramas —
   manuals, murals, and verification wireframes.
+- `writing-clearly-and-concisely`: clear, direct human-facing prose for every
+  phase and presentation artifact.
 - `backlog-status`: verify whether existing GitHub issues are actually
   resolved against merged PRs and real code.
 
@@ -207,6 +211,8 @@ Full tree gate from this marketplace repo: `./scripts/validate-all.sh`.
   compute `gap_count` from `len(gaps)`.
 - Mutate GitHub only when the user explicitly asks for issue creation/update or
   when the active workflow already requires it.
+- Apply `writing-clearly-and-concisely` to human-facing prose. Preserve a warm,
+  natural voice; clarity does not require corporate or bureaucratic language.
 
 ## Reference Loading
 

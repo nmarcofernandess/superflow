@@ -13,6 +13,9 @@ descrevê-lo. O resultado parece um manual de operação bem diagramado, não um
 O leitor-alvo quase sempre é um **não-técnico** (sócio, cliente, família). O documento
 falha se precisar de tradutor do lado.
 
+**REQUIRED SUB-SKILL:** Use `writing-clearly-and-concisely` for every headline,
+paragraph, label, status, and caption before finalizing the HTML.
+
 ## Processo
 
 ### 1. Conteúdo antes de estética
@@ -26,6 +29,24 @@ Didático = concreto. Antes de abrir uma tag:
 - Definir a espinha: 3–6 seções, cada uma com UMA ideia. Se a seção tem duas ideias,
   são duas seções.
 - Cada seção termina ancorada no uso prático: o que muda na vida de quem usa.
+
+#### 1.1 Clareza sem burocracia
+
+Escreva cada seção nesta ordem:
+
+1. o título declara o estado, a decisão, ou o problema;
+2. o parágrafo explica a causa ou a evidência concreta;
+3. o fechamento informa o efeito prático ou a próxima ação.
+
+Use voz ativa, afirmações positivas, termos específicos, e apenas as palavras
+necessárias. Preserve o português natural: clareza não significa formalidade
+corporativa. A personalidade vem dos exemplos e do ritmo, não de frases de
+efeito, provocações ao leitor, ou comentários sobre a própria honestidade.
+
+```text
+Evite: Onde estamos, sem teatro de “quase pronto”.
+Use:  O motor funciona em pequena escala; a execução completa continua bloqueada.
+```
 
 ### 2. Escolher direção estética e COMPROMETER
 
@@ -128,6 +149,8 @@ O diorama é a alma. Regras que fazem ele funcionar:
 
 - Abrir mentalmente em 390px: grid vira coluna? zigue-zague reordena?
 - Todo texto sobre papel tem contraste real? (muted ≠ ilegível)
+- Todo destaque que mudou o fundo definiu também uma cor de texto legível?
+- O texto declara estado, evidência, e ação sem soar burocrático ou performático?
 - A plaquinha Fig. está em todos os dioramas? Numeração sequencial?
 - O leitor não-técnico entende cada seção sem glossário?
 - Na Direção C: todo `.prova` tem comando real + critério de aceite real? Nenhum

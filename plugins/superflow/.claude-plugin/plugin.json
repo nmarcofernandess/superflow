@@ -1,8 +1,8 @@
 {
   "name": "superflow",
   "displayName": "Superflow",
-  "version": "0.2.1",
-  "description": "Production Agent Skills workflow: phase-budget routing, faceted Analyst/Build (mindset, strings-safadas, Reuse Guard), package validator as Ready boundary, and TDD I1–I3 on code tasks.",
+  "version": "0.3.0",
+  "description": "Production Agent Skills workflow: phase-budget routing, faceted Analyst/Build (mindset, strings-safadas, Reuse Guard), package validator as Ready boundary, TDD I1–I3 on code tasks, and a clear-writing contract for human-facing prose.",
   "author": {
     "name": "Marco Antonio",
     "url": "https://github.com/nmarcofernandess"

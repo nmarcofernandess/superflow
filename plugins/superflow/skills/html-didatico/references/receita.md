@@ -90,6 +90,14 @@ html { scroll-behavior: smooth; }
 }
 ```
 
+Todo destaque que aplica um fundo deve definir também a cor do texto. Fundo
+claro usa tinta escura; fundo escuro usa tinta clara. Nunca dependa da cor
+herdada do container:
+
+```css
+.inline-mark { background: var(--paper-2); color: var(--ink); padding: 2px 5px; }
+```
+
 ## 4. Anatomia A — peças de página
 
 **Doc-plate** (metadata de documento — o "carimbo de registro" no topo):
@@ -418,14 +426,18 @@ Elementos mortos/fantasma: borda `dashed`, sem sombra, cor muted.
 **Carimbo circular** (fechamento do documento — estampa com overshoot):
 
 ```html
-<div class="stamp"><span>· treta ·<br /><b>enterrada</b><br />jul / 2026</span></div>
+<div class="stamp" aria-label="Piloto B validado em julho de 2026">
+  <span>piloto B</span><strong>validado</strong><small>jul 2026</small>
+</div>
 ```
 ```css
-.stamp { display: grid; place-items: center; width: 200px; height: 200px;
+.stamp { flex: 0 0 200px; width: 200px; aspect-ratio: 1; display: flex;
+  flex-direction: column; align-items: center; justify-content: center; gap: 6px;
   border-radius: 50%; border: 3px double var(--accent); color: var(--accent);
   transform: rotate(-8deg); font-family: var(--mono); font-size: 11px;
-  letter-spacing: .16em; text-transform: uppercase; text-align: center; line-height: 1.8; }
-.stamp b { font-size: 16px; }
+  letter-spacing: .12em; text-transform: uppercase; text-align: center; }
+.stamp strong { font-size: 16px; }
+.stamp small { font: inherit; letter-spacing: .06em; }
 @keyframes stampIn { from { opacity: 0; transform: rotate(-8deg) scale(1.7); }
                      to   { opacity: 1; transform: rotate(-8deg) scale(1); } }
 /* disparar quando o container ganhar .in (reveal por scroll) */

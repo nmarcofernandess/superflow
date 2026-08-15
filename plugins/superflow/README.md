@@ -30,7 +30,10 @@ superflow/
 │   ├── warlog/SKILL.md
 │   ├── execute/SKILL.md
 │   ├── qa/SKILL.md
-│   └── audit/SKILL.md
+│   ├── audit/SKILL.md
+│   └── writing-clearly-and-concisely/
+│       ├── SKILL.md
+│       └── elements-of-style.md
 ├── assets/references/
 ├── assets/templates/
 ├── assets/examples/
@@ -56,6 +59,8 @@ superflow/
 - `superflow:execute` implements from durable artifacts under iron-law TDD (I2).
 - `superflow:qa` closes acceptance matrix + RED/GREEN evidence (I3).
 - `superflow:audit` performs read-only route/readiness/gap checks.
+- `superflow:writing-clearly-and-concisely` keeps human-facing prose direct,
+  specific, concise, and natural.
 
 ## Validate
 
