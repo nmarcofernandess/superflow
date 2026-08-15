@@ -1,0 +1,54 @@
+{
+  "schema_version": "superflow.status.v1",
+  "title": "Campaign fixture",
+  "route": "prd_execute",
+  "phase_budget": "lean",
+  "workflow_type": "feature",
+  "execution_strategy": "single",
+  "campaign": "fixture-campaign",
+  "source": {
+    "type": "fixture",
+    "github_issue": null,
+    "file": null
+  },
+  "confidence": "high",
+  "decision": {
+    "verdict": "prd_ready",
+    "prd_status": "ready",
+    "reason": "fixture",
+    "prd_path": "PRD.md",
+    "discard_path": null
+  },
+  "artifacts": {
+    "prd": "PRD.md",
+    "analysis": null,
+    "blueprint": null,
+    "progress": "progress.md",
+    "warlog": null,
+    "plan": null,
+    "implementation_log": null,
+    "review": null,
+    "qa": null
+  },
+  "task_source": {
+    "type": "none",
+    "path": null,
+    "progress": null
+  },
+  "updated_at": "2026-08-15T00:00:00Z",
+  "id": "002-consumer",
+  "depends_on": [
+    "001-foundation"
+  ],
+  "current_phase": "execute",
+  "phases": {
+    "inbox": "skipped",
+    "analyst": "skipped",
+    "taskgen": "complete",
+    "build": "skipped",
+    "plan": "skipped",
+    "execute": "pending",
+    "review": "pending",
+    "qa": "pending"
+  }
+}

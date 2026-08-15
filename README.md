@@ -1,6 +1,6 @@
 # Superflow
 
-**Version `0.4.0`**. Agent Skills marketplace plugin for routing work by maturity
+**Version `0.5.0`**. Agent Skills marketplace plugin for routing work by maturity
 and risk.
 
 ```text
@@ -22,6 +22,7 @@ Codex and Claude Code are install surfaces. Source of truth:
 | Anti-fork | Reuse Guard before `new` | `reuse-guard-protocol.md` |
 | Plan / Execute / QA | TDD iron laws I1–I3 | `tdd-contract.md` |
 | Review | findings with verdicts, accepted blockers re-verified | `review-contract.md` |
+| Campaign | computed next/blocked/done over many packages | `campaign-contract.md` |
 | **Ready boundary** | package must pass the shipped validator | `scripts/validate_superflow.py` |
 
 Declaring Analyst or Build **ready** requires:
@@ -38,18 +39,18 @@ unanswered review finding.
 DietFlow-shaped paths may appear in fixtures/examples; the contracts are
 portable.
 
-## Install (Codex) — pin `v0.4.0`
+## Install (Codex) — pin `v0.5.0`
 
-Canonical ref: tag **`v0.4.0`**. Pin it — `main` is older than the newest
+Canonical ref: tag **`v0.5.0`**. Pin it — `main` is older than the newest
 release whenever a lane is in flight, so check that `main`’s `plugin.json`
 reports the version you expect before using `--ref main`.
 
 ```bash
-codex plugin marketplace add nmarcofernandess/superflow --ref v0.4.0
+codex plugin marketplace add nmarcofernandess/superflow --ref v0.5.0
 codex plugin add superflow@superflow
 ```
 
-`main` carries `0.4.0` from this release on:
+`main` carries `0.5.0` from this release on:
 
 ```bash
 codex plugin marketplace add nmarcofernandess/superflow --ref main
@@ -64,13 +65,13 @@ codex plugin marketplace upgrade superflow
 
 Start a new thread after install or update so skills reload.
 
-## Install (Claude Code) — pin `v0.4.0`
+## Install (Claude Code) — pin `v0.5.0`
 
 Pin the tag. Unpinned marketplace add usually resolves `main` and will not
-install `0.4.0` until that branch is updated.
+install `0.5.0` until that branch is updated.
 
 ```text
-/plugin marketplace add nmarcofernandess/superflow@v0.4.0
+/plugin marketplace add nmarcofernandess/superflow@v0.5.0
 /plugin install superflow@superflow
 /reload-plugins
 ```
@@ -78,32 +79,35 @@ install `0.4.0` until that branch is updated.
 Shell:
 
 ```bash
-claude plugin marketplace add nmarcofernandess/superflow --ref v0.4.0
+claude plugin marketplace add nmarcofernandess/superflow --ref v0.5.0
 claude plugin install superflow@superflow
 ```
 
 Unpinned `main` is fine while
 `plugins/superflow/.claude-plugin/plugin.json` on `main` reports
-`"version": "0.4.0"`.
+`"version": "0.5.0"`.
 
 ## Repository shape
 
 ```text
-.agents/plugins/marketplace.json      # Codex marketplace catalog (v0.4.0)
-.claude-plugin/marketplace.json       # Claude Code marketplace catalog (v0.4.0)
+.agents/plugins/marketplace.json      # Codex marketplace catalog (v0.5.0)
+.claude-plugin/marketplace.json       # Claude Code marketplace catalog (v0.5.0)
 plugins/superflow/
-  .codex-plugin/plugin.json           # version 0.4.0
-  .claude-plugin/plugin.json          # version 0.4.0
+  .codex-plugin/plugin.json           # version 0.5.0
+  .claude-plugin/plugin.json          # version 0.5.0
   skills/                             # portable Agent Skills
   assets/references/                  # contracts (mindset, TDD, reuse, warlog)
   assets/fixtures/mindset/            # golden + negative package fixtures
   assets/fixtures/warlog/             # campaign WARLOG fixture
   assets/fixtures/review/             # reviewed package fixture
+  assets/fixtures/campaign/           # three-package campaign fixture
   scripts/validate_superflow.py       # package + plugin validator
   scripts/test_feature_mindset.py
   scripts/test_warlog_contract.py
   scripts/test_tdd_contract.py
   scripts/test_review_contract.py
+  scripts/superflow_campaign.py       # campaign motor
+  scripts/test_campaign_contract.py
 ```
 
 **Do not** copy `plugins/superflow` into consumer apps. Install the marketplace
@@ -121,6 +125,7 @@ from Git.
 | `plan` | `implementation_plan.json` + TDD I1 |
 | `execute` | Implementation + TDD I2 |
 | `review` | Spec/code review — findings, verdicts, re-verification |
+| `campaign` | Multi-package drive — next, blocked, done |
 | `qa` | Acceptance + red+green I3 |
 | `warlog` | Campaign board (sprints, budget, green contract) |
 | `audit` | No-write readiness/gaps |
@@ -136,7 +141,7 @@ From this repo root:
 ```
 
 Must print OK for plugin root, routes, TDD, feature-mindset, warlog, review,
-writing, and forward tests.
+campaign, writing, and forward tests.
 
 Package-level Ready (consumer work folder):
 
@@ -161,6 +166,7 @@ and the command log in `artifacts/proofs/superflow-fatality/tribunal.md`.
 - `plugins/superflow/assets/references/reuse-guard-protocol.md`
 - `plugins/superflow/assets/references/tdd-contract.md`
 - `plugins/superflow/assets/references/review-contract.md`
+- `plugins/superflow/assets/references/campaign-contract.md`
 - `plugins/superflow/assets/references/routing-protocol.md`
 - `plugins/superflow/assets/references/execution-contract.md`
 
@@ -174,5 +180,5 @@ and the command log in `artifacts/proofs/superflow-fatality/tribunal.md`.
 
 ## Version
 
-All marketplace and plugin manifests ship **`0.4.0`** together. See
+All marketplace and plugin manifests ship **`0.5.0`** together. See
 `CHANGELOG.md`.

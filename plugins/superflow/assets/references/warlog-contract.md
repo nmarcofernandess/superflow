@@ -85,6 +85,18 @@ Do not dump every phase state machine if the campaign map already answers.
 - Two parallel warlog systems (no “call warlog-minimal”). One official skill.
 - WARLOG that contradicts a ready PRD without reconciling first.
 
+## The motor, not a second board
+
+WARLOG is the narrative of a campaign; it does not compute one. When a campaign
+spans several packages, `campaign-contract.md` owns the computed verdict — what
+is actionable now, and whether the campaign is finished — read from the real
+`status.json` files by `scripts/superflow_campaign.py`.
+
+The two do not overlap: the sprint card explains why a slice exists and what
+its green contract is; the motor answers whether it is closed. Never restate
+the motor's verdict as a hand-maintained table here — that is the second
+parallel system this contract forbids.
+
 ## Status pointer
 
 When `WARLOG.md` exists: `status.json.artifacts.warlog = "WARLOG.md"`.
