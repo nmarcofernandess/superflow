@@ -1,5 +1,42 @@
 # Changelog
 
+## 0.5.0 — 2026-08-15
+
+### The campaign motor
+
+A campaign — a migration in slices, a foundation and its consumers, a spec that
+grew into five — had a narrator and no motor. The WARLOG told the story with
+sprint cards and dependencies; nothing read the real packages to answer what is
+actionable now, and nothing stopped a long session from declaring victory with
+a package still open.
+
+- `assets/references/campaign-contract.md` — C1 the campaign is derived, not
+  declared; C2 order comes from dependencies; C3 closed is the validator's
+  verdict; C4 do not let go of the bone.
+- `scripts/superflow_campaign.py` — walks the packages, computes the graph, and
+  exits `10 next` / `20 blocked` / `0 done` / `1 contract error`.
+- `skills/campaign/SKILL.md` — the loop: ask the motor, work the package it
+  names, come back. It never writes another package's status.
+- A package joins with two fields in its own `status.json`: `campaign` and
+  `depends_on`. **No central campaign file**, so there is nothing to drift —
+  and the WARLOG contract now points at the motor instead of growing a second
+  board.
+- Gates: a dependency cycle is named, not looped; a `depends_on` that points
+  nowhere fails; a package claiming `qa: complete` that the validator refuses
+  fails the whole campaign; a `blocked` phase needs `blocked_reason`, because a
+  blocker nobody signed is an abandonment.
+- `done` is a computed verdict over every package in scope. There is no partial
+  victory.
+
+### Validator
+
+- **Partial packages no longer pass in silence.** A directory carrying any
+  Superflow signature (`status.json`, `PRD.md`, `analysis.md`/`SPEC.md`) must
+  hold the whole trio; before this, a package with `status.json` and no
+  `progress.md` returned OK. Found by the campaign tests, not by a human.
+
+Eight cases in `test_campaign_contract.py`, each observed RED first.
+
 ## 0.4.0 — 2026-08-14
 
 ### Review is a phase

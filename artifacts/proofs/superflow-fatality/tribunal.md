@@ -246,3 +246,72 @@ happens to open with "concordo" is not punished for politeness.
 - Review quality is not measured — an honest empty round is accepted on its
   signed reason.
 - No multi-package campaign motor: review closes one package, not a queue.
+
+---
+
+# Tribunal — Superflow 0.5.0 (campaign motor)
+
+Date: 2026-08-15  
+Version: **0.5.0**  
+Scope: several packages driven to the end; `done` becomes a computed verdict.
+
+## What was missing in 0.4.0
+
+The WARLOG carried mission, sprint cards, dependencies and a next action — for
+a human to read. Nothing read the real packages. A campaign could be declared
+finished by whoever got tired first.
+
+## Design decision (Reuse Guard)
+
+The WARLOG contract forbids "two parallel warlog systems". So the motor does
+**not** introduce a campaign file. A package joins with `campaign` and
+`depends_on` in its own `status.json`; the motor derives the graph. Nothing is
+duplicated, so nothing can drift.
+
+## Suite
+
+```bash
+cd ~/superflow
+./scripts/validate-all.sh
+```
+
+Observed: exit 0, 9 `OK` lines including `OK: superflow campaign contract tests`.
+
+## Gates (each observed RED before the motor existed)
+
+| Probe | Expected |
+|---|---|
+| fixture campaign, 001 closed | exit 10, next = `002-consumer` |
+| every package closed | exit 0, verdict `done` |
+| one package still open | never `done` |
+| dependency cycle | exit 1, cycle named |
+| `depends_on` pointing nowhere | exit 1 |
+| `qa: complete` on a package the validator refuses | exit 1, names the validator |
+| phase `blocked` with no `blocked_reason` | exit 1 |
+| phase `blocked` with a signed reason | exit 20, blockers listed |
+| `--campaign` scope | foreign packages excluded |
+
+## Re-probe with an unseen graph
+
+A diamond built from scratch (`010-schema` → `011-api` + `012-ui` →
+`013-release`), plus one package belonging to another campaign:
+
+```text
+D1  010 closed          → exit 10, next 011-api, 013 waiting on both parents
+D2  011 and 012 closed  → exit 10, next 013-release
+D3  013 closed          → exit 0, DONE
+D4  no --campaign       → exit 10, the foreign package keeps the scope open
+D5  foreign package "qa complete" with PRD.md deleted → exit 1, validator refuses
+```
+
+Observed: as above. D5 also exposed a validator bug fixed in this release —
+a package with `status.json` and no `progress.md`/`PRD.md` used to return a
+silent OK.
+
+## Still out of scope
+
+- The motor names the next package; it does not execute phases and never writes
+  another package's `status.json`.
+- Order comes from dependencies only. Priority and value stay human, in the
+  WARLOG.
+- Nothing enforces that a *different* agent works each package.

@@ -39,6 +39,7 @@ REQUIRED_PLUGIN_FILES = [
     "skills/warlog/SKILL.md",
     "skills/execute/SKILL.md",
     "skills/review/SKILL.md",
+    "skills/campaign/SKILL.md",
     "skills/qa/SKILL.md",
     "skills/audit/SKILL.md",
     "skills/writing-clearly-and-concisely/SKILL.md",
@@ -53,6 +54,7 @@ REQUIRED_PLUGIN_FILES = [
     "assets/references/execution-contract.md",
     "assets/references/tdd-contract.md",
     "assets/references/review-contract.md",
+    "assets/references/campaign-contract.md",
     "assets/references/feature-mindset-contract.md",
     "assets/references/reuse-guard-protocol.md",
     "assets/references/mermaid-contract.md",
@@ -76,6 +78,7 @@ REQUIRED_PLUGIN_FILES = [
     "scripts/superflow_github.py",
     "scripts/superflow_audit.py",
     "scripts/superflow_warlog.py",
+    "scripts/superflow_campaign.py",
 ]
 
 PLAN_TDD_MARKERS = [
@@ -130,6 +133,7 @@ EXPECTED_PLUGIN_SKILLS = [
     "warlog",
     "execute",
     "review",
+    "campaign",
     "qa",
     "audit",
     "writing-clearly-and-concisely",
@@ -1369,12 +1373,14 @@ def validate_package(path: Path) -> None:
     spec_path = path / "SPEC.md"
     has_mindset = analysis_path.exists() or spec_path.exists()
 
-    # Patch 1: never silent-OK when analysis/SPEC exist without the core trio
+    # Never silent-OK a partial package. Any Superflow signature (status.json,
+    # PRD.md, analysis/SPEC) means this IS a package and must be complete;
+    # a directory with none of them is simply not ours to judge.
     if missing:
-        if has_mindset:
+        is_package = has_mindset or (path / "status.json").exists() or (path / "PRD.md").exists()
+        if is_package:
             fail(
-                f"{path}: partial package — analysis/SPEC present but missing "
-                f"{', '.join(missing)} (never silent OK)"
+                f"{path}: partial package — missing {', '.join(missing)} (never silent OK)"
             )
         return
 

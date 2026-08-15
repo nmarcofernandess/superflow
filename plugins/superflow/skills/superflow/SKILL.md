@@ -46,7 +46,11 @@ can produce a durable artifact or a verified implementation.
     (status wall, feature explainer, or a proof-final wireframe), use the
     `html-didatico` skill; use Direction C when a verification wireframe is
     filled into the proof in the same file.
-14. If asked whether existing issues are truly resolved, use the
+14. If the work spans several `specs/NNN-*` packages, use the `campaign` skill
+    and `../../assets/references/campaign-contract.md`: the motor computes
+    what is actionable from the real packages and refuses `done` while any
+    package is open. The WARLOG stays the narrative; it is not a second board.
+15. If asked whether existing issues are truly resolved, use the
     `backlog-status` skill to reconcile each issue against merged PRs and real
     code; this is not `audit`, which scores one forward request.
 
@@ -91,6 +95,8 @@ Superflow exposes the router and each major phase:
 - `execute`: implementation from a durable Superflow source under iron-law TDD.
 - `review`: spec review before Plan, code review after GREEN — findings with
   verdicts and re-verification in `review_log.json`.
+- `campaign`: drive several packages to the end — computed next/blocked/done
+  over the real packages, never done while one is open.
 - `qa`: acceptance matrix and RED/GREEN proof closure.
 - `audit`: no-write route/readiness/gap analysis.
 - `html-didatico`: self-contained visual HTML docs with CSS dioramas —
