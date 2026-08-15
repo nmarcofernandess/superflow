@@ -109,6 +109,16 @@ Ver §5. Inventário de toast/empty/modal/banner/helper que a feature toca.
 **Teste do cartesiano (obrigatório para string nova no blueprint):**  
 troque 0/1/2/1000, todos os enums, inverta bools, remova opcionais. Se precisa de outra frase à mão para o próximo caso → safada → reescreva.
 
+**Onde o gate roda (escopo):** a **Faceta — Copy** (no SPEC, `### Copy`) — é
+lá que copy é decidida. Dentro dela contam **tabela e prosa igualmente**: o
+pecado é a frase, não o formato markdown. Um bloco fica honesto quando roteia o
+exemplo para `invariante|estrutura|morte` (`morta` vale).
+
+Fora da faceta, prosa é análise, não copy: data em tabela de cronograma,
+`acima` numa nota de schema e número em evidência **não** são safada. A única
+coisa julgada fora do escopo é o texto que se declara copy aprovada — aí a
+forma-instância volta a ser crime.
+
 **Mock ≠ literal:** para cada frase de mock → (a) invariante em messages/constantes, (b) estrutura label+valor/chip/contador, ou (c) morte. Não existe “colar e ajustar depois”.
 
 **Anti-exemplo bom (invariante):** “Atendimentos concluídos não são alterados.”
@@ -124,7 +134,10 @@ Pronto só se:
 - **Recode Log** presente (deep: ≥1 entrada real **ou** `coherence_proof: <por quê a síntese inicial já casou com o terreno>`; docs-only: `skip_reason` honesto — `skip_reason` **não** dispensa deep);
 - claims técnicos com `path:line` (regex `file.ext:N`) ou token literal `UNPROVEN` — crase solta não conta;
 - quando há UI/código: **Reuse Guard** (`reuse-guard-protocol.md`) documentado
-  — graph e/ou grep — e `new` **exige** tabela Need|Source|Decision|path na mesma seção;
+  — graph e/ou grep — e `new` **exige** tabela Need|Source|Decision|path na
+  mesma seção. `new` declarado em prosa conta como `new`; escrever `reuse` em
+  outro ponto da seção não dispensa a tabela — a tabela **é** onde o reuso se
+  prova;
 - inventário Copy quando há UI/copy;
 - sem string safada como “copy aprovada” (detecção por **forma**: moeda/contagem/data/geometria/2ª pessoa, não por literal de fixture).
 

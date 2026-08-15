@@ -115,6 +115,128 @@ def assert_readme_install_pins_release_tag() -> None:
             raise AssertionError("Codex section must warn that main may be older")
 
 
+def assert_safada_scope_and_decision_gates() -> None:
+    """Gates must read meaning, not markdown shape.
+
+    The safada gate used to scan every line starting with ``|`` anywhere in the
+    document, so a sprint date failed as "instance prose" while the contract's
+    own anti-example passed in free prose. The reuse gate used to look for the
+    word ``new`` and stand down whenever ``reuse`` appeared in the same
+    section.
+    """
+    with tempfile.TemporaryDirectory(prefix="superflow-scope.") as tmp:
+        root = Path(tmp)
+
+        # P1 — schedule table outside Copy is not UI copy
+        sched = root / "schedule-table"
+        shutil.copytree(FIXTURES / "deep", sched)
+        with (sched / "analysis.md").open("a", encoding="utf-8") as fh:
+            fh.write(
+                "\n## Cronograma\n\n"
+                "| Sprint | Data | Entrega |\n|---|---|---|\n"
+                "| S1 | 12/08/2026 | motor de busca |\n"
+            )
+        sched_run = run_validate(sched)
+        if sched_run.returncode != 0:
+            raise AssertionError(
+                f"schedule table outside Copy must PASS (date is data, not copy):\n{sched_run.stdout}"
+            )
+
+        # P2 — technical note using a geometry word outside Copy is not UI copy
+        note = root / "geometry-note"
+        shutil.copytree(FIXTURES / "deep", note)
+        with (note / "analysis.md").open("a", encoding="utf-8") as fh:
+            fh.write(
+                "\n## Notas\n\n"
+                "| Item | Nota |\n|---|---|\n"
+                "| Schema | conforme a tabela acima, o campo e opcional |\n"
+            )
+        note_run = run_validate(note)
+        if note_run.returncode != 0:
+            raise AssertionError(
+                f"technical note outside Copy must PASS (not UI copy):\n{note_run.stdout}"
+            )
+
+        # P3 — instance prose inside Copy must fail even in free prose (no table)
+        prose = root / "copy-free-prose"
+        shutil.copytree(FIXTURES / "deep", prose)
+        text = (prose / "analysis.md").read_text(encoding="utf-8")
+        text = text.replace(
+            "## Faceta — Copy (strings-safadas)",
+            "## Faceta — Copy (strings-safadas)\n\n"
+            'Texto aprovado para o modal: "Continua Retorno por R$ 180,00, '
+            'como foi combinado." Vai assim para producao.\n',
+        )
+        (prose / "analysis.md").write_text(text, encoding="utf-8")
+        prose_run = run_validate(prose)
+        assert_fail(
+            prose_run,
+            why="instance prose inside Copy facet (free prose, no table)",
+            needles=["safada", "instance", "invariante"],
+        )
+
+        # P5 — a facet holding only a table header is a placeholder, whatever
+        #      words the header happens to contain
+        header_only = root / "header-only-table"
+        shutil.copytree(FIXTURES / "deep", header_only)
+        text = (header_only / "analysis.md").read_text(encoding="utf-8")
+        text = re.sub(
+            r"## Faceta — Produto[\s\S]*?(?=## Faceta — Backend)",
+            "## Faceta — Produto\n\n"
+            "| Promessa | Jornada | Non-goals |\n|---|---|---|\n\n",
+            text,
+            count=1,
+        )
+        (header_only / "analysis.md").write_text(text, encoding="utf-8")
+        header_run = run_validate(header_only)
+        assert_fail(
+            header_run,
+            why="facet with header-only table",
+            needles=["placeholder", "empty"],
+        )
+
+        # P6 — the same shape with one real row is content
+        one_row = root / "one-real-row"
+        shutil.copytree(FIXTURES / "deep", one_row)
+        text = (one_row / "analysis.md").read_text(encoding="utf-8")
+        text = re.sub(
+            r"## Faceta — Produto[\s\S]*?(?=## Faceta — Backend)",
+            "## Faceta — Produto\n\n"
+            "| Promessa | Jornada | Non-goals |\n|---|---|---|\n"
+            "| Ver o valor combinado sem abrir o registro | drawer, um clique | "
+            "editar valor |\n\n",
+            text,
+            count=1,
+        )
+        (one_row / "analysis.md").write_text(text, encoding="utf-8")
+        one_row_run = run_validate(one_row)
+        if one_row_run.returncode != 0:
+            raise AssertionError(
+                f"table with one real row must PASS:\n{one_row_run.stdout}"
+            )
+
+        # P4 — decision 'new' in prose still needs the Reuse Guard table
+        forked = root / "new-without-guard"
+        shutil.copytree(FIXTURES / "deep", forked)
+        text = (forked / "analysis.md").read_text(encoding="utf-8")
+        text = re.sub(
+            r"## Faceta — Frontend[\s\S]*?(?=## Faceta — Copy)",
+            "## Faceta — Frontend (reuso antes de criar)\n\n"
+            "Vamos reuse o BaseModal como casca externa. Para o miolo nao existe\n"
+            "equivalente, entao a decisao e new: um componente PickerDeCategoria\n"
+            "com estado proprio. A busca foi no olho durante a leitura do codigo.\n\n",
+            text,
+            count=1,
+        )
+        (forked / "analysis.md").write_text(text, encoding="utf-8")
+        forked_run = run_validate(forked)
+        assert_fail(
+            forked_run,
+            why="decision 'new' declared in prose without Reuse Guard table",
+            needles=["reuse guard", "guard table", "need|source"],
+        )
+
+
 def main() -> int:
     plugin = run_validate(PLUGIN_ROOT)
     if plugin.returncode != 0:
@@ -122,6 +244,7 @@ def main() -> int:
 
     assert_ready_gates_require_validator()
     assert_readme_install_pins_release_tag()
+    assert_safada_scope_and_decision_gates()
 
     coverage = json.loads(COVERAGE.read_text(encoding="utf-8"))
     units = {u["id"]: u for u in coverage["units"]}

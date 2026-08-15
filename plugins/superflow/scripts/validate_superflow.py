@@ -536,15 +536,20 @@ def _is_placeholder_body(body: str) -> bool:
     if low.startswith("replace with") or low.startswith("substituir por"):
         return True
     lines = [ln.strip() for ln in body.splitlines() if ln.strip()]
-    # Only a markdown table with empty/placeholder cells
-    if len(lines) <= 3 and all(
-        ln.startswith("|") or set(ln) <= {"|", "-", ":", " "} for ln in lines
-    ):
-        cell_text = " ".join(lines).lower()
-        if "unproven" in cell_text or cell_text.count("|") > 4 and len(cell_text) < 120:
-            # header-only or stub table
-            if "high" not in cell_text and "path" in cell_text and "88" not in cell_text:
-                return True
+    # A body that is only a markdown table: header alone, or rows with no content
+    if lines and all(ln.startswith("|") for ln in lines):
+        rows = [
+            [c.strip() for c in ln.strip("|").split("|")]
+            for ln in lines
+            if not set(ln) <= set("|-: ")  # drop the |---|---| separator
+        ]
+        if len(rows) <= 1:
+            return True
+        empty_cell = {"", "-", "—", "...", "…", "tbd", "todo", "pending", "n/a"}
+        for row in rows[1:]:
+            if any(c and c.lower() not in empty_cell for c in row):
+                return False
+        return True
     return False
 
 
@@ -576,7 +581,8 @@ _SAFADA_SECOND_PERSON_RE = re.compile(
     r"como\s+combinado|ainda\s+tem)\b",
     re.I,
 )
-_DEST_OK_RE = re.compile(r"\b(invariante|estrutura|morte)\b", re.I)
+# "morta" and "morte" are the same verdict for a mock string.
+_DEST_OK_RE = re.compile(r"\b(invariante|estrutura|mort[ae]s?)\b", re.I)
 _DEST_APPROVE_RE = re.compile(
     r"\b(aprovad\w*|manter|nenhum|copy\s+de\s+sistema|usar\s+como\s+copy|ui\s+copy)\b",
     re.I,
@@ -598,60 +604,95 @@ def _text_looks_safada_instance(text: str) -> bool:
     return False
 
 
-def _reject_strings_safadas_approved(text: str, *, label: str) -> None:
-    """Always-on: instance prose must not be approved as system UI copy.
+# Where a package decides UI copy. Outside these, prose is analysis, not copy.
+COPY_SCOPE_HEADINGS = (
+    "## Faceta — Copy",
+    "## Faceta - Copy",
+    "### Copy",
+    "## Copy",
+)
 
-    Form-based (not fixture-literal): currency/count/date/geometry/2nd-person
-    in a table row whose destination is not invariante|estrutura|morte → fail.
-    """
-    low = text.lower()
-    # Free-prose approval phrases still catch obvious traps
-    if "ui copy aprovada" in low or "copy aprovada" in low:
-        if _text_looks_safada_instance(text) or "prosa-inst" in low or "como foi combinado" in low:
-            fail(f"{label}: strings-safadas — instance prose marked as approved UI copy")
-        if "aprovada" in low and _SAFADA_CURRENCY_RE.search(low):
-            fail(f"{label}: strings-safadas — currency instance prose approved as UI copy")
+# A claim that some text already IS the shipped copy, made outside the facet.
+# A denied claim ("não aprovada como UI copy") is the opposite of a claim.
+_APPROVAL_CLAIM_RE = re.compile(
+    r"(?<!n[ãa]o )(?<!not )(?<!never )"
+    r"\b(copy\s+aprovad\w*|ui\s+copy\s+aprovad\w*|aprovad\w*\s+como\s+(?:ui\s+)?copy)\b",
+    re.I,
+)
 
-    for ln in text.splitlines():
+
+def _copy_scopes(text: str) -> list[tuple[str, str]]:
+    """Bodies of the Copy facet (analysis `## Faceta — Copy`, SPEC `### Copy`)."""
+    scopes: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    for heading in COPY_SCOPE_HEADINGS:
+        if heading not in text:
+            continue
+        body = _section_body(text, heading)
+        if body and body not in seen:
+            seen.add(body)
+            scopes.append((heading, body))
+    return scopes
+
+
+def _iter_decision_blocks(blob: str):
+    """One block per decision: a table row, or a prose paragraph."""
+    paragraph: list[str] = []
+    for ln in blob.splitlines():
         s = ln.strip()
-        if not s.startswith("|"):
+        if s.startswith("|"):
+            if paragraph:
+                yield " ".join(paragraph)
+                paragraph = []
+            if set(s) <= set("|-: "):
+                continue
+            yield s
             continue
-        if "---" in s:
+        if not s:
+            if paragraph:
+                yield " ".join(paragraph)
+                paragraph = []
             continue
-        cells = [c.strip() for c in s.strip("|").split("|")]
-        if len(cells) < 2:
-            continue
-        joined = " ".join(cells)
-        joined_low = joined.lower()
-        # Skip header rows
-        if any(
-            h in joined_low
-            for h in (
-                "superfície",
-                "superficie",
-                "pecado",
-                "destino",
-                "string / key",
-                "invariant prose",
-                "forbidden",
-                "texto candidato",
-            )
-        ):
-            continue
+        paragraph.append(s)
+    if paragraph:
+        yield " ".join(paragraph)
 
-        dest = cells[-1]
-        body = " ".join(cells[1:-1]) if len(cells) > 2 else cells[0]
-        # Honest kill/structure/invariant destination is OK even with instance sample
-        if _DEST_OK_RE.search(dest):
+
+def _reject_strings_safadas_approved(text: str, *, label: str) -> None:
+    """Instance prose must not survive as system UI copy.
+
+    Scope is the Copy facet, where copy is decided. A date in a sprint table or
+    a geometry word in a schema note is data, not copy. Inside the facet both
+    table rows and free prose count — the sin is the sentence, not the markdown
+    shape. A block is honest when it routes the sample to
+    invariante|estrutura|morte.
+
+    Outside the facet, only text claiming to already BE approved copy is judged.
+    """
+    scopes = _copy_scopes(text)
+    for heading, blob in scopes:
+        for block in _iter_decision_blocks(blob):
+            if not _text_looks_safada_instance(block):
+                continue
+            if _DEST_OK_RE.search(block):
+                continue
+            fail(
+                f"{label}: strings-safadas — instance-form copy in {heading} "
+                "without invariante|estrutura|morte destination "
+                f"(block: {block[:120]})"
+            )
+
+    copy_bodies = [body for _, body in scopes]
+    for block in _iter_decision_blocks(text):
+        if any(block in body for body in copy_bodies):
             continue
-        # Form looks like instance prose and is not routed to morte/estrutura/invariante
-        if _text_looks_safada_instance(body) or _text_looks_safada_instance(joined):
-            if _DEST_APPROVE_RE.search(dest) or _DEST_APPROVE_RE.search(joined) or not _DEST_OK_RE.search(joined):
-                fail(
-                    f"{label}: strings-safadas — instance-form prose in table row "
-                    "without invariante|estrutura|morte destination "
-                    f"(row: {s[:120]})"
-                )
+        if not _APPROVAL_CLAIM_RE.search(block):
+            continue
+        if _text_looks_safada_instance(block) and not _DEST_OK_RE.search(block):
+            fail(
+                f"{label}: strings-safadas — instance prose marked as approved UI copy "
+                f"(block: {block[:120]})"
+            )
 
 
 def _recode_rows_real(recode: str) -> list[str]:
@@ -767,6 +808,21 @@ def _require_backend_evidence(backend: str, *, label: str, depth: str) -> None:
     )
 
 
+# `new` as a declared decision — a table cell, or prose that decides it.
+# "the new modal reuses X" is narration; "decisão: new" is a fork.
+_NEW_DECISION_RE = re.compile(
+    r"\|\s*new\s*\|"
+    r"|\bdecis(?:ão|ao|ion)\w*\s*(?:é|e|=|:|->|→|is)?\s*[`\"'*]*new\b"
+    r"|\bnew\b\s*(?:->|→|:)\s*(?:criar|create|build)"
+    r"|\b(?:criar|create)\b[^.\n]{0,40}\bnew\b",
+    re.I,
+)
+
+
+def _declares_new_decision(frontend: str) -> bool:
+    return bool(_NEW_DECISION_RE.search(frontend))
+
+
 def _require_frontend_decision(frontend: str, *, label: str, depth: str) -> None:
     if depth == "docs" and "skip_reason" in frontend.lower():
         return
@@ -776,19 +832,13 @@ def _require_frontend_decision(frontend: str, *, label: str, depth: str) -> None
     has_new = bool(re.search(r"\bnew\b", low))
     if not (has_reuse or has_mode or has_new):
         fail(f"{label}: Frontend facet needs reuse|mode|new decision")
-    # Decision 'new' (word present without reuse/mode primary, or pure new) requires guard table
-    if has_new and not (has_reuse or has_mode):
-        if not _has_reuse_guard_table(frontend):
-            fail(
-                f"{label}: Frontend decision 'new' requires Reuse Guard table "
-                "(Need|Source|Decision|path) in the same section"
-            )
-    elif has_new and re.search(r"\|\s*new\s*\|", low):
-        if not _has_reuse_guard_table(frontend):
-            fail(
-                f"{label}: Frontend decision 'new' requires Reuse Guard table "
-                "(Need|Source|Decision|path) in the same section"
-            )
+    # A declared `new` always needs the guard table. Saying `reuse` elsewhere in
+    # the section is not a substitute — the guard IS where reuse gets proven.
+    if _declares_new_decision(frontend) and not _has_reuse_guard_table(frontend):
+        fail(
+            f"{label}: Frontend decision 'new' requires Reuse Guard table "
+            "(Need|Source|Decision|path) in the same section"
+        )
 
 
 def _require_recode_honest(recode: str, *, label: str, depth: str) -> None:

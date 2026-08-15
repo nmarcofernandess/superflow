@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.3.0 — 2026-08-14
+
+### One line of truth
+
+- Merges the clear-writing skill (`writing-clearly-and-concisely`, shipped on
+  `main` as 0.1.1) into the 0.2.x contract line. `validate-all.sh` runs every
+  test suite; the router keeps both the Ready boundary and the writing
+  sub-skill step.
+
+### Gates read meaning, not markdown shape
+
+- **strings-safadas is scoped to the Copy facet** (`## Faceta — Copy`, SPEC
+  `### Copy`) and reads **prose and tables alike** inside it. A sprint date, a
+  geometry word in a schema note, or a number in evidence no longer fails a
+  package; the contract's own anti-example no longer passes just by living
+  outside a table. Outside the facet, only text claiming to BE approved copy is
+  judged. `morta` counts as `morte`; a denied claim ("**não** aprovada como UI
+  copy") is not a claim.
+- **`new` always needs the Reuse Guard table.** Declaring `new` in prose counts
+  as `new`, and writing `reuse` elsewhere in the section no longer stands the
+  gate down.
+- **Placeholder detection lost its magic number.** A facet whose body is only a
+  table header (or rows with no content) is a placeholder — decided by parsing
+  rows, not by looking for the literals `path`, `high`, and `88`.
+
+### Proof
+
+- Six cases in `test_feature_mindset.py`
+  (`assert_safada_scope_and_decision_gates`): schedule table PASS, schema note
+  PASS, Copy prose FAIL, prose `new` FAIL, header-only table FAIL,
+  one-real-row PASS.
+- Re-probed with phrases that appear in no fixture and no test.
+
 ## 0.2.1 — 2026-07-29
 
 ### WARLOG campaign board

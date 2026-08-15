@@ -113,3 +113,69 @@ replace Recode table with
 - OS-level hooks that force the validator without agent/CI action.
 
 This log claims only what the commands above show: A–E fail; golden fixtures pass.
+
+---
+
+# Tribunal — Superflow 0.3.0 (scope repro)
+
+Date: 2026-08-14  
+Version: **0.3.0**  
+Scope: gates judge meaning, not markdown shape; `main` and the contract line
+merged into one release.
+
+## Suite
+
+```bash
+cd ~/superflow
+./scripts/validate-all.sh
+```
+
+Observed: exit 0, with `OK: superflow feature mindset tests` and
+`OK: Superflow writing contract` in the same run.
+
+## What was wrong in 0.2.1
+
+The safada gate scanned every line starting with `|` in the whole document, so
+markdown shape decided guilt:
+
+| Probe | 0.2.1 | 0.3.0 |
+|---|---|---|
+| `\| S1 \| 12/08/2026 \| motor de busca \|` (sprint table) | FAIL | PASS |
+| `\| Schema \| conforme a tabela acima… \|` (schema note) | FAIL | PASS |
+| `"Continua Retorno por R$ 180,00, como foi combinado."` in Copy **prose** | PASS | FAIL |
+| Decision `new` in prose, no guard table | PASS | FAIL |
+| Facet body = table header only | PASS | FAIL |
+
+The third row is the contract's own anti-example. It survived the validator by
+not being inside a table.
+
+## Fixed gates
+
+| # | Fix | Where |
+|---|-----|-------|
+| 1 | safada scoped to the Copy facet; prose and rows read alike; approval claims still judged anywhere | `_copy_scopes` / `_iter_decision_blocks` / `_reject_strings_safadas_approved` |
+| 2 | `morta` accepted as `morte`; denied claim is not a claim | `_DEST_OK_RE` / `_APPROVAL_CLAIM_RE` |
+| 3 | declared `new` always requires the guard table (prose included) | `_NEW_DECISION_RE` / `_declares_new_decision` |
+| 4 | placeholder table detected by parsing rows, not by the literals `path`/`high`/`88` | `_is_placeholder_body` |
+
+## Re-probe with unseen data
+
+Phrases below appear in no fixture and no test — varying the data, not only the
+path:
+
+```bash
+# PASS: "| Beta fechado | 03-09-2027 | squad de dados |" appended outside Copy
+# PASS: "| unidade | o seletor fica a direita do input, ao lado do rotulo |"
+# FAIL: Copy prose "Voce ainda tem 4 consultas neste plano, aproveite…"
+# FAIL: "| Picker de categoria | new |" with no guard columns
+# PASS: same need with a full Need|Guard source|Decision|Evidence path table
+```
+
+Observed: PASS, PASS, FAIL, FAIL, PASS.
+
+## Still out of scope
+
+- Safada detection is form-based and PT-BR-shaped (`consultas|pacientes|dias…`,
+  `acima|à direita`). An English package gets weaker coverage.
+- `coverage.json` remains an inventory, not a semantic proof engine.
+- No OS hook forces the validator; skills instruct, agents run.
