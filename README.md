@@ -38,23 +38,16 @@ portable.
 
 ## Install (Codex) — pin `v0.3.0`
 
-Canonical ref: tag **`v0.3.0`**.  
-`main` may still report an older plugin version. Do **not** use `--ref main`
-until `main`’s `plugin.json` also says `0.3.0`.
+Canonical ref: tag **`v0.3.0`**. Pin it — `main` is older than the newest
+release whenever a lane is in flight, so check that `main`’s `plugin.json`
+reports the version you expect before using `--ref main`.
 
 ```bash
 codex plugin marketplace add nmarcofernandess/superflow --ref v0.3.0
 codex plugin add superflow@superflow
 ```
 
-Development tip (moving branch — prefer the tag):
-
-```bash
-codex plugin marketplace add nmarcofernandess/superflow --ref feat/superflow-fatality-analyst-build
-codex plugin add superflow@superflow
-```
-
-After `main` carries `0.3.0`:
+`main` carries `0.3.0` from this release on:
 
 ```bash
 codex plugin marketplace add nmarcofernandess/superflow --ref main
@@ -87,14 +80,7 @@ claude plugin marketplace add nmarcofernandess/superflow --ref v0.3.0
 claude plugin install superflow@superflow
 ```
 
-Branch tip (prefer tag):
-
-```bash
-claude plugin marketplace add nmarcofernandess/superflow --ref feat/superflow-fatality-analyst-build
-claude plugin install superflow@superflow
-```
-
-After merge, unpinned `main` is fine only when
+Unpinned `main` is fine while
 `plugins/superflow/.claude-plugin/plugin.json` on `main` reports
 `"version": "0.3.0"`.
 
