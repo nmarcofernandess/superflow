@@ -1,46 +1,52 @@
 # WARLOG: {title}
 
+## Mission
+
+{mission}
+
+## Scope
+
+- In: {scope_in}
+- Out: {scope_out}
+
 ## Context
 
 - Created: {created_at}
 - Route: {route}
-- Phase budget: {phase_budget}
+- Phase budget (package): {phase_budget}
 - Confidence: {confidence}
 - Source: {source}
 
-## State Snapshot
+## Campaign map
 
 ```mermaid
-stateDiagram-v2
-  [*] --> Captured
-  Captured --> PRD
-  PRD --> Build
-  Build --> Plan
-  Plan --> Execute
-  Execute --> QA
-  QA --> Done
-  QA --> Execute: fix
+flowchart TD
+  S1["S1 — first mergeable slice"] --> S2["S2 — next slice"]
+  S2 --> Done["Campaign done"]
 ```
 
-## Timeline
+## Sprints
 
-```mermaid
-timeline
-  title Superflow WARLOG
-  Capture : idea recorded
-  PRD : scope shaped
-  Build : technical decision
-  Execute : verified work
-```
+### S1 — {first_sprint_title}
+
+- State: ready
+- Depends on: —
+- Budget: {sprint_budget}
+- Route: {route} → Execute → QA (trim phases that do not apply)
+- Human gate: none
+- Green contract: package validator green; acceptance criteria from PRD
+- Harness: existing
+- Artifacts: PRD.md, status.json
+- Next action: {next_phase}
 
 ## Decisions
 
 - Initial route: {route}
-- Initial next phase: {next_phase}
+- Initial package phase budget: {phase_budget}
 
 ## Event Log
 
-- {created_at} | taskgen | Created WARLOG shell.
+- {created_at} | warlog | Created campaign WARLOG shell.
 
 ## Risks And Blocks
 

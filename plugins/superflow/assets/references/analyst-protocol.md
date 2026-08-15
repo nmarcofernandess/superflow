@@ -8,37 +8,45 @@ without guessing.
 ## Mission
 
 Produce an `analysis.md` that proves the product promise, system terrain,
-entities, state transitions, rules, risks, and next phase. If the target touches
-an existing codebase, the analysis must include source-backed evidence and an
-implementation map.
+entities, state transitions, rules, risks, and next phase — under
+**feature-mindset-contract.md**: facetas Produto / Backend / Frontend / Copy,
+síntese coerente, recodificação retroativa (não waterfall).
+
+If the target touches an existing codebase, the analysis must include
+source-backed evidence and an implementation map.
 
 ## Golden Lineage
 
-This protocol intentionally merges the strongest parts of:
+This protocol merges:
 
-- Supervibe Analyst: phase discipline, native grill, grounding, entities,
-  machine-executable rules, visual modeling, and blueprint handoff.
-- Code Flow Analyst: PRD-quality issue semantics, implementation mapping,
-  `code-recon`, grill verdicts, and repo-agnostic handoff.
-- Build / technical blueprint: Product -> Backend -> Frontend contracts, file
-  boundaries, sequencing, validation, and risks.
+- Supervibe / Code Flow Analyst discipline (grill, evidence, entities, handoff).
+- DietFlow triad + reuso (portable: search-before-create, data path first).
+- Strings-safadas (invariant prose only; data in structure).
+- Faceted analysis (Colon-style): analyze facets → synthesize → recode the set
+  when a new isolate breaks a category. One sentence of theory is enough.
 
-Do not collapse this into a short PRD. If the request has architecture or
-existing-code risk, a thin analysis is a failed analysis.
+Do not collapse this into a short PRD. Thin analysis that only fills headings
+is a failed analysis (B1).
 
 ## Non-Negotiables
 
-- Produce or update a durable artifact: `analysis.md` for local packages, or the
-  issue body for inbox-only work.
-- No `TBD`, no "definir depois" as a central decision. Either ask one precise
-  question or record an explicit assumption with risk.
-- Use Mermaid only.
-- Every code/system claim must be backed by `path:line` or marked `UNPROVEN`.
-- If the request names an existing module, schema, action, service, component,
-  or doc set, run code recon before verdict.
-- If the analysis will feed implementation, include a blueprint-quality handoff:
-  files/areas, contracts, sequence, validation, and risks.
-- Run a grill pass before declaring `ready for build` or `ready for taskgen`.
+- Durable artifact: `analysis.md` or issue body.
+- No `TBD` as a central decision — ask one precise question or record assumption
+  with risk.
+- Mermaid only for diagrams.
+- Every code/system claim: `path:line` or `UNPROVEN` (T1, B5).
+- Backend claims include **payload/shape** the UI receives when UI is in scope
+  (T2).
+- Before `new` UI/action: **Reuse Guard** (`reuse-guard-protocol.md`) with
+  evidence — graph Tier-2 if fresh, else grep (T4–T6). Plugin **searches**; it
+  does not prescribe a universal shell name.
+- Copy inventory when UI/copy is in scope; apply strings-safadas (S1–S5).
+- **Síntese** paragraph binds facets (F4). Paste of three sections = fail.
+- **Recode Log** present; deep work needs honest recode or coherence proof;
+  docs-only may use skip_reason (F5–F6, B3).
+- Blueprint handoff lists testable **behaviors** without fake test commands
+  (D1–D2).
+- Grill before `ready for build` or `ready for taskgen`.
 
 ## Phase 0 - Native Grill
 
@@ -55,149 +63,88 @@ Score the input before writing. Each missing item is one point of ambiguity:
 Rules:
 
 - 0-1 ambiguity points: proceed.
-- 2-3 ambiguity points: ask one precise question unless repo evidence can answer.
-- 4-5 ambiguity points: stop after at most three surgical questions, then record
-  assumptions if the user wants forward motion.
+- 2-3: ask one precise question unless repo evidence can answer.
+- 4-5: at most three surgical questions, then assumptions if user wants motion.
 
 ## Phase 1 - Mode And Scope
 
-Classify the analyst job:
+Classify: `construction` | `extraction` | `audit` | `hybrid` | `investigation`.
 
-- `construction`: new product/system behavior.
-- `extraction`: existing system behavior must be documented.
-- `audit`: current architecture or implementation must be judged.
-- `hybrid`: existing system plus proposed change.
-- `investigation`: bug or unknown behavior without proven cause. There is no
-  separate Discovery phase — reproduce, read logs/tests/code paths until the
-  cause is proven with evidence or explicitly `UNPROVEN`; only then scope a
-  fix and route forward.
+Investigation owns bugs without proven cause: reproduce, read logs/tests/code
+until proven or `UNPROVEN`; no separate Discovery phase.
 
-Record:
+Record source, route, phase budget, expected next phase, whether Build follows.
 
-- source: user request, issue, PRD, spec folder, or diff;
-- route and phase budget;
-- expected next phase;
-- whether Build is mandatory after Analyst.
+## Phase 2 - Faceted recon (loop)
 
-## Phase 2 - Code Recon
+Use `code-recon-protocol.md`. Attention order often Product → Backend →
+Frontend → Copy, but **do not freeze** a facet when later evidence contradicts
+it — log a recode and rewrite the set (F3, F6).
 
-Use `code-recon-protocol.md` when reality matters. Do this before writing
-technical conclusions.
+Minimum for existing code:
 
-Minimum recon for existing code:
+1. Entry/context (and repo maps if present — T7).
+2. Backend: schema, actions, **payload to UI**, guards, hooks.
+3. Frontend: shells/primitives — **grep family before inventing**.
+4. Copy surfaces: toast/empty/modal/banner candidates.
+5. Tests/proofs and ops constraints.
 
-1. Entry/context: local instructions, manifests, module docs, route/config maps.
-2. Backend truth: schema, actions/API, services, guards, hooks, queries, cache.
-3. Frontend truth when relevant: shells, providers, components, forms, tables,
-   modals, empty/error/loading states.
-4. Tests/proofs: unit/integration/E2E/proof scripts and missing coverage.
-5. Operational constraints: branch/worktree, migrations, env, queue, deploy.
+Explorer subagents may help; final `analysis.md` cites files itself.
 
-When useful, split recon into explorer lanes, but the final `analysis.md` must
-cite the files itself. Subagents do not replace evidence.
+## Phase 3 - Analyze facets
 
-## Phase 3 - Product Promise
+Write all four facets (or proportional skips with reason):
 
-Write the promise in one hard paragraph:
+- **Produto** — promise, surface, non-goals (T3 if data missing).
+- **Backend** — evidence table path:line / UNPROVEN + payload.
+- **Frontend** — reuse|mode|new table with scan evidence.
+- **Copy** — inventory + invariante|estrutura|morte.
 
-- user/persona;
-- broken or desired outcome;
-- current pain;
-- success behavior;
-- explicit non-goals.
+## Phase 4 - Synthesize
 
-Translate vague terms:
+Write **Síntese**: one hard paragraph that binds the facets. If any facet can
+be deleted without breaking the paragraph, rewrite (F4, H1).
 
-| Vague | Analyst must convert to |
-|---|---|
-| easy | steps, decisions, friction removed |
-| fast | latency, wait states, queue/deploy impact |
-| robust | failure modes, fallback, recovery |
-| consistent | source of truth, derivation path, anti-drift rule |
+## Phase 5 - Recode
 
-## Phase 4 - Entities, State, Rules
+When evidence changes a category, update prior facets and append **Recode Log**:
 
-For each meaningful object:
-
-```text
-ENTITY: <Name>
-- Attributes:
-- Actions:
-- Relations:
-- Source of truth:
-- Runtime states:
-- Invalid states to prevent:
-```
-
-Rules must pass the dumb-machine test:
-
-- Can a machine execute it without "common sense"?
-- Are edge cases covered: empty, duplicate, archived/deleted, missing profile,
-  permissions, concurrent update, stale cache?
-- Do conditionals overlap or leave gaps?
-
-## Phase 5 - Implementation Map
-
-Every analyst run that touches real code must include a navigable map.
-
-Use this order:
-
-1. Context / entry points.
-2. Backend contracts.
-3. Services / hooks / state.
-4. Shells / shared primitives.
-5. Frontend composition.
-6. Tests and proof harness.
-
-Each row must include:
-
-| Path | Role | Evidence | Decision |
+| When | Trigger | Facet | Recode |
 |---|---|---|---|
-| `path:line` | what it owns | observed fact | reuse/new/legacy/unknown |
 
-Do not write "see repo" or "inspect later". If it matters, inspect it now.
+Deep/existing-code: at least one real recode if synthesis moved, or explicit
+note that initial synthesis already matched terrain.  
+Docs-only: `skip_reason` allowed (B3).  
+Fake “N/A” in deep = fail.
 
-## Phase 6 - Blueprint Handoff
+## Phase 6 - Entities, State, Rules
 
-If the output can become implementation, include a blueprint-quality handoff.
-Use `technical-blueprint-protocol.md` as the contract.
+Same entity template as before; dumb-machine rules; edge cases.
 
-Minimum sections:
+## Phase 7 - Implementation Map
 
-- Files / areas likely to change.
-- Ownership boundaries.
-- Product contract.
-- Backend contract.
-- Frontend contract when relevant.
-- Sequence.
-- Validation.
-- Risks and rollback.
+Context → backend → services/hooks → shells → frontend → tests.  
+Each row: path, role, evidence, decision reuse/mode/new/legacy/unknown.
 
-If architecture risk is high, verdict must be `ready for build`, not
-`ready for execution`.
+## Phase 8 - Blueprint Handoff
 
-## Phase 7 - Visual Model
+Product/Backend/Frontend/Copy contracts summary; files; sequence; validation;
+risks; **testable behavior names** only (no fake commands).
 
-Use Mermaid only when it reduces ambiguity. Preferred diagram types:
+## Phase 9 - Visual Model
 
-- `flowchart TD`: request/data/runtime flow.
-- `sequenceDiagram`: API/action/service chain.
-- `erDiagram`: entities and relations.
-- `stateDiagram-v2`: lifecycle/status transitions.
+Mermaid only when it reduces ambiguity.
 
-No decorative diagrams. Diagram must clarify a decision, entity relation, or
-runtime path.
+## Phase 10 - Grill Verdict
 
-## Phase 8 - Grill Verdict
+Self-review:
 
-Run a final self-review:
-
-- Does every major claim have evidence?
-- Is product promise tied to implementation terrain?
-- Are entities and state transitions explicit?
-- Are legacy/debt and live paths separated?
-- Are next phases sequenced correctly?
-- Is the work one task, multiple slices, or a larger program?
+- Facets coherent under Synthesis?
+- Evidence for technical claims?
+- Recode Log honest for this depth?
+- Strings-safadas applied?
+- Ready ≠ filled headings?
+- One slice or split?
 
 Allowed verdicts:
 
@@ -211,39 +158,25 @@ Allowed verdicts:
 
 ## Required `analysis.md` Shape
 
-Use these headings for local package output:
+Use `assets/templates/analysis.md` headings. Mandatory for existing-system UI
+work:
 
-```markdown
-# Analyst: <Title>
+- TL;DR + **Síntese** near top (H1)
+- Faceta Produto / Backend / Frontend / Copy
+- Recode Log
+- Evidence Matrix + Implementation Map
+- Story de Usuario + Story Tecnica
+- Blueprint Handoff + Grill Verdict
 
-## State
-## TL;DR
-## Phase 0 Grill
-## Source And Scope
-## Product Promise
-## Current Terrain
-## Evidence Matrix
-## Implementation Map
-## Entities And State
-## Runtime / Data Flow
-## Rules And Invariants
-## Architecture Risks
-## Blueprint Handoff
-## Acceptance Criteria
-## Open Questions
-## Grill Verdict
-## Recommended Next Phase
-```
+## Ready Gate (binary)
 
-`Evidence Matrix` and `Implementation Map` are mandatory for existing-system
-work. If either is missing, the analysis is not done.
+Do **not** declare ready for taskgen/build if:
 
-## Anti-Patterns
-
-| Anti-pattern | Why it fails |
-|---|---|
-| A list of risks without file/line evidence | Cannot be reviewed or executed safely |
-| Product promise without entities/state | Nice prose, no system logic |
-| Architecture critique without blueprint handoff | Leaves Build to rediscover everything |
-| "Ready" with unresolved source-of-truth questions | Green false |
-| Reusing Superflow route output as analyst output | Classifier is not analysis |
+- Synthesis missing or is section-collage;
+- technical claim without path:line or UNPROVEN;
+- `new` UI without reuse scan;
+- Copy still carries instance prose as approved system text;
+- deep package with empty Recode Log and no coherence proof;
+- product promise requires data Backend marked UNPROVEN without non-goal;
+- blueprint handoff invents TDD commands;
+- only achievement is “all headings present” (B1–B2).

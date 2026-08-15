@@ -8,28 +8,43 @@ Find what is real before Analyst, Build, Plan, Execute, or QA makes claims.
 Separate proven facts from inference and mark unknowns instead of smoothing over
 them.
 
+Recon feeds the **feature-mindset** facets (Produto / Backend / Frontend /
+Copy). It is not a waterfall of folders — it is evidence for synthesis and
+recode. See `feature-mindset-contract.md`.
+
 ## Rules
 
 - Inspect actual files before asserting behavior.
 - Prefer `rg`, `rg --files`, focused reads, docs, schema, tests, and commands.
 - Start from the user's concrete boundary.
-- Use `path:line` for evidence wherever possible.
+- Use `path:line` for evidence wherever possible (T1).
+- Capture **payload/shape** that UI actually receives, not only model names (T2).
+- Before proposing `new` UI or new action/service, run **Reuse Guard**
+  (`reuse-guard-protocol.md`) — crystallize-guard style: Tier-2 `.context` if
+  fresh, else grep families (T4–T6). Do not prescribe a fixed shell name as
+  universal dogma.
 - If subagents are available, use explorer lanes for independent discovery, but
   the final artifact must cite the files directly.
 - Do not edit files from recon.
+- `UNPROVEN` beats confident invention (B5).
 
-## Recon Lenses
+## Recon by facet (attention order, not freeze)
 
-Use only the lenses needed for the ask:
+Order of attention is often Product → Backend → Frontend → Copy. New evidence
+can force **recode** of earlier facets.
 
-| Lens | Inspect |
+| Facet | Inspect |
 |---|---|
-| Product surface | routes, UI flow, screenshots, copy, empty/error/loading states |
-| Backend truth | schema, actions, services, guards, policies, hooks, queries, cache |
-| Frontend pattern | shells, primitives, providers, forms, modals, cards, tables, charts |
+| Product surface | routes, journey, when UI appears, consequence vs onboarding |
+| Backend truth | schema, actions, services, guards, policies, hooks, queries, cache, **response/DTO shape** |
+| Frontend pattern | shells, primitives, providers, forms, modals, cards, tables, charts — **grep family before inventing** |
+| Copy surfaces | toasts, empty states, banners, modal body, helpers — candidates for strings-safadas audit |
 | Tests/proof | unit, integration, E2E, CI, proof scripts, fixtures, known flakes |
 | Operations | env, migrations, queue, auth, branch/worktree, deploy |
-| Topology | domain file tree with ownership comments and reuse/new/unknown labels |
+
+## Recon Lenses (legacy names)
+
+Same as facets above; use only the lenses needed for the ask.
 
 ## Output Shape
 
@@ -44,6 +59,19 @@ What the system actually does.
 | Path | Lines | Fact | Confidence |
 |---|---:|---|---|
 
+## Payload / data path
+What the screen receives (fields, counts, nullability).
+
+## Reuse Guard (anti-fork)
+- Need named:
+- Graph (`.context` Tier-2) result: reuse path | none | stale-hint
+- Grep families / commands:
+- Decision: reuse | mode | new (+ justification if new)
+- Evidence paths:
+
+## Copy inventory
+UI strings / mock phrases that need invariant|structure|death.
+
 ## File Topology Map
 ```text
 src/
@@ -54,35 +82,37 @@ src/
 Runtime/data/user flows that matter.
 
 ## Patterns To Preserve
-Reusable primitives, shells, conventions, contracts.
+Reusable primitives, shells, conventions, contracts — **discovered**, not prescribed.
 
 ## Constraints And Risks
 Coupling, missing tests, auth/env/deploy boundaries, performance concerns.
 
 ## Unknowns
-Only what could not be proven from files or safe commands.
+Only what could not be proven from files or safe commands (`UNPROVEN`).
 
 ## Implications
-What analyst/build/plan/execution must respect.
+What analyst/build/plan/execution must respect — including which facets to recode.
 ```
 
 ## Topology Labels
 
 - `# reuse`: already covered by an existing module/pattern.
-- `# new`: likely new derivation point needed.
+- `# mode`: existing primitive with thin wrapper/mode.
+- `# new`: likely new derivation point needed (only after scan).
 - `# legacy`: live only for compatibility; do not spread it.
 - `# unknown`: needs more recon before decision.
 
-## DietFlow Recon Default
+## Repo-aware default (T7)
 
-When the target repo is DietFlow and the ask touches a clinical/admin module,
-the first pass normally reads:
+**If** the target repo has `AGENTS.md` and/or `.context/` (e.g. DietFlow):
 
-1. `AGENTS.md`.
-2. `.context/domains/manifest.yaml`.
-3. Module domain YAML and listed pattern YAMLs.
-4. `prisma/schema.prisma` for model truth.
-5. Module actions/services/hooks/components/tests.
+1. Read `AGENTS.md` (or equivalent) — triad/reuse rules if present.
+2. Read module map (e.g. `.context/domains/manifest.yaml`).
+3. Read domain/pattern docs listed there — full files, not samples.
+4. Schema / actions / hooks / components / tests for the module.
 
-Do not call a DietFlow analysis grounded until this chain is either followed or
-explicitly declared out of scope.
+**If not**, use generic recon: entry routes, schema/API layer, UI composition
+roots, test layout. Do not invent DietFlow shell names.
+
+Do not call an analysis grounded until the applicable chain is followed or
+explicitly out of scope with `UNPROVEN` where needed.

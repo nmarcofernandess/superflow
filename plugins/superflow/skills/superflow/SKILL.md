@@ -22,17 +22,24 @@ can produce a durable artifact or a verified implementation.
 5. If generating diagrams, follow `../../assets/references/mermaid-contract.md`; Mermaid only.
 6. If writing a PRD or issue body, follow `../../assets/references/prd-contract.md` and
    `../../assets/references/github-issue-contract.md`.
-7. If maintaining a WARLOG, follow `../../assets/references/warlog-contract.md`.
-8. If executing, follow `../../assets/references/execution-contract.md` and keep
-   `status.json` current.
+7. If maintaining a WARLOG, follow `../../assets/references/warlog-contract.md`
+   (campaign board: sprints, budget, green contract — not a microtask diary).
+8. If executing, follow `../../assets/references/execution-contract.md` and
+   `../../assets/references/tdd-contract.md`, and keep `status.json` current.
+   Code goes through `review` (`../../assets/references/review-contract.md`)
+   between GREEN and QA: findings get verdicts, accepted blockers get proof.
 9. Treat Build and Plan as different phases: Build writes the technical spec
    (`SPEC.md`; legacy `technical_blueprint.md` stays valid); Plan writes
-   executable tasks in `implementation_plan.json`.
+   executable tasks in `implementation_plan.json` with TDD pre-compile (I1).
 10. The phase executor owns its own status update. The router initializes and
     resumes from `status.json`; it does not mark a phase complete without the
     phase artifact and evidence.
-11. Validate the package with `../../scripts/validate_superflow.py` before declaring it
-   ready.
+11. **Ready boundary:** run
+    `python3 <plugin-root>/scripts/validate_superflow.py <path-to-package>`
+    on the real package directory before declaring Analyst, Build, or package
+    **ready**. Exit 0 is required. Hollow headings, partial packages (missing
+    `status.json`), fake Recode, and strings-safadas fail the gate. Analyst and
+    Build skills restate this Ready Gate; do not skip it.
 12. For human-facing prose, **REQUIRED SUB-SKILL:** Use
     `writing-clearly-and-concisely` before finalizing the artifact.
 13. If the deliverable is a visual mural/one-pager for a non-technical reader
@@ -64,7 +71,7 @@ can produce a durable artifact or a verified implementation.
 | `lean` | taskgen, execute, qa | analyst, build, plan |
 | `standard` | taskgen, plan, execute, qa | analyst, build |
 | `deep` | analyst, taskgen, build, plan, execute, qa | none |
-| `forensic` | analyst (investigation mode), build, critic, plan, execute, qa | none |
+| `forensic` | analyst (investigation mode), build, plan, execute, review, qa | none |
 
 Budget controls phases first. Model strength is secondary and can be chosen
 inside each phase.
@@ -78,10 +85,13 @@ Superflow exposes the router and each major phase:
 - `taskgen`: create or promote local PRD packages.
 - `analyst`: product/domain ambiguity analysis before PRD hardening.
 - `build`: technical blueprint/spec for risky or architectural work.
-- `plan`: executable `implementation_plan.json` from PRD/blueprint.
-- `warlog`: long-running Mermaid WARLOG creation and updates.
-- `execute`: implementation from a durable Superflow source.
-- `qa`: acceptance and proof closure.
+- `plan`: executable `implementation_plan.json` from PRD/blueprint with TDD
+  RED/GREEN pre-compile.
+- `warlog`: campaign board (sprints, deps, budget, green contract, Mermaid).
+- `execute`: implementation from a durable Superflow source under iron-law TDD.
+- `review`: spec review before Plan, code review after GREEN — findings with
+  verdicts and re-verification in `review_log.json`.
+- `qa`: acceptance matrix and RED/GREEN proof closure.
 - `audit`: no-write route/readiness/gap analysis.
 - `html-didatico`: self-contained visual HTML docs with CSS dioramas —
   manuals, murals, and verification wireframes.
@@ -159,14 +169,22 @@ python3 <plugin-root>/scripts/superflow_warlog.py \
   --event "Build approved; execution can start."
 ```
 
-Validate a Superflow skill/package:
+Validate the **plugin root** (doctrine + manifests) or a **user package**:
 
 ```bash
-python3 <plugin-root>/scripts/validate_superflow.py \
-  <plugin-root> --mermaid
+# Plugin install integrity (CI / after pull)
+python3 <plugin-root>/scripts/validate_superflow.py <plugin-root>
+python3 <plugin-root>/scripts/test_feature_mindset.py
+python3 <plugin-root>/scripts/test_tdd_contract.py
 python3 <plugin-root>/scripts/test_superflow_routes.py
 python3 <plugin-root>/scripts/forward_test_superflow.py
+
+# Real work package (required before Analyst/Build ready)
+python3 <plugin-root>/scripts/validate_superflow.py \
+  path/to/specs/NNN-slug
 ```
+
+Full tree gate from this marketplace repo: `./scripts/validate-all.sh`.
 
 ## Non-Negotiables
 
@@ -185,6 +203,9 @@ python3 <plugin-root>/scripts/forward_test_superflow.py
 - Keep executable tasks in `implementation_plan.json`, not `status.json`.
 - Keep execution evidence in `implementation_log.json`; do not rewrite the plan
   as a progress log.
+- Code tasks follow `tdd-contract.md`: plan pre-compiles RED/GREEN (I1),
+  execute observes RED before production code (I2), QA maps PRD criteria to
+  evidence including red+green (I3).
 - Build is a technical blueprint, not a super PRD and not the final task list.
 - Plan is the task list, not an architecture decision phase.
 - Use `WARLOG.md` for product/plugin, forensic, deep, or multi-session work;
@@ -208,5 +229,11 @@ python3 <plugin-root>/scripts/forward_test_superflow.py
 - Read `../../assets/references/status-schema.md` before editing `status.json`.
 - Read `../../assets/references/execution-contract.md` before executing from a Superflow
   package.
+- Read `../../assets/references/tdd-contract.md` before planning or executing
+  code tasks.
+- Read `../../assets/references/feature-mindset-contract.md` before Analyst or
+  Build (facetas, recode, strings-safadas, truth-seeking).
+- Read `../../assets/references/reuse-guard-protocol.md` before creating UI or
+  actions (anti-fork: .context Tier-2 or grep — crystallize-guard slice).
 - Read `../../assets/references/backlog-status-protocol.md` before verifying
   existing issues against merged PRs.

@@ -1,0 +1,25 @@
+{
+  "schema_version": "superflow.log.v1",
+  "source_plan": "implementation_plan.json",
+  "updated_at": "YYYY-MM-DDTHH:mm:ssZ",
+  "tasks": [
+    {
+      "id": "subtask-1-1",
+      "status": "DONE|DONE_WITH_CONCERNS|BLOCKED|NEEDS_CONTEXT|pending",
+      "files_touched": [],
+      "red": {
+        "command": "command actually run for RED",
+        "excerpt": "failure excerpt proving expected gap",
+        "ok": true
+      },
+      "green": {
+        "command": "command actually run for GREEN",
+        "excerpt": "PASS or success excerpt",
+        "ok": true
+      },
+      "notes": "",
+      "self_critique": ""
+    }
+  ],
+  "remaining": []
+}

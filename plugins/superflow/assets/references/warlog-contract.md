@@ -1,78 +1,96 @@
 # WARLOG Contract
 
-WARLOG e o log vivo de produto, plugin, epico ou investigacao longa. Ele nao
-substitui `progress.md` de uma task local pequena. Use WARLOG quando a historia
-precisa sobreviver a varias sessoes, branches, issues ou decisoes.
+WARLOG is the **campaign board** for long-running work: multi-session, multi-sprint,
+plugin, architecture, forensic, or epic. It is not a task tracker and not a diary
+of microsteps.
 
-## Quando criar
+DNA from Warlog Minimal (mission, WBS, dependencies, sprints, chronology, next
+action) lives here. Visuals are **Mermaid only**. PlantUML is forbidden.
 
-Crie ou atualize `WARLOG.md` quando:
+## When to create
 
-- `phase_budget = deep` ou `forensic`.
-- O trabalho atravessa mais de uma sessao.
-- Existem decisoes que precisam ser rastreadas.
-- O pedido envolve plugin, workflow, arquitetura, migracao ou epico.
-- O usuario pede warlog, timeline, status vivo ou trilha de decisao.
+Create or update `WARLOG.md` when:
 
-Nao crie WARLOG para tarefa lean obvia. Use `progress.md`.
+- `phase_budget` is `deep` or `forensic`, or work spans multiple sessions;
+- decisions must survive branch/issue/session changes;
+- the user asks for warlog, campaign board, sprint map, or live next action.
 
-## Mermaid
+Do **not** create WARLOG for lean one-shot work. Use `progress.md` and the
+package validator.
 
-WARLOG usa Mermaid como primeira linguagem visual. Markdown narrativo continua
-canonico, mas os snapshots visuais devem ser fenced blocks `mermaid`.
+## Ownership (do not blur)
 
-Use estes tipos:
+| Artifact | Answers | Does not answer |
+|----------|---------|-----------------|
+| **WARLOG** | How sprints chain? What is blocked? Budget? Green contract? Next fatia? | Execute step 3; RED command |
+| **status.json** | Where are we now? Active phase? Artifact pointers? | Campaign history |
+| **SPEC / Plan** | Technical contracts and ordered tasks of the **active** sprint | Whole campaign |
+| **implementation_log** | RED/GREEN evidence per code task | Sprint graph |
 
-| Visao | Mermaid |
-|-------|---------|
-| Estado atual | `stateDiagram-v2` |
-| Linha do tempo | `timeline` |
-| Dependencias | `flowchart TD` |
-| Sprint com datas reais | `gantt` |
-| Prova de DoD | `requirementDiagram` |
+WARLOG may list sprint artifacts. It does not replace `implementation_plan.json`,
+`implementation_log.json`, or Analyst/Build Ready gates
+(`validate_superflow.py` on the package).
 
-Nao use sintaxe visual legada. Nao use imagem gerada como fonte canonica.
+## Sprint = mergeable slice
 
-## Estrutura
+A sprint is a mergeable fatia of the campaign (often one PR), not a calendar Scrum
+sprint. Detail for a future sprint is born late (rolling wave).
 
-1. Contexto e objetivo.
-2. Snapshot visual em Mermaid.
-3. Decisoes tomadas.
-4. Evento logado com data, fase e evidencia.
-5. Riscos, bloqueios e proxima acao.
+Each sprint card:
 
-## Snapshot padrao
+```markdown
+### S2 — Human-verifiable result title
 
-```mermaid
-stateDiagram-v2
-  [*] --> Captured
-  Captured --> PRD
-  PRD --> Build
-  Build --> Plan
-  Plan --> Execute
-  Execute --> QA
-  QA --> Done
-  QA --> Execute: fix
+- State: blocked | ready | active | qa | done
+- Depends on: S1, decision X (or —)
+- Budget: direct | plan | spec
+- Route: Analyst? → Build? → Plan? → Execute → QA (only phases needed)
+- Human gate: decision that changes the solution, or none
+- Green contract: tests, visual proof, performance, regressions (names, not fake commands)
+- Harness: existing | extend here | own sprint
+- Artifacts: analysis/SPEC/PLAN/QA that actually exist (or —)
+- Next action: one concrete action
 ```
 
-## Linha do tempo padrao
+### Budget (per sprint)
 
-```mermaid
-timeline
-  title Superflow WARLOG
-  Capture : ideia registrada
-  PRD : escopo estabilizado
-  Build : decisao tecnica
-  Execute : implementacao verificada
-```
+| Budget | Use | Expected prep |
+|--------|-----|----------------|
+| `direct` | Mature source, obvious change, low risk | Execute + QA |
+| `plan` | Clear product/tech, sequencing needed | Plan + Execute + QA |
+| `spec` | Ambiguity, architecture, data, multi-analysis | Analyst as needed + Build/SPEC + Plan if needed + Execute + QA |
 
-## Regras
+Budget is proposed in WARLOG; the human may override. It is not a keyword score.
 
-- Atualize `status.json.artifacts.warlog = "WARLOG.md"` quando o WARLOG existir.
-- WARLOG pode resumir tasks, mas nao substitui `implementation_plan.json` nem
-  `implementation_log.json`.
-- Registre skipped phases no WARLOG quando a decisao for importante para uma
-  leitura futura.
-- Se o WARLOG contradiz o PRD, pare e resolva a fonte de verdade antes de
-  executar.
-- Diagrama grande demais vira ruido. Divida em snapshots pequenos.
+## Required structure
+
+1. **Mission** — one-sentence end state + success metric.
+2. **Scope** — in / out.
+3. **Campaign map** — Mermaid `flowchart` (WBS or dependency graph).
+4. **Sprints** — one card per mergeable slice (at least S1 when creating).
+5. **Decisions** — durable choices that constrain later sprints.
+6. **Event Log** — dated chronology (session-scale, not microtask ticks).
+7. **Risks And Blocks** — open risks and unblockers.
+8. **Next Action** — single concrete next move (same truth as dashboard).
+
+Optional Mermaid: `timeline`, `stateDiagram-v2`, `gantt` when dates help.
+Do not dump every phase state machine if the campaign map already answers.
+
+## Forbidden
+
+- PlantUML / legacy diagram syntax.
+- Microtask RFEs, step-by-step execute trails, or invented TDD commands in WARLOG
+  (those belong to Plan / Execute / `tdd-contract.md`).
+- Tracking task DONE/blocked per line as the primary UI (use Plan board + log).
+- Two parallel warlog systems (no “call warlog-minimal”). One official skill.
+- WARLOG that contradicts a ready PRD without reconciling first.
+
+## Status pointer
+
+When `WARLOG.md` exists: `status.json.artifacts.warlog = "WARLOG.md"`.
+
+## Shell generator
+
+`scripts/superflow_warlog.py` may create the shell and append events. The agent
+(or human) fills Mission, Sprints, and Green contracts with real content.
+Placeholders must be replaced before claiming campaign ready.

@@ -1,0 +1,43 @@
+{
+  "schema_version": "superflow.plan.v1",
+  "plan": {
+    "id": "fixture-review",
+    "workflow_type": "feature",
+    "phases": [
+      {
+        "id": "phase-1",
+        "title": "Drawer value",
+        "subtasks": [
+          {
+            "id": "subtask-1-1",
+            "title": "Show the agreed value in the drawer header",
+            "owner": "main_agent",
+            "files_to_modify": ["src/components/drawer/DrawerHeader.tsx"],
+            "behavior": "Drawer header shows the stored value for the appointment and nothing when it is null",
+            "tdd": {
+              "required": true,
+              "red": {
+                "test_file": "src/components/drawer/DrawerHeader.test.tsx",
+                "test_name": "renders the stored value",
+                "command": "npm test -- DrawerHeader.test.tsx -t 'renders the stored value'",
+                "expected_failure": "header renders an empty node because the value is never read from the DTO",
+                "ok": false
+              },
+              "green": {
+                "command": "npm test -- DrawerHeader.test.tsx -t 'renders the stored value'",
+                "expected": "PASS"
+              },
+              "negatives": ["null value", "value present but appointment archived"]
+            },
+            "verification": {
+              "type": "test",
+              "command": "npm test -- DrawerHeader.test.tsx"
+            },
+            "acceptance_criteria": ["AC1"],
+            "status": "pending"
+          }
+        ]
+      }
+    ]
+  }
+}

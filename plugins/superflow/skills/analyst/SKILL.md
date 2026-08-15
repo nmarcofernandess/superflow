@@ -9,102 +9,104 @@ Analyst is the Superflow distillation phase. It does not code. It turns fuzzy
 intent or a weak issue into an `analysis.md` that Build, Plan, or Taskgen can
 trust.
 
-This skill inherits the heavy Analyst standard: native grill, grounding,
-entities/state, dumb-machine rules, Mermaid modeling, and blueprint handoff. A
-short risk list is not Analyst.
+Heavy standard: native grill, grounding, entities/state, dumb-machine rules,
+Mermaid, blueprint handoff — plus **feature-mindset**: facetas (not waterfall),
+síntese, Recode Log, strings-safadas, path:line|UNPROVEN, reuse-before-new.
 
 ## Required Reading
 
-Read these completely before producing or updating analysis:
+Read completely before producing or updating analysis:
 
 1. `../../assets/references/routing-protocol.md`
 2. `../../assets/references/prd-contract.md`
-3. `../../assets/references/analyst-protocol.md`
-4. `../../assets/references/code-recon-protocol.md`
-5. `../../assets/references/technical-blueprint-protocol.md`
-6. `../../assets/references/mermaid-contract.md`
-7. `../../assets/templates/analysis.md`
+3. `../../assets/references/feature-mindset-contract.md`
+4. `../../assets/references/reuse-guard-protocol.md`
+5. `../../assets/references/analyst-protocol.md`
+6. `../../assets/references/code-recon-protocol.md`
+7. `../../assets/references/technical-blueprint-protocol.md`
+8. `../../assets/references/mermaid-contract.md`
+9. `../../assets/templates/analysis.md`
 
 ## Investigation Mode
 
-There is no separate Discovery phase. When the input is a bug or unknown
-behavior without proven cause (route `investigate_first`), Analyst owns the
-investigation: reproduce, read logs/tests/code paths, and either prove the
-cause with evidence or mark it `UNPROVEN`. The investigation lives inside the
-analysis artifact; the verdict routes the work after the cause is known.
+No separate Discovery phase. Bugs/unknowns without proven cause: reproduce,
+read logs/tests/code, prove or `UNPROVEN`, then route.
 
 ## Multiple Analyses, One Active Synthesis
 
-One piece of work can need more than one analysis lens — product, code, data,
-performance. The default output is a single `analysis.md`; when more than one
-lens deserves its own artifact, name them `ANALYSIS-<lens>.md` in the same
-package. `status.json.artifacts.analysis` points at the single ACTIVE
-analysis — the status never reconciles individual analyses. When
-implementation needs one canonical technical closure, Build consumes all
-analyses and produces the single spec, listing the sources it consumed.
+Default one `analysis.md`. Extra lenses: `ANALYSIS-<lens>.md`. Status points at
+the active analysis. Build synthesizes the canonical SPEC from all analyses.
 
 ## Procedure
 
-1. Classify the source: inline ask, GitHub issue, PRD, spec folder, or diff.
-2. Run Phase 0 grill from `analyst-protocol.md`. Ask one precise question only
-   when repo evidence cannot answer the ambiguity.
-3. If code truth matters, run code recon before scope/verdict. Use actual repo
-   files, `rg`, docs, schema, tests, and commands. Evidence must be cited as
-   `path:line` or explicitly marked `UNPROVEN`.
-4. Separate product promise, entities/state, rules, current behavior, and
-   implementation terrain.
-5. Include `Story de Usuario` and `Story Tecnica` so taskgen/build can preserve
-   both the human outcome and the system obligation in the PRD.
-6. Produce or update `analysis.md` inside the local package. For inbox-only
-   work, write the analysis into the GitHub issue body only if local artifact
-   creation is not appropriate.
-7. Include a blueprint handoff when the analysis can become implementation.
-   High architecture risk should end as `ready for build`, not direct execute.
-8. Run a final grill pass and record the verdict.
-9. Update `status.json`: set `phases.analyst = "complete"` and point
-   `artifacts.analysis` at the active analysis (`analysis.md` or the relevant
-   `ANALYSIS-<lens>.md`) when local.
+1. Classify source (inline, issue, PRD, package, diff).
+2. Phase 0 grill (`analyst-protocol.md`).
+3. Faceted recon (`code-recon-protocol.md`) before technical conclusions —
+   attention order often P→B→F→Copy; **never freeze** when later evidence
+   contradicts; append Recode Log and rewrite the set.
+4. **Reuse Guard** (`reuse-guard-protocol.md`) for each UI/code need before
+   closing Frontend/Backend with `new` — graph Tier-2 if fresh, else grep;
+   table need → source → reuse|mode|new → path. Run **before** final Síntese.
+5. Write four facets (or proportional skip_reason): Produto, Backend
+   (payload + path:line|UNPROVEN), Frontend (guard + reuse|mode|new), Copy
+   (invariante|estrutura|morte).
+6. Write **Síntese** that binds facets (not a paste of three sections).
+7. Maintain **Recode Log** (deep: real entries when synthesis moves; docs-only:
+   skip_reason ok).
+8. Stories de Usuario e Técnica; entities; implementation map.
+9. Blueprint handoff with testable **behavior names** only — no fake test
+   commands (`tdd-contract.md` owns RED/GREEN later).
+10. Grill verdict; update `status.json` (`phases.analyst`, `artifacts.analysis`).
+11. **Run the package validator** on the package directory (see Ready Gate).
+    Non-zero exit = not ready. Do not skip this step.
 
 ## Mandatory Output
 
-Local `analysis.md` must use the template headings from
-`../../assets/templates/analysis.md`.
+Use template headings from `../../assets/templates/analysis.md`.
 
-Mandatory for existing-system work:
+Mandatory for existing-system / UI work:
 
-- `Evidence Matrix` with concrete file evidence.
-- `Implementation Map` in context -> backend -> services/hooks -> shells ->
-  frontend -> tests order.
-- `Story de Usuario` and `Story Tecnica`, with technical story grounded in the
-  implementation map instead of vibes.
-- `Entities And State` with source of truth and invalid states.
-- `Runtime / Data Flow` with Mermaid when it reduces ambiguity.
-- `Rules And Invariants` that a dumb machine can execute.
-- `Blueprint Handoff` with files/areas, contracts, sequence, validation, and
-  risks.
-- `Grill Verdict` with one of the allowed verdicts from
-  `analyst-protocol.md`.
+- TL;DR + **Síntese** near the top
+- **Faceta — Produto / Backend / Frontend / Copy**
+- **Recode Log**
+- Evidence Matrix with `path:line` or UNPROVEN
+- Implementation Map with reuse decisions
+- Blueprint Handoff + Grill Verdict
 
 ## Ready Gate
 
-Do not declare `ready for taskgen` or `ready for build` if any of these is true:
+**Package validator is mandatory.** Before declaring `ready for taskgen` or
+`ready for build`, run the shipped validator on the **real package path**
+(the folder that contains `analysis.md` / `status.json` / `PRD.md`):
 
-- source-backed evidence is missing for a technical claim;
-- implementation map is absent for an existing codebase;
-- entities/state/source-of-truth are vague;
-- product promise is not tied to user-visible behavior;
-- blueprint handoff is absent for architecture or implementation work;
-- unresolved human decision changes the solution shape;
-- the scope is really multiple slices and has not been split.
+```bash
+python3 <plugin-root>/scripts/validate_superflow.py <path-to-package>
+```
 
-## Optional Acceleration
+- Exit code **must be 0**. Non-zero means **not ready** — fix the package and
+  re-run until green.
+- Filled headings alone are never ready. The validator rejects hollow
+  synthesis, fake Recode, instance-prose Copy, backtick-only Backend, and
+  `new` without Reuse Guard table.
+- Depth is derived from `status.json` (`phase_budget` / `route` /
+  `workflow_type`), not from agent-written depth markers.
 
-Explorer or architect subagents may help gather terrain or compare approaches,
-but they are not dependencies and they do not replace the final artifact. The
-analysis must contain the cited evidence and decisions itself.
+Do not declare ready if any of the following hold (even if the validator was
+not run — run it anyway):
+
+- package validator not run or exit ≠ 0;
+- source-backed evidence missing for a technical claim;
+- Synthesis missing or is heading-collage only;
+- implementation map absent for existing codebase;
+- `new` UI/code without Reuse Guard (graph or grep) evidence;
+- Copy still approves instance/mock prose as system copy;
+- Recode Log dishonest for depth (fake N/A on deep without `coherence_proof`);
+- product promise needs data that is UNPROVEN without non-goal;
+- ready would only mean “sections filled”;
+- TDD commands invented in handoff (behavior names only — `tdd-contract.md`
+  owns RED/GREEN in Plan/Execute).
 
 ## Mermaid
 
-Use Mermaid for user flow, lifecycle, data flow, entity relation, or decision
-trees when it reduces ambiguity. Follow
+Use Mermaid when it reduces ambiguity. Follow
 `../../assets/references/mermaid-contract.md`. Mermaid only.

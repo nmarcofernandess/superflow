@@ -3,6 +3,10 @@
 Execution starts only after a route has a durable source of truth. For local
 work, that source is `specs/NNN-slug/PRD.md`.
 
+TDD proof rules for code work live in `tdd-contract.md` (I1 plan pre-compile,
+I2 iron law at execute, I3 QA matrix). This file owns **when** to execute and
+how phases relate; the TDD contract owns **how** code tasks prove behavior.
+
 ## Execute Directly
 
 Allowed when all are true:
@@ -15,7 +19,10 @@ Allowed when all are true:
 - No schema/security/cross-module ambiguity
 - User asked to implement or the task is already in execution mode
 
-Direct execution still requires QA.
+Direct execution still requires QA and still follows TDD iron law for code
+(I2): failing test first, observed RED, then minimal production code, then
+GREEN. Record evidence in `implementation_log.json` (use task id `direct-1`
+when there is no plan).
 
 ## Plan First
 
@@ -28,6 +35,9 @@ Use plan when:
 
 Write `implementation_plan.json` as the executable task source. A Markdown plan
 may be generated for humans, but resume/execution should rely on JSON.
+
+Each code subtask must pre-compile TDD fields (`behavior`, `tdd.red`,
+`tdd.green`) per `tdd-contract.md` invariant I1.
 
 ## Build First
 
@@ -48,7 +58,7 @@ subtasks.
 | Phase | Owns | Does not own |
 |---|---|---|
 | Build | architecture, contracts, source-of-truth decisions, file boundaries, risks, validation strategy, rollback | per-subtask execution status |
-| Plan | ordered subtasks, file targets, verification per task, acceptance mapping, owner classification | architecture decisions that should have been closed by Build |
+| Plan | ordered subtasks, file targets, TDD pre-compile, verification per task, acceptance mapping, owner classification | architecture decisions that should have been closed by Build |
 
 If Build cannot choose a safe architecture, do not hide that in Plan. Mark the
 phase blocked or route back to Analyst/product decision.
@@ -85,8 +95,8 @@ the artifact and holds the evidence.
 
 Task lists do not live in `status.json`. Use:
 
-- `implementation_plan.json` for immutable executable tasks;
-- `implementation_log.json` for task execution evidence and remaining work;
+- `implementation_plan.json` for immutable executable tasks (with TDD fields);
+- `implementation_log.json` for task execution evidence including red/green;
 - `status.json` for phase/current pointer and artifact paths.
 
 For deep, forensic, plugin, workflow, migration, or multi-session work, also
@@ -95,12 +105,14 @@ maintain `WARLOG.md` with Mermaid snapshots according to
 
 ## QA
 
-QA must match the change:
+QA must match the change and invariant I3:
 
 - Docs-only: lint/render/link checks where relevant.
-- Code: targeted tests plus static checks.
+- Code: targeted tests plus static checks; RED/GREEN evidence for required TDD
+  tasks.
 - UI: screenshot/browser proof when behavior is visual.
 - Data/security: explicit migration/auth/permission validation.
 
 Do not declare done from a green check that does not cover the acceptance
-criteria.
+criteria. Do not accept task `DONE` without red+green evidence when
+`tdd.required` is true.

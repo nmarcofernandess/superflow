@@ -1,6 +1,6 @@
 {
   "name": "superflow",
-  "description": "Portable Agent Skills workflow for routing ideas, issues, PRDs, specs, plans, execution, and QA by maturity and risk.",
+  "description": "Portable Agent Skills marketplace: Superflow production workflow (phase budget, faceted Analyst/Build, TDD, package validator Ready gates).",
   "owner": {
     "name": "Marco Antonio",
     "url": "https://github.com/nmarcofernandess"
@@ -9,8 +9,8 @@
     {
       "name": "superflow",
       "source": "./plugins/superflow",
-      "description": "Routes work through the smallest honest phase set: inbox, PRD, analyst, build, plan, execute, and QA.",
-      "version": "0.1.1+codex.2026080922",
+      "description": "Routes work through the smallest honest phase set with faceted Analyst/Build, Reuse Guard, package validator Ready boundary, TDD on code tasks, and a clear-writing contract.",
+      "version": "0.4.0",
       "author": {
         "name": "Marco Antonio",
         "url": "https://github.com/nmarcofernandess"
@@ -23,6 +23,9 @@
         "workflow",
         "prd",
         "phase-budget",
+        "feature-mindset",
+        "tdd",
+        "reuse-guard",
         "warlog",
         "qa"
       ]

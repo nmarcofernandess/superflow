@@ -1,106 +1,178 @@
 # Superflow
 
-Superflow is a portable Agent Skills workflow for routing raw requests into the
-smallest honest phase set:
+**Version `0.4.0`**. Agent Skills marketplace plugin for routing work by maturity
+and risk.
 
 ```text
-request -> route -> inbox/PRD -> optional build -> optional plan -> execute -> QA
+request → route → inbox/PRD → optional analyst → optional build → optional plan → execute → QA
 ```
 
-The reusable core is the `SKILL.md` tree under `plugins/superflow/skills`.
-Codex and Claude Code are distribution surfaces, not separate sources of truth.
-This repository is the marketplace root, like `code-flow`: product repositories
-consume `superflow`, they do not host it.
+Install from this Git marketplace (`nmarcofernandess/superflow`). Product repos
+consume the plugin; they do not host a copy.
 
-## Repository Shape
+Codex and Claude Code are install surfaces. Source of truth:
+`plugins/superflow/{skills,assets,scripts}`.
 
-```text
-.agents/plugins/marketplace.json      # Codex marketplace catalog
-.claude-plugin/marketplace.json       # Claude Code marketplace catalog
-plugins/superflow/
-  .codex-plugin/plugin.json           # Codex plugin manifest
-  .claude-plugin/plugin.json          # Claude Code plugin manifest
-  skills/                             # Portable Agent Skills core
-  assets/                             # References, templates, and examples
-  scripts/validate_superflow.py       # Structural validator
+## What you get
+
+| Layer | Contract | Enforcement |
+|-------|----------|-------------|
+| Routing | phase budget + route table | `routing-protocol.md`, `superflow` skill |
+| Analyst / Build | faceted truth (Produto → Backend → Frontend → Copy), Recode Log, strings-safadas | `feature-mindset-contract.md` |
+| Anti-fork | Reuse Guard before `new` | `reuse-guard-protocol.md` |
+| Plan / Execute / QA | TDD iron laws I1–I3 | `tdd-contract.md` |
+| Review | findings with verdicts, accepted blockers re-verified | `review-contract.md` |
+| **Ready boundary** | package must pass the shipped validator | `scripts/validate_superflow.py` |
+
+Declaring Analyst or Build **ready** requires:
+
+```bash
+python3 <plugin-root>/scripts/validate_superflow.py <path-to-package>
 ```
 
-Do not copy this plugin into product repositories. Do not add
-`plugins/superflow` or `.agents/plugins/marketplace.json` to consumer repos just
-to use Superflow. Install this marketplace from Git and keep this repository as
-the source.
+Exit `0` only. Hollow headings, partial packages, fake Recode rows, instance
+prose as UI copy, backtick-only backend “evidence”, and `new` without a Reuse
+Guard table **fail**. So does a package that shipped code and closed QA with an
+unanswered review finding.
 
-## Install In Codex
+DietFlow-shaped paths may appear in fixtures/examples; the contracts are
+portable.
+
+## Install (Codex) — pin `v0.4.0`
+
+Canonical ref: tag **`v0.4.0`**. Pin it — `main` is older than the newest
+release whenever a lane is in flight, so check that `main`’s `plugin.json`
+reports the version you expect before using `--ref main`.
+
+```bash
+codex plugin marketplace add nmarcofernandess/superflow --ref v0.4.0
+codex plugin add superflow@superflow
+```
+
+`main` carries `0.4.0` from this release on:
 
 ```bash
 codex plugin marketplace add nmarcofernandess/superflow --ref main
 codex plugin add superflow@superflow
 ```
 
-Refresh after updates:
+Refresh:
 
 ```bash
 codex plugin marketplace upgrade superflow
 ```
 
-Start a new thread after installing or updating so the available skills list is
-rebuilt.
+Start a new thread after install or update so skills reload.
 
-## Install In Claude Code
+## Install (Claude Code) — pin `v0.4.0`
 
-Inside Claude Code:
+Pin the tag. Unpinned marketplace add usually resolves `main` and will not
+install `0.4.0` until that branch is updated.
 
 ```text
-/plugin marketplace add nmarcofernandess/superflow
+/plugin marketplace add nmarcofernandess/superflow@v0.4.0
 /plugin install superflow@superflow
 /reload-plugins
 ```
 
-Or from the shell when supported by your Claude Code version:
+Shell:
 
 ```bash
-claude plugin marketplace add nmarcofernandess/superflow
+claude plugin marketplace add nmarcofernandess/superflow --ref v0.4.0
 claude plugin install superflow@superflow
 ```
 
-Refresh after updates:
+Unpinned `main` is fine while
+`plugins/superflow/.claude-plugin/plugin.json` on `main` reports
+`"version": "0.4.0"`.
+
+## Repository shape
 
 ```text
-/plugin marketplace update superflow
-/plugin update superflow@superflow
-/reload-plugins
+.agents/plugins/marketplace.json      # Codex marketplace catalog (v0.4.0)
+.claude-plugin/marketplace.json       # Claude Code marketplace catalog (v0.4.0)
+plugins/superflow/
+  .codex-plugin/plugin.json           # version 0.4.0
+  .claude-plugin/plugin.json          # version 0.4.0
+  skills/                             # portable Agent Skills
+  assets/references/                  # contracts (mindset, TDD, reuse, warlog)
+  assets/fixtures/mindset/            # golden + negative package fixtures
+  assets/fixtures/warlog/             # campaign WARLOG fixture
+  assets/fixtures/review/             # reviewed package fixture
+  scripts/validate_superflow.py       # package + plugin validator
+  scripts/test_feature_mindset.py
+  scripts/test_warlog_contract.py
+  scripts/test_tdd_contract.py
+  scripts/test_review_contract.py
 ```
 
-## Design Rule
+**Do not** copy `plugins/superflow` into consumer apps. Install the marketplace
+from Git.
 
-Agent Skills are the portable format. Plugin manifests and marketplaces are thin
-runtime adapters. If workflow behavior changes, edit
-`plugins/superflow/skills`, `plugins/superflow/assets`, or
-`plugins/superflow/scripts` first and then bump the plugin manifests when
-publishing a release.
+## Skills (exported)
 
-Analyst and Build are heavyweight phases. Analyst must combine native grill,
-code recon, implementation mapping, entities/state, source-backed evidence, and
-blueprint handoff when the request touches existing code. Build must turn that
-terrain into Product -> Backend -> Frontend contracts before execution.
+| Skill | Role |
+|-------|------|
+| `superflow` | Route + orchestrate |
+| `capture` | Inbox / issue-shaped PRD |
+| `taskgen` | Local `specs/NNN-*` package |
+| `analyst` | Faceted analysis (`analysis.md`) |
+| `build` | Technical SPEC / blueprint |
+| `plan` | `implementation_plan.json` + TDD I1 |
+| `execute` | Implementation + TDD I2 |
+| `review` | Spec/code review — findings, verdicts, re-verification |
+| `qa` | Acceptance + red+green I3 |
+| `warlog` | Campaign board (sprints, budget, green contract) |
+| `audit` | No-write readiness/gaps |
+| `backlog-status` | Issue vs merged PR truth |
+| `html-didatico` | Visual HTML docs |
 
-PRDs always carry both `Story de Usuario` and `Story Tecnica`, plus current vs
-desired behavior, system contract, acceptance criteria, and definition of
-complete. Build is the technical blueprint phase (`technical_blueprint.md`).
-Plan is the executable task phase (`implementation_plan.json`). `status.json`
-is only the GPS for current phase, decision, and artifact pointers; task
-progress belongs in `implementation_log.json`.
+## Validate (maintainers / CI)
 
-## Validate
+From this repo root:
 
 ```bash
-scripts/validate-all.sh
+./scripts/validate-all.sh
 ```
 
-At minimum, the Superflow validators must pass:
+Must print OK for plugin root, routes, TDD, feature-mindset, warlog, review,
+writing, and forward tests.
+
+Package-level Ready (consumer work folder):
 
 ```bash
-python3 plugins/superflow/scripts/validate_superflow.py plugins/superflow
-python3 plugins/superflow/scripts/test_superflow_routes.py
-python3 plugins/superflow/scripts/forward_test_superflow.py
+python3 plugins/superflow/scripts/validate_superflow.py path/to/specs/NNN-slug
 ```
+
+Golden fixtures (must PASS):
+
+```bash
+python3 plugins/superflow/scripts/validate_superflow.py plugins/superflow/assets/fixtures/mindset/deep
+python3 plugins/superflow/scripts/validate_superflow.py plugins/superflow/assets/fixtures/mindset/docs-only
+python3 plugins/superflow/scripts/validate_superflow.py plugins/superflow/assets/fixtures/mindset/string-trap
+```
+
+Negative cases (must FAIL): `plugins/superflow/scripts/test_feature_mindset.py`
+and the command log in `artifacts/proofs/superflow-fatality/tribunal.md`.
+
+## Core contracts (read these)
+
+- `plugins/superflow/assets/references/feature-mindset-contract.md`
+- `plugins/superflow/assets/references/reuse-guard-protocol.md`
+- `plugins/superflow/assets/references/tdd-contract.md`
+- `plugins/superflow/assets/references/review-contract.md`
+- `plugins/superflow/assets/references/routing-protocol.md`
+- `plugins/superflow/assets/references/execution-contract.md`
+
+## Design rules
+
+1. Agent Skills are portable; manifests are thin adapters.
+2. Ready ≠ filled headings — Ready = validator green on the real package.
+3. Analyst/Build hand off **behavior names**; Plan/Execute own test commands.
+4. Prefer reuse/mode over `new`; document Reuse Guard when `new` is justified.
+5. Mermaid only for diagrams.
+
+## Version
+
+All marketplace and plugin manifests ship **`0.4.0`** together. See
+`CHANGELOG.md`.

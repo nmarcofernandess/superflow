@@ -1,0 +1,41 @@
+{
+  "schema_version": "superflow.status.v1",
+  "id": "fixture-mindset-docs",
+  "title": "Mindset docs-only fixture",
+  "route": "prd_execute",
+  "phase_budget": "lean",
+  "workflow_type": "docs_only",
+  "execution_strategy": "single",
+  "source": {"type": "fixture", "github_issue": null, "file": null},
+  "confidence": "high",
+  "current_phase": "taskgen",
+  "decision": {
+    "verdict": "prd_ready",
+    "prd_status": "ready",
+    "reason": "docs-only fixture",
+    "prd_path": "PRD.md",
+    "discard_path": null
+  },
+  "phases": {
+    "inbox": "skipped",
+    "analyst": "complete",
+    "taskgen": "complete",
+    "build": "skipped",
+    "critic": "skipped",
+    "plan": "skipped",
+    "execute": "pending",
+    "qa": "pending"
+  },
+  "artifacts": {
+    "prd": "PRD.md",
+    "analysis": "analysis.md",
+    "blueprint": "SPEC.md",
+    "progress": "progress.md",
+    "warlog": null,
+    "plan": null,
+    "implementation_log": null,
+    "qa": null
+  },
+  "task_source": {"type": "none", "path": null, "progress": null},
+  "updated_at": "2026-07-29T00:00:00Z"
+}

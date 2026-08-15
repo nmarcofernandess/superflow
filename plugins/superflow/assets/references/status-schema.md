@@ -31,7 +31,7 @@ nao vira documento narrativo.
     "analyst": "skipped",
     "taskgen": "complete",
     "build": "skipped",
-    "critic": "skipped",
+    "review": "pending",
     "plan": "skipped",
     "execute": "pending",
     "qa": "pending"
@@ -44,6 +44,7 @@ nao vira documento narrativo.
     "warlog": null,
     "plan": null,
     "implementation_log": null,
+    "review": null,
     "qa": null
   },
   "task_source": {
@@ -54,6 +55,12 @@ nao vira documento narrativo.
   "updated_at": "YYYY-MM-DDTHH:mm:ssZ"
 }
 ```
+
+When `artifacts.plan` is set it must be `implementation_plan.json` and code
+subtasks follow `tdd-contract.md`. When `artifacts.implementation_log` is set
+it must be `implementation_log.json` with red/green evidence for completed
+`tdd.required` tasks.
+
 
 ## Valores
 

@@ -1,15 +1,15 @@
 {
   "name": "superflow",
-  "version": "0.1.1+codex.2026080922",
-  "description": "Phase-budget workflow for routing ideas, GitHub issues, PRDs, analyst notes, specs, plans, WARLOGs, execution, and QA without forcing a rigid chain.",
+  "version": "0.4.0",
+  "description": "Production phase-budget workflow with faceted Analyst/Build mindset, Reuse Guard, package validator Ready gates, TDD contract on code tasks, and a clear-writing contract.",
   "author": {
     "name": "Marco Antonio"
   },
   "skills": "./skills/",
   "interface": {
     "displayName": "Superflow",
-    "shortDescription": "Route ideas into issue, PRD, plan, or execution.",
-    "longDescription": "Superflow is a local workflow plugin that routes raw ideas, GitHub issues, mature PRDs, analyst notes, technical specs, implementation plans, WARLOGs, execution requests, and QA through the smallest honest set of phases. It preserves GitHub as an inbox, promotes mature work into local PRD packages, exposes the major phases as separate skills, uses Mermaid-only visual contracts, and treats analyst/build/plan as tools instead of mandatory ritual.",
+    "shortDescription": "Route ideas into issue, PRD, plan, or execution with honest Ready gates.",
+    "longDescription": "Superflow is a portable Agent Skills plugin that routes raw ideas, GitHub issues, mature PRDs, analyst notes, technical specs, implementation plans, WARLOGs, execution, and QA through the smallest honest phase set. Analyst and Build use a faceted truth contract (Produto/Backend/Frontend/Copy, Recode Log, strings-safadas) with a package validator as the Ready boundary. Plan/Execute/QA enforce TDD I1–I3 on code tasks. Install from the marketplace Git root; do not copy the plugin into product repos.",
     "developerName": "Marco Antonio",
     "category": "Productivity",
     "capabilities": [
@@ -18,8 +18,12 @@
       "prd-generation",
       "user-and-technical-stories",
       "analyst-workflow",
+      "feature-mindset",
+      "reuse-guard",
+      "package-validator-ready-gate",
       "technical-blueprint",
       "implementation-plan-json",
+      "tdd-contract",
       "status-gps",
       "warlog-mermaid",
       "issue-promotion",
@@ -29,7 +33,8 @@
     "defaultPrompt": [
       "Use Superflow to route this request.",
       "Audit this request with Superflow gaps.",
-      "Promote this issue into a Superflow PRD package."
+      "Promote this issue into a Superflow PRD package.",
+      "Validate this Superflow package before declaring ready."
     ]
   }
 }

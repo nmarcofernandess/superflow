@@ -1,8 +1,8 @@
 {
   "name": "superflow",
   "displayName": "Superflow",
-  "version": "0.1.1+codex.2026080922",
-  "description": "Routes work through the smallest honest phase set: inbox, PRD, analyst, build, plan, execute, and QA.",
+  "version": "0.4.0",
+  "description": "Production Agent Skills workflow: phase-budget routing, faceted Analyst/Build (mindset, strings-safadas, Reuse Guard), package validator as Ready boundary, TDD I1–I3 on code tasks, and a clear-writing contract for human-facing prose.",
   "author": {
     "name": "Marco Antonio",
     "url": "https://github.com/nmarcofernandess"
@@ -14,6 +14,9 @@
     "workflow",
     "prd",
     "phase-budget",
+    "feature-mindset",
+    "tdd",
+    "reuse-guard",
     "implementation-plan-json",
     "warlog",
     "qa"

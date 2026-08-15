@@ -46,14 +46,18 @@ superflow/
 - `superflow:capture` captures ideas into GitHub-ready PRD issues.
 - `superflow:taskgen` creates or promotes local PRD packages.
 - `superflow:analyst` handles product/domain/system ambiguity with native grill,
-  code recon, evidence matrix, implementation map, entities/state, and blueprint
-  handoff.
-- `superflow:build` writes the technical blueprint/spec from analyst/PRD terrain
-  using code recon and Product -> Backend -> Frontend contracts.
-- `superflow:plan` writes executable `implementation_plan.json` task catalogs.
+  faceted recon (Produto/Backend/Frontend/Copy), **Reuse Guard** (anti-fork
+  via `.context` or grep — crystallize-guard slice), Síntese, Recode Log,
+  strings-safadas, and blueprint handoff — see
+  `assets/references/feature-mindset-contract.md` +
+  `assets/references/reuse-guard-protocol.md`.
+- `superflow:build` writes the technical blueprint/spec as a **synthesis** of
+  those facets (not a freeze-waterfall of headings).
+- `superflow:plan` writes executable `implementation_plan.json` task catalogs
+  with TDD RED/GREEN pre-compile (`tdd-contract.md` I1).
 - `superflow:warlog` maintains Mermaid-first WARLOGs.
-- `superflow:execute` implements from durable artifacts.
-- `superflow:qa` closes acceptance/proof.
+- `superflow:execute` implements from durable artifacts under iron-law TDD (I2).
+- `superflow:qa` closes acceptance matrix + RED/GREEN evidence (I3).
 - `superflow:audit` performs read-only route/readiness/gap checks.
 - `superflow:writing-clearly-and-concisely` keeps human-facing prose direct,
   specific, concise, and natural.
@@ -63,6 +67,8 @@ superflow/
 ```bash
 python3 scripts/validate_superflow.py .
 python3 scripts/test_superflow_routes.py
+python3 scripts/test_tdd_contract.py
+python3 scripts/test_feature_mindset.py
 python3 scripts/forward_test_superflow.py
 ```
 
@@ -77,8 +83,9 @@ verdicts.
 The validator also fails generated packages whose PRD lacks `Story de Usuario`,
 `Story Tecnica`, current/desired behavior, system contract, or definition of
 complete. `status.json` is the phase GPS; detailed tasks live in
-`implementation_plan.json`, and execution evidence lives in
-`implementation_log.json`.
+`implementation_plan.json` (with `tdd.red` / `tdd.green` on code tasks), and
+execution evidence lives in `implementation_log.json` (red+green excerpts).
+Canonical TDD rules: `assets/references/tdd-contract.md`.
 
 ## Marketplace Distribution
 

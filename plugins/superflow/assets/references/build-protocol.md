@@ -10,18 +10,19 @@ product promise will be implemented or intentionally deferred.
 
 Build is not the final implementation plan. It closes architecture, contracts,
 boundaries, risk, validation strategy, and sequence. Plan later converts that
-blueprint into executable subtasks in `implementation_plan.json`.
+blueprint into executable subtasks in `implementation_plan.json` under
+`tdd-contract.md` (D1–D2: do not invent fake test commands here).
+
+Build must obey `feature-mindset-contract.md`: **facetas + síntese + recode**,
+not waterfall freeze.
 
 ## Autocontained Dependencies
 
+- Use `feature-mindset-contract.md` for facets, strings-safadas, ready gates.
 - Use `code-recon-protocol.md` for real terrain.
 - Use `technical-blueprint-protocol.md` for file-level plan and contracts.
 - Use `analyst-protocol.md` when the PRD or analysis is too thin.
 - Use a grill pass before calling the blueprint ready.
-
-Do not depend on external Build, Analyst, feature-development, or custom agent
-plugins. Subagents may accelerate recon, but this plugin's artifacts own the
-final evidence and decisions.
 
 ## Required Phases
 
@@ -35,8 +36,7 @@ Require one of:
 - clear user request explicitly asking for blueprint/spec.
 
 When multiple analyses exist, read all of them. The blueprint/spec is the
-single canonical synthesis and lists the sources it consumed; the status does
-not reconcile individual analyses.
+single canonical synthesis and lists the sources it consumed.
 
 If the input lacks product promise, entities, scope, or source truth, route back
 to Analyst.
@@ -44,63 +44,63 @@ to Analyst.
 ### 2. Recon Terrain
 
 Run recon before architecture when the target is an existing system.
+Use facet lenses (Backend payload, Frontend reuse scan, Copy inventory).
 
-For DietFlow:
+### 3. Facets — attention order, not freeze
 
-- read `AGENTS.md`;
-- use `.context/domains/manifest.yaml` to find the module;
-- read relevant pattern YAMLs and READMEs;
-- inspect schema/actions/hooks/services/components/tests for the module.
+SPEC must close **all** of these as facets of one synthesis (not three frozen
+stages):
 
-### 3. Product -> Backend -> Frontend
+1. **Product** — promise, journey, surface, non-goals.
+2. **Backend** — data model, actions/API, **payload shape**, permissions, cache,
+   migrations if any — with path:line or UNPROVEN.
+3. **Frontend** — shell/composition **discovered** in-repo; reuse|mode|new.
+4. **Copy** — strings-safadas table (invariant | structure | death).
 
-SPEC must close in this order:
+Order of writing may follow Product → Backend → Frontend → Copy for attention.
+If Backend/Frontend/Copy evidence breaks Product, **recode** Product (and log it).
 
-1. Product: promise, journey, user consequence, non-goals.
-2. Backend: data model, actions/API, permissions, state, cache/revalidation,
-   migrations if any.
-3. Frontend: shell, components, loading/error/empty states, layout,
-   interactions, validation.
+### 4. Synthesis + cross-facet
 
-### 4. Architecture Diagrams
+- Write **Synthesis** first (or immediately after inputs): one coherent
+  paragraph (F4, H2).
+- Fill **Cross-facet dependencies** (F7).
+- Carry **Recode Log** from analysis and add Build recodes.
 
-Use Mermaid:
+### 5. Architecture Diagrams
 
-- `flowchart TD` for implementation flow;
-- `sequenceDiagram` for call chains;
-- `erDiagram` for data;
-- `stateDiagram-v2` for lifecycle;
-- controlled `flowchart` for component/module map.
+Use Mermaid when it clarifies. Mermaid only.
 
-Mermaid only.
+### 6. Blueprint body
 
-### 5. Blueprint
+Files/areas, sequence, validation strategy, risks, rollback, testable behavior
+names for Plan (no fake commands).
 
-Produce:
-
-- files/areas;
-- contracts;
-- sequence;
-- validation;
-- risks;
-- rollback/containment.
-
-### 6. Handoff
+### 7. Handoff
 
 If ready:
 
-- write `SPEC.md` (default) or the repo-native equivalent —
-  `technical_blueprint.md` remains valid in existing specs (lazy migration);
+- write `SPEC.md` (default; `technical_blueprint.md` legacy ok);
 - update `status.json` with `phases.build = "complete"` and
   `artifacts.blueprint = "SPEC.md"`;
-- route to `plan` when executable tasks are needed;
-- route to `warlog` when this is deep, forensic, plugin, architecture, or
-  multi-session work.
+- route to `plan` when executable tasks are needed.
 
-Build is not ready if:
+## Ready Gate (binary)
 
-- technical claims lack proof;
-- a reusable pattern is ignored;
+Build is **not** ready if:
+
+- technical claims lack proof (`path:line` or UNPROVEN missing where required);
+- Synthesis is missing or is a paste of three disconnected sections;
+- a reusable pattern was not searched before `new`;
+- Copy approves instance prose / mock literal without cartesian test;
+- Cross-facet table missing on multi-facet work;
 - validation is vague;
-- PR scope is too large;
-- human product decision is still unresolved.
+- PR scope too large without split;
+- human product decision still unresolved;
+- ready would be “headings filled” only (B1–B2);
+- blueprint invents TDD commands (D1–D2).
+
+## Proportionality
+
+Docs-only: light Product + Copy; Backend/Frontend may skip with reason.
+Deep existing-code: full facets + real recode log when synthesis shifted.

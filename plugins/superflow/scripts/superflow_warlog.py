@@ -33,16 +33,39 @@ def read_title(package: Path, status: dict) -> str:
     return package.name
 
 
+def sprint_budget_from_phase(phase_budget: str) -> str:
+    """Map package phase_budget → sprint budget (direct|plan|spec)."""
+    b = (phase_budget or "").lower().strip()
+    if b in {"capture", "lean"}:
+        return "direct"
+    if b in {"standard"}:
+        return "plan"
+    if b in {"deep", "forensic"}:
+        return "spec"
+    return "plan"
+
+
 def render_template(package: Path, status: dict, now: str) -> str:
+    title = read_title(package, status)
+    phase_budget = str(status.get("phase_budget", "unknown"))
+    route = str(status.get("route", "unknown"))
+    next_phase = next_pending_phase(status)
     classification = {
-        "title": read_title(package, status),
+        "title": title,
+        "mission": f"Deliver {title} as a durable Superflow campaign with mergeable sprints.",
+        "scope_in": "This package’s product promise and its mergeable slices.",
+        "scope_out": "Unrelated epics; microtask tracking (use Plan/log).",
         "created_at": now,
-        "route": status.get("route", "unknown"),
-        "phase_budget": status.get("phase_budget", "unknown"),
+        "route": route,
+        "phase_budget": phase_budget,
         "confidence": status.get("confidence", "unknown"),
-        "source": status.get("source", {}).get("type", "unknown") if isinstance(status.get("source"), dict) else "unknown",
-        "next_phase": next_pending_phase(status),
-        "risks": "Review PRD, blueprint, and open blocks before execution.",
+        "source": status.get("source", {}).get("type", "unknown")
+        if isinstance(status.get("source"), dict)
+        else "unknown",
+        "next_phase": next_phase,
+        "first_sprint_title": f"First mergeable slice toward {title}",
+        "sprint_budget": sprint_budget_from_phase(phase_budget),
+        "risks": "Replace this shell with real sprint cards before claiming campaign ready.",
     }
     return TEMPLATE.read_text(encoding="utf-8").format(**classification)
 
