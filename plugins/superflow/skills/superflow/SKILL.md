@@ -106,6 +106,15 @@ Superflow exposes the router and each major phase:
 - `backlog-status`: verify whether existing GitHub issues are actually
   resolved against merged PRs and real code.
 
+Standalone tools — call them with `/name`. They are not phases, they do not
+write `status.json`, and no Superflow route requires them:
+
+- `grill-me`: interview one question at a time until the design tree is
+  resolved.
+- `grill-with-docs`: the same grill, against `CONTEXT.md` / ADRs.
+- `gauntlet-loop`: write a short prompt that loops a builder against a real
+  bar until a blind critic picks ours.
+
 ## Commands
 
 Create a local PRD package:

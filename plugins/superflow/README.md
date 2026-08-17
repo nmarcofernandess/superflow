@@ -31,9 +31,15 @@ superflow/
 │   ├── execute/SKILL.md
 │   ├── qa/SKILL.md
 │   ├── audit/SKILL.md
-│   └── writing-clearly-and-concisely/
-│       ├── SKILL.md
-│       └── elements-of-style.md
+│   ├── writing-clearly-and-concisely/
+│   │   ├── SKILL.md
+│   │   └── elements-of-style.md
+│   ├── grill-me/SKILL.md
+│   ├── grill-with-docs/
+│   │   ├── SKILL.md
+│   │   ├── CONTEXT-FORMAT.md
+│   │   └── ADR-FORMAT.md
+│   └── gauntlet-loop/SKILL.md
 ├── assets/references/
 ├── assets/templates/
 ├── assets/examples/
@@ -61,6 +67,11 @@ superflow/
 - `superflow:audit` performs read-only route/readiness/gap checks.
 - `superflow:writing-clearly-and-concisely` keeps human-facing prose direct,
   specific, concise, and natural.
+- `superflow:grill-me` interviews one question at a time. Standalone — not a
+  phase.
+- `superflow:grill-with-docs` grills against `CONTEXT.md` / ADRs. Standalone.
+- `superflow:gauntlet-loop` writes a paste-ready quality-bar loop prompt.
+  Standalone.
 
 ## Validate
 

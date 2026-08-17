@@ -1,5 +1,23 @@
 # Changelog
 
+## Unreleased
+
+### Standalone slash skills
+
+Three tools you can invoke with `/` without entering a Superflow route. They
+are not phases. They do not write `status.json`. The router does not require
+them.
+
+- `grill-me` — one-question-at-a-time interview until the design tree is
+  resolved.
+- `grill-with-docs` — the same grill, against `CONTEXT.md` / ADRs, updating
+  docs as terms crystallise.
+- `gauntlet-loop` — writes a short paste-ready prompt that loops a builder
+  against a real quality bar until a blind critic picks ours.
+
+Call `/grill-me`, `/grill-with-docs`, or `/gauntlet-loop`. Plugin-qualified
+forms (`/superflow:grill-me`) work when the bare name is already taken.
+
 ## 0.5.0 — 2026-08-15
 
 ### The campaign motor

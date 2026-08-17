@@ -44,6 +44,11 @@ REQUIRED_PLUGIN_FILES = [
     "skills/audit/SKILL.md",
     "skills/writing-clearly-and-concisely/SKILL.md",
     "skills/writing-clearly-and-concisely/elements-of-style.md",
+    "skills/grill-me/SKILL.md",
+    "skills/grill-with-docs/SKILL.md",
+    "skills/grill-with-docs/CONTEXT-FORMAT.md",
+    "skills/grill-with-docs/ADR-FORMAT.md",
+    "skills/gauntlet-loop/SKILL.md",
     "assets/references/analyst-protocol.md",
     "assets/references/code-recon-protocol.md",
     "assets/references/technical-blueprint-protocol.md",
@@ -137,6 +142,13 @@ EXPECTED_PLUGIN_SKILLS = [
     "qa",
     "audit",
     "writing-clearly-and-concisely",
+]
+
+# Callable with /name. Not Superflow phases. No Mermaid/status contract.
+STANDALONE_PLUGIN_SKILLS = [
+    "grill-me",
+    "grill-with-docs",
+    "gauntlet-loop",
 ]
 
 FORBIDDEN_DIAGRAM_TOKENS = [
@@ -385,6 +397,15 @@ def validate_plugin_root(root: Path) -> None:
             fail(f"skills/{skill_name}/SKILL.md frontmatter must include name: {skill_name}")
         if skill_name not in {"audit", "writing-clearly-and-concisely"} and "mermaid" not in skill_text.lower():
             fail(f"skills/{skill_name}/SKILL.md must mention Mermaid contract")
+    for skill_name in STANDALONE_PLUGIN_SKILLS:
+        skill_path = root / "skills" / skill_name / "SKILL.md"
+        skill_text = read(skill_path)
+        if not skill_text.startswith("---\n"):
+            fail(f"skills/{skill_name}/SKILL.md missing YAML frontmatter")
+        if f"name: {skill_name}" not in skill_text:
+            fail(f"skills/{skill_name}/SKILL.md frontmatter must include name: {skill_name}")
+        if "description:" not in skill_text:
+            fail(f"skills/{skill_name}/SKILL.md frontmatter missing description")
 
     analyst_text = read(root / "skills" / "analyst" / "SKILL.md")
     if len(analyst_text.splitlines()) < 80:
