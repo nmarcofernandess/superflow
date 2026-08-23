@@ -31,6 +31,7 @@ superflow/
 │   ├── execute/SKILL.md
 │   ├── qa/SKILL.md
 │   ├── audit/SKILL.md
+│   ├── explain-clearly/SKILL.md
 │   ├── writing-clearly-and-concisely/
 │   │   ├── SKILL.md
 │   │   └── elements-of-style.md
@@ -65,6 +66,9 @@ superflow/
 - `superflow:execute` implements from durable artifacts under iron-law TDD (I2).
 - `superflow:qa` closes acceptance matrix + RED/GREEN evidence (I3).
 - `superflow:audit` performs read-only route/readiness/gap checks.
+- `superflow:explain-clearly` reconstructs source meaning, object models, and
+  causal chains before rewriting PRDs, specs, reports, or HTML. Standalone —
+  not a phase.
 - `superflow:writing-clearly-and-concisely` keeps human-facing prose direct,
   specific, concise, and natural.
 - `superflow:grill-me` interviews one question at a time. Standalone — not a
@@ -95,11 +99,12 @@ The validator also fails generated packages whose PRD lacks the first-section
 `TL;DR`, `Story de Usuario`, `Story Tecnica`, current/desired behavior, system
 contract, or definition of complete. A `gathering` scaffold may keep the
 explicit TL;DR placeholder; a `ready` PRD must explain the problem as a
-standalone causal chain, not merely replace jargon with vague words. The
-contract requires a causal map, concrete example where needed,
-reasonable-objection pass, and closed-book paraphrase test. ASCII and Mermaid
-are both allowed when they remove inference work. The script validates
-structure and placeholders; semantic readiness remains a skill/human decision.
+standalone causal chain, not merely replace jargon with vague words.
+`explain-clearly` reconstructs the semantic model, uses a concrete example when
+needed, and runs reasonable-objection and closed-book paraphrase gates. ASCII
+and Mermaid are both allowed when they remove inference work. The script
+validates structure and placeholders; semantic readiness remains a skill/human
+decision.
 `status.json` is the phase GPS; detailed tasks live in
 `implementation_plan.json` (with `tdd.red` / `tdd.green` on code tasks), and
 execution evidence lives in `implementation_log.json` (red+green excerpts).

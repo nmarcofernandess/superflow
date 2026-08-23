@@ -42,6 +42,7 @@ REQUIRED_PLUGIN_FILES = [
     "skills/campaign/SKILL.md",
     "skills/qa/SKILL.md",
     "skills/audit/SKILL.md",
+    "skills/explain-clearly/SKILL.md",
     "skills/writing-clearly-and-concisely/SKILL.md",
     "skills/writing-clearly-and-concisely/elements-of-style.md",
     "skills/grill-me/SKILL.md",
@@ -146,6 +147,7 @@ EXPECTED_PLUGIN_SKILLS = [
 
 # Callable with /name. Not Superflow phases. No Mermaid/status contract.
 STANDALONE_PLUGIN_SKILLS = [
+    "explain-clearly",
     "grill-me",
     "grill-with-docs",
     "gauntlet-loop",
@@ -434,16 +436,24 @@ def validate_plugin_root(root: Path) -> None:
             fail(f"assets/templates/ISSUE_PRD.md missing heading: {heading}")
     validate_prd_tldr(prd_template, label="assets/templates/PRD.md", require_filled=False)
     validate_prd_tldr(issue_template, label="assets/templates/ISSUE_PRD.md", require_filled=False)
-    prd_contract = read(root / "assets" / "references" / "prd-contract.md")
+    explain_skill = read(root / "skills" / "explain-clearly" / "SKILL.md")
     for marker in (
-        "Pass 1 — build the causal map",
-        "Inference-debt test",
-        "Reasonable-objection and paraphrase gates",
-        "closed-book paraphrase test",
-        "ASCII sketch or Mermaid diagram",
+        "Semantic reconstruction",
+        "The source artifact is evidence",
+        "`CONFIRMED`",
+        "`IN_FLIGHT`",
+        "Reasonable-objection gate",
+        "Closed-book paraphrase gate",
+        "Rewrite from the semantic model",
+        "ASCII",
+        "Mermaid",
     ):
+        if marker not in explain_skill:
+            fail(f"skills/explain-clearly/SKILL.md missing semantic marker: {marker}")
+    prd_contract = read(root / "assets" / "references" / "prd-contract.md")
+    for marker in ("REQUIRED SUB-SKILL", "explain-clearly", "written"):
         if marker not in prd_contract:
-            fail(f"assets/references/prd-contract.md missing causal TL;DR marker: {marker}")
+            fail(f"assets/references/prd-contract.md missing TL;DR integration marker: {marker}")
     for label, template in (
         ("assets/templates/PRD.md", prd_template),
         ("assets/templates/ISSUE_PRD.md", issue_template),
@@ -1491,6 +1501,9 @@ def validate_package(path: Path) -> None:
         label=f"{path}/PRD.md",
         require_filled=str(decision.get("prd_status") or "").lower() in {"ready", "complete"},
     )
+    for heading in PRD_REQUIRED_HEADINGS:
+        if heading not in prd_text:
+            fail(f"{path}/PRD.md missing heading: {heading}")
 
     plan_data: dict | None = None
     plan_path = path / "implementation_plan.json"

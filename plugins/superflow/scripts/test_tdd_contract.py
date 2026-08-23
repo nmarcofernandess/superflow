@@ -269,6 +269,27 @@ def main() -> int:
                 f"{placeholder_run.stdout}"
             )
 
+        # A ready PRD still needs every canonical section; TL;DR does not
+        # replace the detailed implementation contract below it.
+        missing_story = write_min_package(root / "missing-story")
+        missing_story_prd = missing_story / "PRD.md"
+        missing_story_prd.write_text(
+            missing_story_prd.read_text(encoding="utf-8").replace(
+                "## Story de Usuario\nx\n",
+                "",
+            ),
+            encoding="utf-8",
+        )
+        missing_story_run = run_validate(missing_story)
+        if (
+            missing_story_run.returncode == 0
+            or "missing heading: ## Story de Usuario" not in missing_story_run.stdout
+        ):
+            raise AssertionError(
+                "ready PRD missing a canonical section must fail validation:\n"
+                f"{missing_story_run.stdout}"
+            )
+
         # Bad plan missing RED
         bad = write_min_package(root / "bad-plan")
         (bad / "implementation_plan.json").write_text(

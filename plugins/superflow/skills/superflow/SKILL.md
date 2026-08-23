@@ -24,9 +24,10 @@ can produce a durable artifact or a verified implementation.
    under the explicit exception in `../../assets/references/prd-contract.md`.
 6. If writing a PRD or issue body, follow `../../assets/references/prd-contract.md` and
    `../../assets/references/github-issue-contract.md`. Write the complete body
-   first, reread it, build the contract's causal map, and write the `TL;DR`
-   last. It belongs immediately after the title and must make sense to a reader
-   unfamiliar with the product without requiring them to invent missing links.
+   first, reread it, then use the `explain-clearly` skill in TL;DR mode. Write
+   the `TL;DR` last, immediately after the title. It must reconstruct the
+   subject for a reader unfamiliar with the product, not merely simplify the
+   draft's existing words.
 7. If maintaining a WARLOG, follow `../../assets/references/warlog-contract.md`
    (campaign board: sprints, budget, green contract — not a microtask diary).
 8. If executing, follow `../../assets/references/execution-contract.md` and
@@ -45,8 +46,10 @@ can produce a durable artifact or a verified implementation.
     **ready**. Exit 0 is required. Hollow headings, partial packages (missing
     `status.json`), fake Recode, and strings-safadas fail the gate. Analyst and
     Build skills restate this Ready Gate; do not skip it.
-12. For human-facing prose, **REQUIRED SUB-SKILL:** Use
-    `writing-clearly-and-concisely` before finalizing the artifact.
+12. When human-facing prose needs semantic reconstruction, **REQUIRED
+    SUB-SKILL:** use `explain-clearly` first. Then use
+    `writing-clearly-and-concisely` for sentence-level editing before finalizing
+    the artifact.
 13. If the deliverable is a visual mural/one-pager for a non-technical reader
     (status wall, feature explainer, or a proof-final wireframe), use the
     `html-didatico` skill; use Direction C when a verification wireframe is
@@ -106,6 +109,8 @@ Superflow exposes the router and each major phase:
 - `audit`: no-write route/readiness/gap analysis.
 - `html-didatico`: self-contained visual HTML docs with CSS dioramas —
   manuals, murals, and verification wireframes.
+- `explain-clearly`: reconstruct source meaning and causal chains before
+  rewriting PRDs, specs, reports, HTML sections, or technical explanations.
 - `writing-clearly-and-concisely`: clear, direct human-facing prose for every
   phase and presentation artifact.
 - `backlog-status`: verify whether existing GitHub issues are actually
@@ -114,6 +119,8 @@ Superflow exposes the router and each major phase:
 Standalone tools — call them with `/name`. They are not phases, they do not
 write `status.json`, and no Superflow route requires them:
 
+- `explain-clearly`: turn source evidence into an understandable object model
+  and causal explanation before copyediting or visual presentation.
 - `grill-me`: interview one question at a time until the design tree is
   resolved.
 - `grill-with-docs`: the same grill, against `CONTEXT.md` / ADRs.
@@ -217,11 +224,11 @@ Full tree gate from this marketplace repo: `./scripts/validate-all.sh`.
   low-confidence PRD, not a different artifact species.
 - A PRD's `TL;DR` is a late editorial pass, not a promise made before the
   investigation. It must summarize the body without adding decisions or scope.
-- Plain words are necessary but insufficient. The TL;DR must preserve the
-  causal chain: familiar situation, current mechanism, reason for the mismatch,
-  observable consequence, proposed behavior, and boundary. It must unpack
-  vague nouns and close predictable “why?” or “isn't that desired?” objections.
-- Use the closed-book paraphrase test in `prd-contract.md`. If an outsider
+- Plain words are necessary but insufficient. Use `explain-clearly` to
+  reconstruct the object model and preserve the causal chain: familiar
+  situation, current mechanism, reason for the mismatch, observable
+  consequence, proposed behavior, and boundary.
+- Use the closed-book paraphrase test in `explain-clearly`. If an outsider
   cannot retell the problem, example, consequence, change, and non-goal after
   one reading, the PRD is not ready.
 - Add an ASCII sketch or Mermaid diagram only when it materially reduces
@@ -247,8 +254,10 @@ Full tree gate from this marketplace repo: `./scripts/validate-all.sh`.
   compute `gap_count` from `len(gaps)`.
 - Mutate GitHub only when the user explicitly asks for issue creation/update or
   when the active workflow already requires it.
-- Apply `writing-clearly-and-concisely` to human-facing prose. Preserve a warm,
-  natural voice; clarity does not require corporate or bureaucratic language.
+- Apply `explain-clearly` before rewriting a subject whose meaning is incomplete
+  or opaque. Apply `writing-clearly-and-concisely` afterward to human-facing
+  prose. Preserve a warm, natural voice; clarity does not require corporate or
+  bureaucratic language.
 
 ## Reference Loading
 

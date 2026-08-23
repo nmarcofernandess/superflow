@@ -61,24 +61,15 @@ Alphabetical reference for usage questions
 
 Writing for humans? Read `elements-of-style.md` and apply the rules. Low on tokens? Dispatch a subagent to copyedit with the guide.
 
-## Causal Summaries
+## Boundary: Meaning Before Copyediting
 
-Concise does not mean incomplete. When shortening a PRD, report, or technical
-explanation, remove repetition and needless words without removing the causal
-links the reader needs.
+This skill improves expression after the meaning is understood. It must not be
+used to make an unresolved model sound confident.
 
-Before finalizing a summary:
+When the request involves reconstructing what an artifact means, separating
+current truth from decisions, finding the causal chain, or making a technical
+subject understandable to an outsider, use `explain-clearly` first. Then apply
+this skill to grammar, rhythm, voice, specificity, and unnecessary words.
 
-1. Name the object or situation before naming its internals.
-2. State the current mechanism, not only the symptom.
-3. Explain why a behavior or datum that is valid in one context is invalid in
-   the context being changed.
-4. Replace vague nouns such as “context,” “leftovers,” “issues,” and
-   “inconsistency” with concrete values, locations, or user-visible paths.
-5. State what happens instead: what is preserved, discarded, recreated, or
-   prevented.
-6. Close predictable objections such as “isn't that intentional?” and “why
-   shouldn't that value travel?”
-
-A shorter sentence that forces the reader to reconstruct the model is not
-clearer. Delete words, not explanations.
+Copyediting cannot repay semantic debt. Never hide a missing explanation behind
+shorter sentences.

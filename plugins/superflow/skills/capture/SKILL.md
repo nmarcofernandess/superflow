@@ -29,6 +29,8 @@ If a diagram helps the issue explain lifecycle, dependency, or user flow, use
 ASCII contrast is allowed inside a PRD TL;DR under `prd-contract.md`.
 
 Issue-shaped PRDs follow the same TL;DR rule as local PRDs: finish and reread
-the body first, build the causal map, then write a standalone summary
-immediately after the title. Plain words do not excuse missing causes: close
-predictable objections and run the paraphrase test before calling it ready.
+the body first, then use the `explain-clearly` skill in TL;DR mode. Reconstruct
+the subject from evidence, write the standalone summary immediately after the
+title, and run its reasonable-objection and closed-book paraphrase gates before
+calling the PRD ready. Use `writing-clearly-and-concisely` only after the
+semantic model is sound.

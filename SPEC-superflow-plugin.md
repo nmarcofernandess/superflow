@@ -126,6 +126,8 @@ superflow/
 | `execute` | Implementation under iron-law TDD (I2) with log evidence |
 | `qa` | PRD acceptance matrix + red/green proof (I3) |
 | `audit` | Read-only route/readiness/gap analysis |
+| `explain-clearly` | Standalone semantic reconstruction and causal explanation before copyediting |
+| `writing-clearly-and-concisely` | Sentence-level clarity after meaning is settled |
 | `grill-me` | Standalone grill (not a phase) |
 | `grill-with-docs` | Standalone grill + CONTEXT/ADR (not a phase) |
 | `gauntlet-loop` | Standalone quality-bar loop prompt (not a phase) |

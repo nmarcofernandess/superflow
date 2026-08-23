@@ -23,19 +23,35 @@ def require(text: str, markers: list[str], context: str) -> None:
 
 
 def main() -> int:
+    explain = read("skills/explain-clearly/SKILL.md")
     writing = read("skills/writing-clearly-and-concisely/SKILL.md")
     elements = read("skills/writing-clearly-and-concisely/elements-of-style.md")
     router = read("skills/superflow/SKILL.md")
     html = read("skills/html-didatico/SKILL.md")
     recipe = read("skills/html-didatico/references/receita.md")
 
-    require(writing, ["name: writing-clearly-and-concisely", "Use active voice", "Omit needless words"], "writing skill")
+    require(
+        explain,
+        [
+            "name: explain-clearly",
+            "Semantic reconstruction",
+            "The source artifact is evidence",
+            "Build a semantic ledger",
+            "Rewrite from the semantic model",
+            "Reasonable-objection gate",
+            "Closed-book paraphrase gate",
+            "Relationship to Visual Artifacts",
+        ],
+        "semantic explanation skill",
+    )
+    require(writing, ["name: writing-clearly-and-concisely", "Use active voice", "Omit needless words", "explain-clearly"], "writing skill")
     require(elements, ["# The Elements of Style", "Rule 10. Use the active voice.", "Rule 13. Omit needless words."], "style reference")
-    require(router, ["writing-clearly-and-concisely", "human-facing prose"], "Superflow router")
+    require(router, ["explain-clearly", "writing-clearly-and-concisely", "human-facing prose"], "Superflow router")
     require(
         html,
         [
             "REQUIRED SUB-SKILL",
+            "explain-clearly",
             "writing-clearly-and-concisely",
             "Clareza sem burocracia",
             "O motor funciona em pequena escala; a execução completa continua bloqueada.",

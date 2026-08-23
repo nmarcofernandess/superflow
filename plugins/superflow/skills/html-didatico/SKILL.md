@@ -13,8 +13,11 @@ descrevê-lo. O resultado parece um manual de operação bem diagramado, não um
 O leitor-alvo quase sempre é um **não-técnico** (sócio, cliente, família). O documento
 falha se precisar de tradutor do lado.
 
-**REQUIRED SUB-SKILL:** Use `writing-clearly-and-concisely` for every headline,
-paragraph, label, status, and caption before finalizing the HTML.
+**REQUIRED SUB-SKILLS:** When the source is technical, contested, incomplete, or
+hard to understand, use `explain-clearly` before designing the page. It owns the
+semantic model and causal story. Then use `writing-clearly-and-concisely` for
+every headline, paragraph, label, status, and caption before finalizing the
+HTML. This skill owns the visual form, not the underlying truth.
 
 ## Processo
 
@@ -24,11 +27,18 @@ Didático = concreto. Antes de abrir uma tag:
 
 - Ler a fonte real (código, docs, conversa) — mensagens de erro literais, nomes de
   campos, números reais valem ouro num diorama.
+- Se a fonte mistura fatos, decisões, trabalho em andamento e jargão, aplicar
+  `explain-clearly`: reconstruir objetos, casos, causas e consequências antes de
+  editar o texto. Não "melhorar" frases que contam a história errada.
 - Dar personagem aos exemplos ("a paciente Maria", "o Mercado Central") — cenário
   abstrato não gruda.
 - Definir a espinha: 3–6 seções, cada uma com UMA ideia. Se a seção tem duas ideias,
   são duas seções.
 - Cada seção termina ancorada no uso prático: o que muda na vida de quem usa.
+
+Em HTML existente, preserve dioramas, wireframes e navegação que ainda expressem
+o modelo correto. Reescreva ou redesenhe somente o que carregar semântica errada;
+forma visual boa não precisa morrer porque o texto falhou.
 
 #### 1.1 Clareza sem burocracia
 

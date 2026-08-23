@@ -131,6 +131,8 @@ from Git.
 | `audit` | No-write readiness/gaps |
 | `backlog-status` | Issue vs merged PR truth |
 | `html-didatico` | Visual HTML docs |
+| `explain-clearly` | Standalone semantic reconstruction before rewriting |
+| `writing-clearly-and-concisely` | Sentence-level clarity and copyediting |
 | `grill-me` | Standalone grill — not a phase |
 | `grill-with-docs` | Standalone grill + CONTEXT/ADR — not a phase |
 | `gauntlet-loop` | Standalone quality-bar loop prompt — not a phase |

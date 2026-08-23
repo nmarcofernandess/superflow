@@ -9,7 +9,7 @@
     {
       "name": "superflow",
       "source": "./plugins/superflow",
-      "description": "Routes work through the smallest honest phase set with faceted Analyst/Build, Reuse Guard, package validator Ready boundary, TDD on code tasks, and a clear-writing contract.",
+      "description": "Routes work through the smallest honest phase set with faceted Analyst/Build, Ready gates, TDD, and semantic reconstruction before human-facing prose.",
       "version": "0.5.0",
       "author": {
         "name": "Marco Antonio",
@@ -26,6 +26,8 @@
         "feature-mindset",
         "tdd",
         "reuse-guard",
+        "semantic-reconstruction",
+        "causal-explanation",
         "warlog",
         "qa"
       ]
