@@ -32,6 +32,8 @@ def write_min_package(root: Path) -> Path:
         "\n".join(
             [
                 "# PRD",
+                "## TL;DR",
+                "This fixture explains the change in plain language before implementation.",
                 "## State",
                 "gathering",
                 "## Problem",
@@ -249,6 +251,23 @@ def main() -> int:
         ok = run_validate(good)
         if ok.returncode != 0:
             raise AssertionError(f"good plan package should pass:\n{ok.stdout}")
+
+        # A ready PRD cannot promote the scaffold TL;DR placeholder.
+        placeholder = write_min_package(root / "placeholder")
+        placeholder_prd = placeholder / "PRD.md"
+        placeholder_prd.write_text(
+            placeholder_prd.read_text(encoding="utf-8").replace(
+                "This fixture explains the change in plain language before implementation.",
+                "A ser escrito depois que o PRD for preenchido.",
+            ),
+            encoding="utf-8",
+        )
+        placeholder_run = run_validate(placeholder)
+        if placeholder_run.returncode == 0 or "filled TL;DR" not in placeholder_run.stdout:
+            raise AssertionError(
+                "ready PRD with a TL;DR placeholder must fail validation:\n"
+                f"{placeholder_run.stdout}"
+            )
 
         # Bad plan missing RED
         bad = write_min_package(root / "bad-plan")

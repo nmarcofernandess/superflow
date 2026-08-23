@@ -19,9 +19,14 @@ can produce a durable artifact or a verified implementation.
 4. If the user asks to audit, review readiness, find gaps, or return
    `gap_count`, use `../../scripts/superflow_audit.py`. Do not substitute
    `--classify-only`; classification has no gap model.
-5. If generating diagrams, follow `../../assets/references/mermaid-contract.md`; Mermaid only.
+5. If generating diagrams, follow `../../assets/references/mermaid-contract.md`;
+   Mermaid is the default. A PRD TL;DR may instead use a small ASCII contrast
+   under the explicit exception in `../../assets/references/prd-contract.md`.
 6. If writing a PRD or issue body, follow `../../assets/references/prd-contract.md` and
-   `../../assets/references/github-issue-contract.md`.
+   `../../assets/references/github-issue-contract.md`. Write the complete body
+   first, reread it, build the contract's causal map, and write the `TL;DR`
+   last. It belongs immediately after the title and must make sense to a reader
+   unfamiliar with the product without requiring them to invent missing links.
 7. If maintaining a WARLOG, follow `../../assets/references/warlog-contract.md`
    (campaign board: sprints, budget, green contract — not a microtask diary).
 8. If executing, follow `../../assets/references/execution-contract.md` and
@@ -210,6 +215,18 @@ Full tree gate from this marketplace repo: `./scripts/validate-all.sh`.
   execute phases while the PRD is `gathering`.
 - Use the same PRD layout in GitHub issues and local files. A shallow idea is a
   low-confidence PRD, not a different artifact species.
+- A PRD's `TL;DR` is a late editorial pass, not a promise made before the
+  investigation. It must summarize the body without adding decisions or scope.
+- Plain words are necessary but insufficient. The TL;DR must preserve the
+  causal chain: familiar situation, current mechanism, reason for the mismatch,
+  observable consequence, proposed behavior, and boundary. It must unpack
+  vague nouns and close predictable “why?” or “isn't that desired?” objections.
+- Use the closed-book paraphrase test in `prd-contract.md`. If an outsider
+  cannot retell the problem, example, consequence, change, and non-goal after
+  one reading, the PRD is not ready.
+- Add an ASCII sketch or Mermaid diagram only when it materially reduces
+  inference work; never use a visual as decoration or as a substitute for the
+  missing sentence.
 - Skip `analyst` when the product logic is already clear.
 - Skip `build` when there is no technical architecture risk.
 - Skip `plan` when execution is obvious and acceptance criteria are testable.

@@ -1,5 +1,16 @@
 # PRD: Exportar CSV filtrado
 
+## TL;DR
+
+O administrador já consegue combinar busca, filtros e ordenação até enxergar
+na tela exatamente os registros de que precisa. Hoje esse recorte fica preso à
+tela porque não existe uma ação de exportação.
+
+A mudança cria um CSV a partir da mesma seleção que alimenta a lista visível.
+Ela não cria uma segunda lógica de filtros nem muda a ordem dos resultados;
+apenas permite levar para fora do sistema o recorte que o administrador já
+montou.
+
 ## State
 
 - Source: inline

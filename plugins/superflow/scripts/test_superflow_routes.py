@@ -43,7 +43,7 @@ def run_case(root: Path, description: str, *, mode: str, expected_route: str, ex
         spec_dir = Path(payload["spec_dir"])
         run([sys.executable, str(VALIDATE), str(spec_dir)])
         prd_text = (spec_dir / "PRD.md").read_text(encoding="utf-8")
-        for marker in ["## Story de Usuario", "## Story Tecnica", "## Definition of Complete"]:
+        for marker in ["## TL;DR", "## Story de Usuario", "## Story Tecnica", "## Definition of Complete"]:
             if marker not in prd_text:
                 raise AssertionError(f"generated PRD missing marker {marker!r}")
         status = json.loads((spec_dir / "status.json").read_text(encoding="utf-8"))

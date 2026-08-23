@@ -8,6 +8,14 @@ Local package: none
 
 # PRD: Ideia de onboarding
 
+## TL;DR
+
+O time quer lembrar uma possibilidade de melhorar a primeira experiência do
+usuário, mas ainda não definiu qual dificuldade do onboarding será resolvida.
+Esta issue preserva a ideia e sua origem sem criar uma pasta de implementação
+nem prometer uma solução. Quando o problema e o resultado esperado estiverem
+claros, a issue poderá ser promovida para um PRD local.
+
 ## Problem
 
 Ideia solta para melhorar onboarding depois.

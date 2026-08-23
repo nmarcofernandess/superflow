@@ -41,10 +41,24 @@ python3 <plugin-root>/scripts/superflow_taskgen.py \
 
 ## PRD Contract
 
-Generated PRDs must include `Story de Usuario`, `Story Tecnica`, current vs
-desired behavior, system pattern/contract, acceptance criteria, and definition
-of complete. A shallow idea can have low confidence, but it still uses the same
-shape as a mature PRD.
+Generated PRDs must include `TL;DR`, `Story de Usuario`, `Story Tecnica`,
+current vs desired behavior, system pattern/contract, acceptance criteria, and
+definition of complete. A shallow idea can have low confidence, but it still
+uses the same shape as a mature PRD.
+
+The TL;DR is not a first-draft shortcut. Complete the rest of the PRD, reread
+it, build the causal map from `prd-contract.md`, and only then write the TL;DR
+for a reader who does not know the product. Keep every link needed to explain
+the current mechanism, why it is wrong in this case, what the user observes,
+what changes, and what remains outside the work. Shortening must remove words,
+not explanations.
+
+Run the reasonable-objection and closed-book paraphrase tests before promotion.
+Phrases such as “stored twice,” “carries context,” “can change,” or “becomes
+clean” fail until the summary names the places or values, explains whether they
+should travel, and says what the target does instead. A generated `gathering`
+package may keep the explicit placeholder, but a PRD cannot become `ready`
+until that placeholder is replaced with a causal, standalone summary.
 
 ## PRD Gate
 
@@ -57,5 +71,6 @@ stays `gathering`.
 
 ## Mermaid
 
-PRD diagrams use `../../assets/references/mermaid-contract.md`. Do not generate
+PRD diagrams use `../../assets/references/mermaid-contract.md`. A TL;DR may use
+a small ASCII contrast when that is clearer than a diagram. Do not generate
 sintaxe visual legada.

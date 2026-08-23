@@ -1,5 +1,18 @@
 # PRD: Migrar status de pagamentos
 
+## TL;DR
+
+Um pagamento precisa responder a duas perguntas diferentes: o processamento da
+cobrança terminou? E o dinheiro foi realmente confirmado? Hoje um único campo
+de status tenta responder às duas. Uma tela pode interpretá-lo como estado
+operacional enquanto um relatório o interpreta como estado financeiro, fazendo
+o mesmo valor significar coisas diferentes.
+
+Esta etapa define dois contratos de estado e a transição segura entre eles antes
+de alterar banco, telas ou relatórios. Ela não muda cobranças diretamente; cria
+o desenho e a estratégia de migração necessários para que a implementação não
+troque um significado pelo outro.
+
 ## State
 
 - Source: inline

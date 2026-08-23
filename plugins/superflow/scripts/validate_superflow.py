@@ -320,6 +320,7 @@ COVERAGE_REQUIRED_IDS = [
 ]
 
 PRD_REQUIRED_HEADINGS = [
+    "## TL;DR",
     "## State",
     "## Problem",
     "## Goal",
@@ -431,6 +432,25 @@ def validate_plugin_root(root: Path) -> None:
             fail(f"assets/templates/PRD.md missing heading: {heading}")
         if heading not in issue_template:
             fail(f"assets/templates/ISSUE_PRD.md missing heading: {heading}")
+    validate_prd_tldr(prd_template, label="assets/templates/PRD.md", require_filled=False)
+    validate_prd_tldr(issue_template, label="assets/templates/ISSUE_PRD.md", require_filled=False)
+    prd_contract = read(root / "assets" / "references" / "prd-contract.md")
+    for marker in (
+        "Pass 1 — build the causal map",
+        "Inference-debt test",
+        "Reasonable-objection and paraphrase gates",
+        "closed-book paraphrase test",
+        "ASCII sketch or Mermaid diagram",
+    ):
+        if marker not in prd_contract:
+            fail(f"assets/references/prd-contract.md missing causal TL;DR marker: {marker}")
+    for label, template in (
+        ("assets/templates/PRD.md", prd_template),
+        ("assets/templates/ISSUE_PRD.md", issue_template),
+    ):
+        for marker in ("familiar situation", "isn't that desired?", "ASCII sketch or Mermaid"):
+            if marker not in template:
+                fail(f"{label} missing causal TL;DR prompt: {marker}")
 
     plan_template = read(root / "assets" / "templates" / "implementation_plan.json")
     for marker in [
@@ -580,6 +600,45 @@ def _is_placeholder_body(body: str) -> bool:
                 return False
         return True
     return False
+
+
+def validate_prd_tldr(text: str, *, label: str, require_filled: bool) -> None:
+    """Validate TL;DR placement and reject placeholders in ready PRDs."""
+    lines = text.splitlines()
+    title_indexes = [i for i, line in enumerate(lines) if re.match(r"^#\s+\S", line)]
+    tldr_indexes = [
+        i for i, line in enumerate(lines) if re.match(r"^##\s+TL;DR(?:\s|$)", line, re.I)
+    ]
+    h2_indexes = [i for i, line in enumerate(lines) if re.match(r"^##\s+\S", line)]
+    if not title_indexes:
+        fail(f"{label}: PRD needs an H1 title before TL;DR")
+    if not tldr_indexes:
+        fail(f"{label}: PRD missing ## TL;DR")
+
+    title_index = title_indexes[0]
+    tldr_index = tldr_indexes[0]
+    if tldr_index <= title_index:
+        fail(f"{label}: ## TL;DR must come after the PRD title")
+    if h2_indexes and tldr_index != h2_indexes[0]:
+        fail(f"{label}: ## TL;DR must be the first section after the title")
+
+    body = _section_body(text, "## TL;DR")
+    if not require_filled:
+        return
+
+    low = body.lower()
+    placeholder_markers = (
+        "{tldr}",
+        "a ser escrito",
+        "write the tldr",
+        "write after",
+        "to be written",
+    )
+    if _is_placeholder_body(body) or any(marker in low for marker in placeholder_markers):
+        fail(
+            f"{label}: ready PRD needs a filled TL;DR; semantic clarity "
+            "requires the causal/paraphrase review"
+        )
 
 
 # path:line evidence — backticks alone do not count
@@ -1427,9 +1486,11 @@ def validate_package(path: Path) -> None:
         if task_source.get("path") != plan_artifact:
             fail(f"{path}/status.json task_source.path must match artifacts.plan")
     prd_text = read(path / "PRD.md")
-    for heading in PRD_REQUIRED_HEADINGS:
-        if heading not in prd_text:
-            fail(f"{path}/PRD.md missing heading: {heading}")
+    validate_prd_tldr(
+        prd_text,
+        label=f"{path}/PRD.md",
+        require_filled=str(decision.get("prd_status") or "").lower() in {"ready", "complete"},
+    )
 
     plan_data: dict | None = None
     plan_path = path / "implementation_plan.json"

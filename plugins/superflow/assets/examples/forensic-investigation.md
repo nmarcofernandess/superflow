@@ -1,5 +1,16 @@
 # PRD: Investigar divergencia intermitente
 
+## TL;DR
+
+O usuário consegue consultar um conjunto de registros na tela e exportar esse
+mesmo conjunto. Em alguns casos, o total exibido e o total do arquivo divergem.
+Ainda não sabemos se a diferença nasce da consulta, do cálculo, do recorte de
+dados ou de outra etapa.
+
+Este trabalho não escolhe um conserto por palpite. Primeiro reproduz a
+divergência e prova em qual etapa ela nasce; somente essa evidência poderá
+definir o fix e seu teste de regressão.
+
 ## State
 
 - Source: github_issue

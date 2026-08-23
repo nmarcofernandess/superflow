@@ -1,6 +1,11 @@
 
 # PRD: fixture
 
+## TL;DR
+
+Este trabalho organiza uma mudança de produto antes da execução. O objetivo é
+preservar um contrato claro para quem usa o sistema e para quem vai implementá-lo.
+
 ## State
 ready
 
@@ -58,4 +63,3 @@ none
 
 ## Next Phase
 build
-

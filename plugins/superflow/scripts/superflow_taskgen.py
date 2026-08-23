@@ -318,6 +318,10 @@ def build_values(args: argparse.Namespace, classification: dict) -> dict:
     return {
         "title": title,
         "source": source,
+        "tldr": (
+            "A ser escrito por último, depois de preencher e reler o PRD, "
+            "a partir do mapa causal descrito no contrato de PRD."
+        ),
         "confidence": classification["confidence"],
         "route": classification["route"],
         "phase_budget": classification["phase_budget"],

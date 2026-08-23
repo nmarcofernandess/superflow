@@ -91,9 +91,16 @@ section checklist. Existing-code analysis must carry `Evidence Matrix`,
 `Implementation Map`, `Entities And State`, `Blueprint Handoff`, and grill
 verdicts.
 
-The validator also fails generated packages whose PRD lacks `Story de Usuario`,
-`Story Tecnica`, current/desired behavior, system contract, or definition of
-complete. `status.json` is the phase GPS; detailed tasks live in
+The validator also fails generated packages whose PRD lacks the first-section
+`TL;DR`, `Story de Usuario`, `Story Tecnica`, current/desired behavior, system
+contract, or definition of complete. A `gathering` scaffold may keep the
+explicit TL;DR placeholder; a `ready` PRD must explain the problem as a
+standalone causal chain, not merely replace jargon with vague words. The
+contract requires a causal map, concrete example where needed,
+reasonable-objection pass, and closed-book paraphrase test. ASCII and Mermaid
+are both allowed when they remove inference work. The script validates
+structure and placeholders; semantic readiness remains a skill/human decision.
+`status.json` is the phase GPS; detailed tasks live in
 `implementation_plan.json` (with `tdd.red` / `tdd.green` on code tasks), and
 execution evidence lives in `implementation_log.json` (red+green excerpts).
 Canonical TDD rules: `assets/references/tdd-contract.md`.

@@ -29,10 +29,13 @@ Phase budget: capture|lean|standard|deep|forensic
 Local package: specs/NNN-slug or none
 ```
 
-The issue PRD uses the same required story sections as a local PRD:
+The issue PRD uses the same layout as a local PRD, including `TL;DR`,
 `Story de Usuario`, `Story Tecnica`, current/desired behavior, system contract,
-acceptance criteria, and definition of complete. A shallow idea is still a
-low-confidence PRD, not a separate artifact species.
+acceptance criteria, and definition of complete. The TL;DR is written after the
+body has been completed and reread. It follows the same causal-map,
+reasonable-objection, and paraphrase gates as a local PRD; an issue is not a
+license for vague compression. A shallow idea is still a low-confidence PRD,
+not a separate artifact species.
 
 ## Promotion
 
