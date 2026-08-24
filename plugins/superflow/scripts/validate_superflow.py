@@ -1014,6 +1014,15 @@ def validate_analysis_mindset(text: str, *, label: str, depth: str = "deep") -> 
     if depth == "skip":
         fail(f"{label}: mindset-depth 'skip' is not allowed (escape hatch removed)")
 
+    # Always-on strings-safadas (every depth)
+    _reject_strings_safadas_approved(text, label=label)
+
+    if depth == "docs":
+        if "## Recode Log" in text:
+            recode = _section_body(text, "## Recode Log")
+            _require_recode_honest(recode, label=label, depth=depth)
+        return
+
     required = [
         "## TL;DR",
         "## Síntese",
@@ -1030,14 +1039,6 @@ def validate_analysis_mindset(text: str, *, label: str, depth: str = "deep") -> 
     synthesis = _section_body(text, "## Síntese")
     if _is_placeholder_body(synthesis):
         fail(f"{label}: Síntese empty or placeholder (ready ≠ filled headings)")
-
-    # Always-on strings-safadas (every depth)
-    _reject_strings_safadas_approved(text, label=label)
-
-    if depth == "docs":
-        recode = _section_body(text, "## Recode Log")
-        _require_recode_honest(recode, label=label, depth=depth)
-        return
 
     if depth in {"deep", "trap"}:
         for h in (
@@ -1066,20 +1067,20 @@ def validate_spec_mindset(text: str, *, label: str, depth: str = "deep") -> None
     if depth == "skip":
         fail(f"{label}: mindset-depth 'skip' is not allowed (escape hatch removed)")
 
+    _reject_strings_safadas_approved(text, label=label)
+
+    if depth == "docs":
+        if "## Recode Log" in text:
+            recode = _section_body(text, "## Recode Log")
+            _require_recode_honest(recode, label=label, depth=depth)
+        return
+
     for h in ("## Synthesis", "### Product", "### Backend", "### Frontend", "### Copy"):
         if h not in text:
             fail(f"{label}: missing SPEC mindset heading {h}")
     synthesis = _section_body(text, "## Synthesis")
     if _is_placeholder_body(synthesis):
         fail(f"{label}: SPEC Synthesis empty/placeholder")
-
-    _reject_strings_safadas_approved(text, label=label)
-
-    if depth == "docs":
-        recode = _section_body(text, "## Recode Log") if "## Recode Log" in text else ""
-        if recode:
-            _require_recode_honest(recode, label=label, depth=depth)
-        return
 
     if depth in {"deep", "trap"}:
         for h in ("### Product", "### Backend", "### Frontend", "### Copy"):
@@ -1109,7 +1110,7 @@ def iter_plan_subtasks(plan: dict) -> list[dict]:
     for phase in phases:
         if not isinstance(phase, dict):
             continue
-        subtasks = phase.get("subtasks")
+        subtasks = phase.get("subtasks") or phase.get("tasks")
         if not isinstance(subtasks, list):
             continue
         for sub in subtasks:
@@ -1124,6 +1125,8 @@ def tdd_required_for_subtask(subtask: dict, workflow_type: str) -> bool:
         return bool(tdd.get("required"))
     if workflow_type in DOCS_WORKFLOW_TYPES:
         return False
+    if "tdd" not in subtask and "behavior" not in subtask:
+        return False
     verification = subtask.get("verification") if isinstance(subtask.get("verification"), dict) else {}
     vtype = str(verification.get("type") or "").lower()
     if vtype == "manual" and not subtask.get("files_to_modify") and not subtask.get("files_to_create"):
@@ -1134,7 +1137,7 @@ def tdd_required_for_subtask(subtask: dict, workflow_type: str) -> bool:
 def validate_plan_tdd(plan: dict, *, label: str) -> None:
     if plan.get("schema_version") != "superflow.plan.v1":
         fail(f"{label}: unexpected schema_version (expected superflow.plan.v1)")
-    plan_body = plan.get("plan")
+    plan_body = plan.get("plan") if isinstance(plan.get("plan"), dict) else plan
     if not isinstance(plan_body, dict):
         fail(f"{label}: missing plan object")
     workflow_type = str(plan_body.get("workflow_type") or "feature").split("|")[0].strip()
@@ -1504,6 +1507,22 @@ def validate_package(path: Path) -> None:
     for heading in PRD_REQUIRED_HEADINGS:
         if heading not in prd_text:
             fail(f"{path}/PRD.md missing heading: {heading}")
+    core_prd_aliases = [
+        ("State / Header", ["State", "Estado", "A promessa", "Contexto", "PRD", "Cabeçalho", "Correção", "O que esta minispec"]),
+        ("Problem / Motivation / Journey", ["Problem", "Problema", "Por que", "O que esta spec resolve", "O veto", "jornada", "O que o produto", "Contexto"]),
+        ("Goal / Promise", ["Goal", "Objetivo", "Promessa", "A promessa", "O que esta spec resolve", "O que esta entrega", "O que esta minispec"]),
+        ("Scope / Contract / Invariants", ["Scope", "Escopo", "O que o contrato", "As nove minispecs", "O que muda", "O terreno", "Configuração", "Invariantes", "Matriz", "Os dez decretos", "O modelo mental", "E3"]),
+        ("Acceptance / Done Criteria", ["Acceptance Criteria", "Critérios de Aceite", "Critérios de pronto", "Definition of Complete", "Definition of Done", "DoD"]),
+    ]
+    for section_name, aliases in core_prd_aliases:
+        matched = False
+        for line in prd_text.splitlines():
+            if line.startswith("#"):
+                if any(alias.lower() in line.lower() for alias in aliases):
+                    matched = True
+                    break
+        if not matched:
+            fail(f"{path}/PRD.md missing core section: {section_name}")
 
     plan_data: dict | None = None
     plan_path = path / "implementation_plan.json"
