@@ -9,6 +9,7 @@ import re
 import subprocess
 import sys
 import tempfile
+from datetime import datetime
 from pathlib import Path
 
 
@@ -343,6 +344,125 @@ PRD_REQUIRED_HEADINGS = [
     "## Open Questions",
     "## Next Phase",
 ]
+
+# --- Handbook: o retrato operável da spec ---------------------------------
+# O HANDBOOK.md responde "o que esta spec é, do que ela depende e qual é o
+# próximo trabalho útil" para quem chega sem contexto. A prosa mora no arquivo;
+# o veredito (selo, arquivabilidade, ação de índice) mora em status.json#handbook,
+# porque veredito raspado de prosa por regex já provou errar (agregador de 2026-09).
+HANDBOOK_ARTIFACT = "HANDBOOK.md"
+
+# (canônico, aliases aceitos no heading). O canônico é o que a mensagem de erro
+# cobra; os aliases existem só para grafia sem acento.
+HANDBOOK_REQUIRED_HEADINGS = [
+    ("Intenção", ["Intenção", "Intencao"]),
+    ("Estado real", ["Estado real"]),
+    ("Rastro", ["Rastro"]),
+    ("Dificuldade e impacto", ["Dificuldade e impacto"]),
+    ("Testes", ["Testes"]),
+    ("O que a linha não comporta", ["O que a linha não comporta", "O que a linha nao comporta"]),
+    ("Relatório de leitura", ["Relatório de leitura", "Relatorio de leitura"]),
+]
+
+# A seção que precisa provar leitura de código, e o piso de provas.
+HANDBOOK_EVIDENCE_SECTION = "Estado real"
+HANDBOOK_MIN_EVIDENCE_ANCHORS = 3
+
+HANDBOOK_SELOS = [
+    "closed",
+    "merged_dev",
+    "in_flight",
+    "pending_work",
+    "needs_marco",
+    "stale_doc",
+    "dormant",
+    "superseded",
+]
+HANDBOOK_INDEX_ACTIONS = ["archive", "new_line", "confirm_pending", "backlog"]
+HANDBOOK_ARCHIVABLE = ["no", "status_only", "yes"]
+HANDBOOK_NEXT_KINDS = [
+    "investigation",
+    "preparation",
+    "plan",
+    "implementation",
+    "human",
+]
+
+# Elegibilidade de execução é DERIVADA (kind != human && blocked_by == []) e
+# nunca gravada: campo gravado envelhece calado e passa a mentir sobre o que
+# está liberado. Estes nomes são recusados dentro de next_useful.
+HANDBOOK_DERIVED_ONLY_KEYS = [
+    "eligible",
+    "elegivel",
+    "elegível",
+    "executable",
+    "runnable",
+    "ready",
+    "actionable",
+    "unblocked",
+]
+
+# Vocabulário fechado de phases.*. `superseded` entra como sétimo valor: cobre
+# "outro pacote fez isso" — que `skipped` (decidiu-se não fazer) não descreve.
+PHASE_VOCABULARY = [
+    "pending",
+    "running",
+    "complete",
+    "skipped",
+    "blocked",
+    "failed",
+    "superseded",
+]
+
+# RATCHET. Censo de 2026-09-09 sobre specs/**/status.json do DietFlow
+# (163 arquivos, 38 violadores). A chave é o caminho do pacote relativo ao
+# primeiro `specs/` do path; o valor são os NOMES de fase que já carregavam
+# grafia fora do vocabulário naquele dia. Regra do ratchet: fase fora do
+# vocabulário e fora desta lista falha; entrada aqui que não viola mais também
+# falha (stale) — a lista só encolhe. Ligar sem FLOOR reprovaria os 38 de
+# largada e o gate seria desligado na primeira semana.
+PHASE_VOCABULARY_FLOOR_DATE = "2026-09-09"
+PHASE_VOCABULARY_FLOOR = {
+    "001-onda2-e2e-supabase-local": ("units",),
+    "001-onda2-e2e-supabase-local/units/00-factories": ("critic",),
+    "044-m3c-card-campos-layout": ("units",),
+    "045-m3c-testes-safety-sandbox": ("units",),
+    "046-modal-canonization": ("build", "code"),
+    "047-onda2-cleanup-followup": ("units",),
+    "056-proof-packs-warlog-ci": ("execute",),
+    "056-proof-packs-warlog-ci/minispecs/01-export-atlas-canonico": ("qa",),
+    "060-dietflow-care-completo": ("execute", "plan", "prd", "qa"),
+    "069-medidas-caseiras-axioma": ("build", "decision_table", "execute", "plan", "qa", "taskgen"),
+    "069-medidas-caseiras-axioma/proof-atlas-timing": ("modal", "proof_recapture", "timing"),
+    "072-tornar-fallback-ultimo-registro-cada-modulo-selectlatestdatedrecordperfamily": ("qa",),
+    "073-export-cross-module-pilha": ("analyst", "execute"),
+    "076-ontologia-alimentos-motor-classificacao": ("build",),
+    "077-landing-app-v2": ("execute",),
+    "081-harmonia-visual": ("analyst", "build", "execute", "plan", "qa"),
+    "083-parecer-central-drawer-agenda/subspecs/agenda-refresh-performance-status": ("qa",),
+    "083-parecer-central-drawer-agenda/subspecs/drawer-export-datas-registros": ("build_review", "execute"),
+    "083-parecer-central-drawer-agenda/subspecs/fim-semana-persistente": ("execute",),
+    "083-parecer-central-drawer-agenda/subspecs/financeiro-drawer-proveniencia/t2.3c-drawer-plano": ("human_review", "qa"),
+    "083-parecer-central-drawer-agenda/subspecs/perfil-care-mesma-verdade": ("qa",),
+    "083-parecer-central-drawer-agenda/subspecs/planejamento-contato-vs-consulta": ("qa",),
+    "083-parecer-central-drawer-agenda/subspecs/scheduling-picker-paridade": ("qa",),
+    "083-parecer-central-drawer-agenda/subspecs/write-through-avisos": ("analyst", "build", "delivery", "execute", "plan", "qa"),
+    "085-fechamento-dev-main-ultra-review": ("execute",),
+    "089-patient-profile-cycle-strip": ("qa",),
+    "089-patient-profile-cycle-strip/minispecs/01-metrica-comparecimento": ("plan", "qa", "taskgen"),
+    "093-campanha-curadoria-canonica-foods": ("execute",),
+    "093-destillery-semantica-hard-soft-lifecycle-delete-no": ("distillery", "execute", "qa"),
+    "093-lifecycle-closure/plans/G1C.4-soft-replace": ("qa",),
+    "095-copy-surface-unification/crystallize/copy-surface": ("diff", "map", "mine"),
+    "100-fuking/minispecs/02-superficie-completo-vs-unitario": ("execute", "qa"),
+    "100-fuking/minispecs/05-anamnese-widget-importa-texto": ("execute", "qa"),
+    "105-colisao-de-identidade/minispecs/07-gerenciar-favorito": ("qa",),
+    "105-colisao-de-identidade/minispecs/08-porta-import": ("qa",),
+    "105-colisao-de-identidade/minispecs/proof": ("execute",),
+    "archived/054-exames-backend-architecture-audit": ("proof", "qa", "taskgen"),
+    "archived/056-care-heroui-web-migration": ("qa",),
+}
+
 
 
 def fail(message: str) -> None:
@@ -1459,6 +1579,320 @@ def validate_package_warlog(text: str, *, label: str) -> None:
         fail(f"{label}: PlantUML fences are forbidden in WARLOG")
 
 
+def _has_heading(text: str, heading: str) -> bool:
+    """True when a markdown heading line starts with `heading`.
+
+    Aceita detalhe no fim do título (`## Estado real — dev@abc`), como o
+    `_section_body` já faz, e recusa heading que só contém a palavra no meio.
+    """
+    return re.search(rf"^{re.escape(heading)}(?:\s*$|[\s—:(])", text, re.M) is not None
+
+
+def _parse_iso_instant(raw: str):
+    """Parse ISO-8601 tolerante ao que as specs realmente gravam.
+
+    Python 3.9 não aceita `Z` nem offset sem dois-pontos (`-0300`); ambos
+    aparecem nos status.json vivos. Devolve None quando não dá para comparar,
+    porque comparar string ISO com offset diferente mente.
+    """
+    value = (raw or "").strip()
+    if not value:
+        return None
+    if value.endswith(("Z", "z")):
+        value = value[:-1] + "+00:00"
+    value = re.sub(r"([+-]\d{2})(\d{2})$", r"\1:\2", value)
+    try:
+        return datetime.fromisoformat(value)
+    except ValueError:
+        return None
+
+
+def _package_floor_key(path: Path) -> str:
+    """Chave de ratchet: caminho do pacote relativo ao `specs/` mais externo.
+
+    Independe de onde o repo está clonado e sobrevive a pacote sem `id`
+    (17 dos 38 violadores do censo não têm `id` no status.json).
+    """
+    parts = path.parts
+    indexes = [i for i, part in enumerate(parts) if part == "specs"]
+    if indexes:
+        return "/".join(parts[indexes[0] + 1 :])
+    return path.name
+
+
+def _render_phase_value(value) -> str:
+    if isinstance(value, str):
+        return value if len(value) <= 48 else value[:45] + "..."
+    return f"<{type(value).__name__}>"
+
+
+def validate_phase_vocabulary(status: dict, *, label: str, floor_key: str) -> None:
+    """phases.* só aceita o vocabulário fechado — em ratchet, nunca em aviso.
+
+    Até 2026-09-09 ninguém lia esses valores (o validador só comparava
+    `qa == complete`), então `done`, `in_progress` e frases inteiras entraram
+    calados. O FLOOR congela quem já estava dentro; qualquer fase nova fora do
+    vocabulário falha nomeando arquivo, fase e valor.
+    """
+    phases = status.get("phases")
+    if not isinstance(phases, dict):
+        print(
+            f"WARN: {label}: phases não é um objeto ({type(phases).__name__}) — "
+            "vocabulário de fases não pode ser verificado",
+            file=sys.stderr,
+        )
+        return
+
+    offenders = sorted(
+        name
+        for name, value in phases.items()
+        if not (isinstance(value, str) and value in PHASE_VOCABULARY)
+    )
+    floor = PHASE_VOCABULARY_FLOOR.get(floor_key, ())
+
+    new = [name for name in offenders if name not in floor]
+    if new:
+        detail = "; ".join(f"{name}={_render_phase_value(phases[name])}" for name in new)
+        fail(
+            f"{label}: fase fora do vocabulário ({detail}) — "
+            f"canônico: {', '.join(PHASE_VOCABULARY)}"
+        )
+
+    stale = [name for name in floor if name not in offenders]
+    if stale:
+        fail(
+            f"{label}: entrada stale no FLOOR de fases ({', '.join(stale)}) — "
+            f"o ratchet só encolhe; remova de PHASE_VOCABULARY_FLOOR[{floor_key!r}] "
+            f"(congelado em {PHASE_VOCABULARY_FLOOR_DATE})"
+        )
+
+
+def _validate_handbook_block(block: dict, *, label: str) -> None:
+    """O bloco `handbook` do status.json: enums fechados e nada derivável gravado."""
+    for key in ["read_at", "read_base", "index_action", "selo", "archivable"]:
+        if key not in block:
+            fail(f"{label}: status.json handbook missing {key}")
+
+    read_at = str(block.get("read_at") or "")
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", read_at):
+        fail(f"{label}: handbook.read_at must be YYYY-MM-DD, got {read_at!r}")
+    if not str(block.get("read_base") or "").strip():
+        fail(f"{label}: handbook.read_base must name the base that was read (ex. 'dev@fed5faf18')")
+
+    for key, allowed in [
+        ("index_action", HANDBOOK_INDEX_ACTIONS),
+        ("selo", HANDBOOK_SELOS),
+        ("archivable", HANDBOOK_ARCHIVABLE),
+    ]:
+        value = block.get(key)
+        if value not in allowed:
+            fail(f"{label}: handbook.{key}={value!r} is not in {allowed}")
+
+    for key in ["archive_debts", "unanswered"]:
+        value = block.get(key, [])
+        if not isinstance(value, list) or any(not isinstance(item, str) for item in value):
+            fail(f"{label}: handbook.{key} must be a list of strings")
+
+    decisions = block.get("open_decisions", [])
+    if not isinstance(decisions, list):
+        fail(f"{label}: handbook.open_decisions must be a list")
+    for item in decisions:
+        if not isinstance(item, dict):
+            fail(f"{label}: handbook.open_decisions entries must be objects")
+        for key in ["id", "question", "owner"]:
+            if not str(item.get(key) or "").strip():
+                fail(f"{label}: handbook.open_decisions entry missing {key}")
+
+    next_useful = block.get("next_useful", [])
+    if not isinstance(next_useful, list):
+        fail(f"{label}: handbook.next_useful must be a list")
+    for item in next_useful:
+        if not isinstance(item, dict):
+            fail(f"{label}: handbook.next_useful entries must be objects")
+        if not str(item.get("id") or "").strip():
+            fail(f"{label}: handbook.next_useful entry missing id")
+        if item.get("kind") not in HANDBOOK_NEXT_KINDS:
+            fail(
+                f"{label}: handbook.next_useful[{item.get('id')!r}].kind="
+                f"{item.get('kind')!r} is not in {HANDBOOK_NEXT_KINDS}"
+            )
+        blocked_by = item.get("blocked_by", [])
+        if not isinstance(blocked_by, list) or any(
+            not isinstance(dep, str) for dep in blocked_by
+        ):
+            fail(
+                f"{label}: handbook.next_useful[{item.get('id')!r}].blocked_by "
+                "must be a list of strings"
+            )
+        written = [key for key in HANDBOOK_DERIVED_ONLY_KEYS if key in item]
+        if written:
+            fail(
+                f"{label}: handbook.next_useful[{item.get('id')!r}] grava "
+                f"{', '.join(written)} — elegibilidade é DERIVADA "
+                "(kind != human && blocked_by == []), nunca gravada"
+            )
+
+    if "tasks" in block:
+        fail(
+            f"{label}: handbook.tasks is forbidden — task executável mora em "
+            "implementation_plan.json (status-schema invariante 10)"
+        )
+
+    rollup = block.get("children_rollup")
+    if rollup is not None:
+        if not isinstance(rollup, dict):
+            fail(f"{label}: handbook.children_rollup must be an object or null")
+        for key in ["derived_at", "derived_from", "counts"]:
+            if key not in rollup:
+                fail(f"{label}: handbook.children_rollup missing {key}")
+        if not isinstance(rollup.get("counts"), dict):
+            fail(f"{label}: handbook.children_rollup.counts must be an object")
+
+
+def validate_handbook(text: str, status: dict, *, label: str) -> None:
+    """As sete seções de prosa, sem placeholder, com o Estado real ancorado.
+
+    A exigência de âncoras `arquivo:linha` no Estado real é o que liga o retrato
+    ao código: sem ela o handbook vira prosa bonita sobre um sistema que ninguém
+    abriu — exatamente o defeito que ele existe para corrigir.
+    """
+    for canonical, aliases in HANDBOOK_REQUIRED_HEADINGS:
+        matched = next(
+            (alias for alias in aliases if _has_heading(text, f"## {alias}")), None
+        )
+        if matched is None:
+            fail(f"{label}: missing required section: ## {canonical}")
+        body = _section_body(text, f"## {matched}")
+        if _is_placeholder_body(body):
+            fail(
+                f"{label}: section ## {canonical} is empty or a placeholder — "
+                "handbook sem conteúdo é pior que handbook ausente"
+            )
+        if canonical == HANDBOOK_EVIDENCE_SECTION:
+            anchors = sorted(set(PATH_LINE_RE.findall(body)))
+            if len(anchors) < HANDBOOK_MIN_EVIDENCE_ANCHORS:
+                fail(
+                    f"{label}: ## {canonical} tem {len(anchors)} âncora(s) "
+                    f"arquivo:linha; o contrato exige {HANDBOOK_MIN_EVIDENCE_ANCHORS} "
+                    "(backtick sozinho não conta)"
+                )
+
+    block = status.get("handbook")
+    if not isinstance(block, dict):
+        fail(
+            f"{label}: status.json precisa do bloco `handbook` — "
+            "o veredito nasce campo, nunca raspado da prosa"
+        )
+    _validate_handbook_block(block, label=label)
+
+
+def warn_stale_handbook_base(path: Path, status: dict, *, label: str) -> None:
+    """Retrato velho é dívida visível, não bloqueio.
+
+    Se `read_base` não for ancestral do HEAD, o handbook descreve um estado que
+    já andou. Isso avisa; não falha. Travar PR aqui garantiria que ninguém
+    escreve o segundo handbook.
+    """
+    block = status.get("handbook")
+    if not isinstance(block, dict):
+        return
+    base = str(block.get("read_base") or "").strip()
+    sha = base.rsplit("@", 1)[-1] if "@" in base else base
+    if not re.fullmatch(r"[0-9a-fA-F]{7,40}", sha):
+        return
+    result = subprocess.run(
+        ["git", "-C", str(path), "merge-base", "--is-ancestor", sha, "HEAD"],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=False,
+    )
+    if result.returncode in (0, 128):
+        # 0 = ancestral; 128 = fora de repo git ou sha desconhecido (não dá para julgar)
+        return
+    print(
+        f"WARN: {label}: read_base {base} não é ancestral do HEAD — "
+        "retrato envelhecido (dívida visível, não bloqueio)",
+        file=sys.stderr,
+    )
+
+
+def validate_children_rollup(path: Path, status: dict, *, label: str) -> None:
+    """`children_source` declara pacote-mãe; o rollup gravado precisa ser fresco.
+
+    O pai não copia estado do filho: ele declara onde os filhos estão e o
+    `superflow_campaign.py` deriva na hora. Se alguém cachear o resultado em
+    `handbook.children_rollup`, o cache tem de ser mais novo que o filho mais
+    novo — cache sem gate de frescor é a mentira que o status do pai já contava.
+    """
+    source = status.get("children_source")
+    if source is None:
+        return
+    if not isinstance(source, dict):
+        fail(f"{label}: children_source must be an object")
+    glob = source.get("glob")
+    if not isinstance(glob, str) or not glob.strip():
+        fail(f"{label}: children_source.glob must be a non-empty glob")
+    package_id = status.get("id")
+    if source.get("campaign") != package_id:
+        fail(
+            f"{label}: children_source.campaign={source.get('campaign')!r} "
+            f"must equal this package id ({package_id!r})"
+        )
+
+    newest = None
+    for child in sorted(path.glob(glob)):
+        try:
+            child_status = json.loads(read(child))
+        except json.JSONDecodeError as exc:
+            fail(f"{label}: child {child} is not valid JSON: {exc}")
+        if child_status.get("campaign") != package_id:
+            fail(
+                f"{label}: child {child} declares campaign="
+                f"{child_status.get('campaign')!r}; the mother package is "
+                f"{package_id!r} — filho órfão não entra no rollup"
+            )
+        stamp = _parse_iso_instant(str(child_status.get("updated_at") or ""))
+        if stamp is not None and (newest is None or stamp > newest):
+            newest = stamp
+
+    block = status.get("handbook") if isinstance(status.get("handbook"), dict) else {}
+    rollup = block.get("children_rollup")
+    if not isinstance(rollup, dict) or newest is None:
+        return
+    derived_at = _parse_iso_instant(str(rollup.get("derived_at") or ""))
+    if derived_at is None:
+        fail(f"{label}: handbook.children_rollup.derived_at is not a parseable timestamp")
+    if derived_at < newest:
+        fail(
+            f"{label}: handbook.children_rollup.derived_at={rollup.get('derived_at')!r} "
+            f"is older than the newest child updated_at ({newest.isoformat()}) — "
+            "cache stale não vale como rollup"
+        )
+
+
+def validate_campaign_membership(path: Path, status: dict, *, label: str) -> None:
+    """Pacote sob `minispecs/` é filho de campanha: `campaign` deixa de ser opcional.
+
+    Sem `campaign`, o rollup do pai não acha o filho e o filho vira órfão —
+    verde sozinho, invisível para a campanha que o encomendou.
+    """
+    if path.parent.name != "minispecs":
+        return
+    campaign = status.get("campaign")
+    if not isinstance(campaign, str) or not campaign.strip():
+        fail(f"{label}: pacote sob minispecs/ exige campaign (o id do pacote-mãe)")
+    mother = path.parent.parent / "status.json"
+    if not mother.exists():
+        return
+    mother_id = json.loads(read(mother)).get("id")
+    if mother_id and campaign != mother_id:
+        fail(
+            f"{label}: campaign={campaign!r} não bate com o id do pacote-mãe "
+            f"({mother_id!r})"
+        )
+
+
 def validate_package(path: Path) -> None:
     required = ["PRD.md", "status.json", "progress.md"]
     missing = [rel for rel in required if not (path / rel).exists()]
@@ -1483,14 +1917,35 @@ def validate_package(path: Path) -> None:
     for key in ["id", "route", "phase_budget", "confidence", "current_phase", "decision", "phases", "artifacts", "task_source"]:
         if key not in status:
             fail(f"{path}/status.json missing {key}")
+    validate_phase_vocabulary(
+        status, label=f"{path}/status.json", floor_key=_package_floor_key(path)
+    )
+    validate_campaign_membership(path, status, label=f"{path}/status.json")
     if status["artifacts"].get("prd") and not (path / status["artifacts"]["prd"]).exists():
         fail(f"{path}/status.json points to missing PRD artifact")
+    handbook_artifact = status["artifacts"].get("handbook")
+    handbook_path = path / HANDBOOK_ARTIFACT
+    if handbook_artifact and handbook_artifact != HANDBOOK_ARTIFACT:
+        fail(f"{path}/status.json artifacts.handbook must point to {HANDBOOK_ARTIFACT}")
+    if handbook_artifact and not handbook_path.exists():
+        fail(f"{path}/status.json points to missing handbook artifact")
+    if handbook_path.exists() and not handbook_artifact:
+        fail(
+            f"{path}/{HANDBOOK_ARTIFACT} existe mas status.json artifacts.handbook "
+            "está vazio — sem o ponteiro, o motor de campanha nunca vê o retrato"
+        )
     decision = status.get("decision")
     if not isinstance(decision, dict):
         fail(f"{path}/status.json decision must be an object")
     for key in ["verdict", "prd_status", "reason", "prd_path", "discard_path"]:
         if key not in decision:
             fail(f"{path}/status.json decision missing {key}")
+    if handbook_path.exists():
+        validate_handbook(
+            read(handbook_path), status, label=f"{path}/{HANDBOOK_ARTIFACT}"
+        )
+        warn_stale_handbook_base(path, status, label=f"{path}/{HANDBOOK_ARTIFACT}")
+    validate_children_rollup(path, status, label=f"{path}/status.json")
     plan_artifact = status["artifacts"].get("plan")
     task_source = status.get("task_source") or {}
     if plan_artifact:

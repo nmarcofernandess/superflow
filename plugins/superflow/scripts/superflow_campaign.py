@@ -74,6 +74,10 @@ def read_package(pkg: Path) -> dict:
             "a blocker nobody signed is an abandonment (campaign-contract.md C4)"
         )
 
+    # O veredito do handbook viaja como campo para o report: painel que precisa
+    # raspar prosa para saber selo/arquivabilidade volta a errar (censo 2026-09).
+    handbook = status.get("handbook") if isinstance(status.get("handbook"), dict) else {}
+
     return {
         "id": pkg.name,
         "path": str(pkg),
@@ -82,6 +86,8 @@ def read_package(pkg: Path) -> dict:
         "qa_complete": str(phases.get("qa") or "").lower() == "complete",
         "blocked_phases": blocked_phases,
         "blocked_reason": blocked_reason,
+        "selo": handbook.get("selo"),
+        "archivable": handbook.get("archivable"),
     }
 
 
@@ -177,6 +183,8 @@ def render_text(verdict: str, report: dict) -> str:
     for pkg in report["packages"]:
         deps = ", ".join(pkg["depends_on"]) or "—"
         line = f"  [{pkg['state']:>10}] {pkg['id']}  deps: {deps}"
+        if pkg.get("selo"):
+            line += f"  selo: {pkg['selo']}"
         if pkg["state"] == "blocked":
             line += f"\n               blocked: {pkg['blocked_reason']}"
         lines.append(line)
