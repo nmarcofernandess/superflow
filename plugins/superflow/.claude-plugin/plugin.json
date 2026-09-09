@@ -1,7 +1,7 @@
 {
   "name": "superflow",
   "displayName": "Superflow",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Production Agent Skills workflow with phase-budget routing, faceted Analyst/Build, package Ready gates, TDD I1–I3, and semantic reconstruction before human-facing prose.",
   "author": {
     "name": "Marco Antonio",

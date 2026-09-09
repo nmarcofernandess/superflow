@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.7.0
+
+### Added
+
+- **`rota` skill** — turns a request into an approvable multi-agent plan before any
+  agent runs: recognise the material, one or more runs carrying POR QUÊ / EXTRAI / DoD,
+  an agent table with papel, model, effort and schema, and bridges whose sufficiency
+  criterion decides whether the next run is even designable. The drawing is generated
+  from `assets/templates/plano.json`, never hand-written, and the laws are checked in
+  the same pass — a plan that breaks one exits non-zero and has no drawing to approve.
+- **`assets/references/rota-contract.md`** — the authority: runtime mechanics, the plan
+  model, and every rule the validator enforces.
+- **`assets/playbooks/`** — five filled-in plans to copy and edit: `pesquisa`,
+  `jornada-superflow`, `migracao`, `revisao`, `grill-loop`. A playbook is a shortcut,
+  never a requirement; when none fits, fill the model from scratch.
+- **`scripts/superflow_rota.py`** — `desenhar` draws the plan and checks the laws;
+  `conferir` redraws the run that actually happened and compares it against the plan,
+  exiting non-zero on deviation.
+- **`scripts/test_rota_contract.py`** — 49 behavioural cases (R1–R10), wired into
+  `validate-all.sh`.
+
+### Notes
+
+- The agent count is **declared, not capped**: the worst case goes in the header, the
+  operator sees it and approves. Above 15 the plan owes one sentence of justification —
+  it is not a prohibition. An approved maximum is a ceiling, never a quota: a foreseen
+  early stop uses fewer agents and is still compliant.
+- `papel` (`reader`/`writer`/`fixer`/`integrador`) is a label of the plan and an
+  instruction in the prompt. Where a runtime has a subagent registry — Claude Code's
+  `agents/`, Codex's `~/.codex/agents/` via `agent_type` — it resolves there, but the
+  plan never depends on one. No agent files ship with the plugin.
+
 ## Unreleased
 
 ### Standalone slash skills
