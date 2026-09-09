@@ -57,7 +57,10 @@ indesenhável. Na coluna `escreve` do desenho eles aparecem como `artefato +regi
 
 | reprova | lei |
 |---|---|
-| pior caso acima de 15 | L1 |
+| pior caso acima de 15 **sem `justificativaTeto`** | L1 |
+| `piorCaso` que contradiz `agentes × multiplicador` | L1 |
+| `maxRounds` que discorda de `multiplicador` | L2 |
+| plano sem run nenhum, ou sem `intencao` | §3 |
 | `multiplicador > 1` sem `condicaoParada`, `maxRounds` ou `memoria` | L2 |
 | `piorCaso` diferente de `agentes × multiplicador` (aviso) | L2 |
 | `fixer` sem `corrige` e sem `somenteLeitura` | L3 |
@@ -65,7 +68,7 @@ indesenhável. Na coluna `escreve` do desenho eles aparecem como `artefato +regi
 | `fixer` que corrige e não registra (aviso) | L7 |
 | `reader` com `corrige` | L3 |
 | mais de 3 destinos distintos escritos na mesma fase, sem `excecaoMecanica` | L4 |
-| dois ou mais no mesmo destino, em `parallel`/`pipeline`, sem `isolamento` | L4 |
+| dois ou mais no mesmo destino de `corrige` **ou de `registra`**, em `parallel`/`pipeline`, sem `isolamento` | L4 |
 | dois isolados no mesmo destino sem `integrador` em fase posterior | L4 + L6 |
 | `schema` que é só um nome, ou objeto sem `campos` | §3 |
 | sem `schema` e sem `semSchemaPorque` | *Free-Text Parsing* |
@@ -85,8 +88,8 @@ conta, e contar agente é a razão de o desenho existir. Resumir também mente s
 custo: numa barreira real de oito builders, o mais lento levou 42m40s e o mais rápido
 8m58s — a leva custa o pior, não a média, e isso só aparece com as oito linhas à mostra.
 
-Respeitado o teto de 15, o desenho não passa de ~35 linhas. Se ficou longo, o alarme é
-o tamanho: o problema é o plano, não o desenho.
+Um plano dentro de 15 não passa de ~35 linhas. Se ficou longo, o alarme é o tamanho:
+o plano deve uma justificativa, e quem aprova decide olhando o número.
 
 A moldura tem 96 colunas e um `assert` garante que as seis colunas cabem dentro dela.
 Conteúdo maior que a coluna é truncado com `…`, nunca estoura a borda. `testar.sh`
@@ -169,8 +172,10 @@ budget = { total: number|null, spent(): number, remaining(): number }
 | concorrência | `min(16, CPUs − 2)`; o excesso enfileira |
 | itens por `parallel`/`pipeline` | 4.096 — passar mais é erro explícito, não truncamento silencioso |
 
-O teto de 15 desta skill é política do Marco. `medium` é recomendação de tamanho ao
-escrever o script; não bloqueia execução.
+O 15 desta skill não trava: acima dele o plano precisa de `justificativaTeto`, uma
+frase que explique o número, e passa. É ônus de explicar, não proibição — quem aprova
+vê a conta por extenso e decide. `medium` é recomendação de tamanho ao escrever o
+script; também não bloqueia execução.
 
 ## O que o script NÃO pode
 

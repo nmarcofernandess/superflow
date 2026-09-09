@@ -76,6 +76,10 @@ def nome_schema(s):
 # ── leis ───────────────────────────────────────────────────────────────────
 def leis(plano):
     falhas, avisos = [], []
+    if not plano.get("runs"):
+        falhas.append("plano sem run nenhum: não há o que aprovar nem o que executar")
+    if not plano.get("intencao"):
+        falhas.append("plano sem 'intencao': o que tem de existir no fim não está escrito")
     for i, run in enumerate(plano.get("runs", [])):
         rn    = run.get("nome", f"RUN {i+1}")
         fases = run.get("fases", [])
@@ -84,7 +88,9 @@ def leis(plano):
         pior  = run.get("piorCaso", len(ags) * mult)
 
         if pior != len(ags) * mult:
-            avisos.append(f"{rn}: piorCaso {pior} ≠ {len(ags)} agentes × {mult} rodadas")
+            falhas.append(f"{rn}: piorCaso {pior} contradiz a própria lista — "
+                          f"{len(ags)} agentes × {mult} rodada(s) = {len(ags)*mult}. "
+                          f"O cabeçalho sairia com um número que o desenho desmente (L1)")
         if pior > TETO and not run.get("justificativaTeto"):
             falhas.append(f"{rn}: pior caso {pior} acima de {TETO} sem 'justificativaTeto'. "
                           f"O número não é proibido — a frase que o explica é obrigatória (L1)")
@@ -94,6 +100,11 @@ def leis(plano):
         if mult > 1:
             for k in ("condicaoParada", "maxRounds", "memoria"):
                 if not run.get(k): falhas.append(f"{rn}: loop sem '{k}' declarado (L2)")
+            mr = run.get("maxRounds")
+            if isinstance(mr, int) and mr != mult:
+                falhas.append(f"{rn}: maxRounds {mr} e multiplicador {mult} descrevem o mesmo "
+                              f"número de rodadas e discordam — o pior caso seria calculado "
+                              f"sobre {mult} e o loop poderia girar {mr} (L2)")
         for k, rot in (("porque","POR QUÊ"), ("extrai","EXTRAI"), ("dod","DoD")):
             if not run.get(k): falhas.append(f"{rn}: falta {rot}")
         if not run.get("retorno"): falhas.append(f"{rn}: sem schema de return (L6)")
@@ -149,7 +160,9 @@ def leis(plano):
                     falhas.append(f"{rn}/{an}: reader com 'corrige' — quem levanta não altera "
                                   f"o objeto investigado")
 
-            # L4 — escritores por fase, contados por destino real
+            # L4 — escritores por fase, contados por destino real.
+            # `registra` é escrita como `corrige` é: dois agentes gravando o mesmo
+            # qa-v1.md em paralelo perdem trabalho do mesmo jeito.
             escritores = [a for a in membros if not vazio(a.get("corrige"))]
             distintos  = {a.get("corrige") for a in escritores}
             if len(distintos) > MAX_ESCRITORES and not run.get("excecaoMecanica"):
@@ -160,7 +173,10 @@ def leis(plano):
             # dois no mesmo destino: ou isolam e integram, ou viram um
             por_destino = {}
             if f.get("padrao") != "serial":   # em serial não há colisão: um escreve depois do outro
-                for a in escritores: por_destino.setdefault(a["corrige"], []).append(a)
+                for a in membros:
+                    for campo in ("corrige", "registra"):
+                        if not vazio(a.get(campo)):
+                            por_destino.setdefault(a[campo], []).append(a)
             for dest, quem in por_destino.items():
                 if len(quem) < 2: continue
                 if not all(x.get("isolamento") for x in quem):
@@ -227,30 +243,62 @@ def dur(ms):
     return f"{s//3600}h{(s%3600)//60:02d}m" if s >= 3600 else (f"{s//60}m{s%60:02d}s" if s >= 60 else f"{s}s")
 
 def levas(ags):
+    """Agrupa por janelas que de fato se sobrepõem.
+
+    Terminar no instante em que o outro começa é sequência, não simultaneidade:
+    por isso `<` e não `<=`. E mesmo sobreposição real só mostra que rodaram ao
+    mesmo tempo — a dependência que o script impôs se lê no script, não no
+    relógio. Por isso o rótulo diz SIMULTÂNEOS (observado), nunca BARREIRA.
+    """
     out = []
     for a in sorted(ags, key=lambda x: x.get("startedAt") or 0):
         ini = a.get("startedAt") or 0; fim = ini + (a.get("durationMs") or 0)
-        if out and ini <= out[-1]["fim"]:
+        if out and ini < out[-1]["fim"]:
             out[-1]["ags"].append(a); out[-1]["fim"] = max(out[-1]["fim"], fim)
         else: out.append({"ags": [a], "ini": ini, "fim": fim})
     return out
+
+def rotulo_base(label):
+    """`build:peca·r2` e `build:peca` são o mesmo agente do plano em rodadas diferentes.
+    Só o sufixo de rodada é descartado; o resto compara exato."""
+    return re.sub(r"·r\d+$", "", str(label or "")).strip()
 
 def conferir(d, plano=None):
     wp    = d.get("workflowProgress", [])
     ags   = [x for x in wp if x.get("type") == "workflow_agent"]
     fases = [x for x in wp if x.get("type") == "workflow_phase"]
-    m     = re.search(r"AGENTES:\s*(\d+)", d.get("script", "") or "")
-    decl  = int(m.group(1)) if m else None
     real  = d.get("agentCount", len(ags))
-    desvio = False
-    if   decl is None: vd = "AGENTES não declarado no script"; desvio = True
-    elif real <= decl: vd = f"máximo {decl} · realizado {real}  ✓ dentro"
-    else:              vd = f"máximo {decl} · realizado {real}  ✗ {real-decl} a mais"; desvio = True
+    desvios, naoverif = [], []
+
+    # O máximo vem do PLANO aprovado. O `// AGENTES:` do script é declaração de
+    # quem escreveu o script — e o script é justamente o que pode ter mudado.
+    m       = re.search(r"AGENTES:\s*(\d+)", d.get("script", "") or "")
+    no_scr  = int(m.group(1)) if m else None
+    maximo  = None
+    if plano:
+        maximo = sum(r.get("piorCaso",
+                     sum(len(f.get("agentes", [])) for f in r.get("fases", []))
+                     * r.get("multiplicador", 1)) for r in plano.get("runs", []))
+        if no_scr is not None and no_scr != maximo:
+            desvios.append(f"o script declara AGENTES: {no_scr}, o plano aprovado soma {maximo}")
+    else:
+        naoverif.append("máximo aprovado — o plano não foi fornecido; "
+                        f"o número do script ({no_scr if no_scr is not None else 'ausente'}) "
+                        "é declaração de quem o escreveu, não do que foi aprovado")
+
+    if maximo is None:
+        vd = "sem plano: contagem NÃO VERIFICADA"
+    elif real <= maximo:
+        vd = f"máximo {maximo} · realizado {real}  ✓ dentro"
+    else:
+        vd = f"máximo {maximo} · realizado {real}  ✗ {real - maximo} a mais"
+        desvios.append(f"{real - maximo} chamada(s) além do máximo aprovado")
 
     o = dupla([(f"RUN · {d.get('workflowName','?')}", d.get("status","?")),
                (f"{real} chamadas agent()", vd),
                (f"{h(d.get('totalTokens'))} tokens · {d.get('totalToolCalls','n/v')} ferramentas",
                 dur(d.get("durationMs")))])
+
     for f in fases:
         meus = [a for a in ags if a.get("phaseIndex") == f.get("index")]
         tk   = sum(a.get("tokens") or 0 for a in meus)
@@ -261,7 +309,8 @@ def conferir(d, plano=None):
               cabcol(["agente","estado","modelo","tokens","tempo","ferramentas"]), linha()]
         for g in levas(meus):
             n = len(g["ags"])
-            o += [linha(f"  {'‖' if n>1 else '·'}  " + (f"BARREIRA · espera {n}" if n > 1 else "SERIAL"))]
+            o += [linha(f"  {'‖' if n>1 else '·'}  " +
+                        (f"SIMULTÂNEOS (observado) · {n}" if n > 1 else "SERIAL"))]
             # Um agente, uma linha. Nunca resumir: agente escondido não é contado.
             for k, a in enumerate(g["ags"]):
                 o += [fila("└" if k == n-1 else "├",
@@ -272,26 +321,61 @@ def conferir(d, plano=None):
             o += [linha()]
         o += [fecha()]
 
-    modelos = {a.get("model") for a in ags}
-    if d.get("defaultModel") and len(modelos) > 1:
-        o += ["", f"  defaultModel do JSON é {d['defaultModel']}, mas rodaram "
-              f"{sorted(str(x) for x in modelos)}.",
-              "  defaultModel não prova o modelo de nenhuma chamada — confira agente a agente."]
+    o += ["", "  Simultaneidade acima é leitura de relógio. A dependência que o script",
+          "  impôs se confere no script — janelas sobrepostas não provam barreira."]
+
     if plano:
-        previstos = {a.get("nome") for r in plano.get("runs", [])
-                     for f in r.get("fases", []) for a in f.get("agentes", [])}
-        rotulos   = {re.split(r"[:·]", a.get("label",""))[0] for a in ags}
-        fora = sorted(x for x in rotulos if x and not any(x in p or p in x for p in previstos))
-        o += ["", "  Identidade das chamadas contra o plano:"]
-        o += [f"    rótulos sem correspondência no plano: {', '.join(fora)}"] if fora else \
-             ["    todos os rótulos correspondem a agentes do plano"]
-        if fora: desvio = True
+        prev = {}
+        for r in plano.get("runs", []):
+            for fa in r.get("fases", []):
+                for a in fa.get("agentes", []):
+                    prev[a.get("nome")] = {"modelo": a.get("modelo"),
+                                           "fase": fa.get("nome"),
+                                           "parada": bool(r.get("condicaoParada"))}
+        vistos, o2 = {}, []
+        for a in ags:
+            base = rotulo_base(a.get("label"))
+            vistos.setdefault(base, []).append(a)
+            if base not in prev:                       # identidade exata, nunca por pedaço
+                desvios.append(f"rótulo '{a.get('label')}' não corresponde a agente nenhum do plano")
+                continue
+            esperado = prev[base]["modelo"]
+            usado    = (a.get("model") or "").replace("claude-", "").replace("-5", "")
+            if esperado and usado and usado != esperado:
+                desvios.append(f"'{base}' rodou em {usado}; o plano aprovou {esperado}")
+            elif not usado:
+                naoverif.append(f"modelo de '{base}' — o registro não traz o campo")
+        for nome, info in prev.items():
+            if nome not in vistos:
+                if info["parada"]:
+                    o2.append(f"    '{nome}' não rodou — o run declara parada antecipada, "
+                              f"então isso pode ser execução do desenho")
+                else:
+                    desvios.append(f"'{nome}' estava no plano e não aparece na run, "
+                                   f"e este run não declara parada antecipada")
+            elif info["fase"] and vistos[nome]:
+                titulo = next((f.get("title") for f in fases
+                               if f.get("index") == vistos[nome][0].get("phaseIndex")), None)
+                if titulo and titulo != info["fase"]:
+                    desvios.append(f"'{nome}' rodou na fase '{titulo}'; o plano o pôs em '{info['fase']}'")
+        o += ["", "  Identidade contra o plano aprovado:"]
+        o += [f"    {len(prev)} agentes previstos · {len(vistos)} rótulos distintos na run"] + o2
     else:
-        o += ["", "  Plano não fornecido: a identidade das chamadas fica NÃO VERIFICADA.",
-              "  Passe o plano.json como segundo argumento para comparar."]
+        naoverif += ["identidade das chamadas", "modelo por agente", "cobertura do plano"]
+        o += ["", "  Plano não fornecido. Passe-o como segundo argumento:",
+              "    superflow_rota.py conferir wf_<runId>.json plano.json"]
+
+    if desvios:
+        o += ["", "  DESVIOS:"] + [f"    ✗ {x}" for x in desvios]
+    if naoverif:
+        o += ["", "  NÃO VERIFICADO (ausência de evidência não é conformidade):"] \
+             + [f"    ? {x}" for x in dict.fromkeys(naoverif)]
+    if not desvios and not naoverif:
+        o += ["", "  Nenhum desvio, e todo aspecto acima pôde ser conferido."]
+
     o += ["", "  Este JSON cobre esta run. Ele não prova que o chat deixou de usar Agent",
           "  tool por fora dela — confira a sessão ou declare o limite."]
-    return "\n".join(o), desvio
+    return "\n".join(o), bool(desvios) or bool(naoverif)
 
 if __name__ == "__main__":
     if len(sys.argv) < 3: print(__doc__); sys.exit(2)

@@ -198,40 +198,114 @@ def main() -> int:
         if resumido:
             falhas.append(f"R9c {rotulo}: desenho esconde agente")
 
-    # `conferir` é veredito, não relatório: o desvio sai no código de saída.
-    with tempfile.TemporaryDirectory() as tmp:
-        run_json = Path(tmp) / "wf_teste.json"
-        run_json.write_text(json.dumps({
-            "workflowName": "t", "status": "completed", "agentCount": 9,
-            "script": "// AGENTES: 4\n", "totalTokens": 1000, "totalToolCalls": 5,
-            "durationMs": 1000,
-            "workflowProgress": [
-                {"type": "workflow_phase", "index": 1, "title": "F"},
-                {"type": "workflow_agent", "index": 1, "label": "x", "phaseIndex": 1,
-                 "model": "claude-sonnet-5", "state": "done", "startedAt": 0,
-                 "durationMs": 10, "tokens": 10, "toolCalls": 1},
-            ],
-        }))
-        r = subprocess.run([sys.executable, str(ROTA), "conferir", str(run_json)],
-                           text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        acima = r.returncode == 1
-        print(f"{'PASS' if acima else 'FAIL'} R10a realizado 9 acima do máximo 4 sai 1")
-        if not acima:
-            falhas.append("R10a: desvio de contagem não saiu no exit code")
-        nv = "NÃO VERIFICADA" in r.stdout
-        print(f"{'PASS' if nv else 'FAIL'} R10b sem o plano, a identidade fica não verificada")
-        if not nv:
-            falhas.append("R10b: conferir não declarou o limite da verificação")
+    # R11 — `conferir` é veredito, não relatório. O plano aprovado é a autoridade;
+    # o `// AGENTES:` do script é declaração de quem escreveu o script, e o script
+    # é justamente o que pode ter mudado. Cada caso abaixo foi um falso aceite real.
+    def agente_run(nome, modelo="sonnet", fase=1, i=0):
+        return {"type": "workflow_agent", "index": i + 1, "label": nome, "phaseIndex": fase,
+                "model": f"claude-{modelo}-5", "state": "done", "startedAt": i * 20,
+                "durationMs": 10, "tokens": 100, "toolCalls": 1}
 
-        dados = json.loads(run_json.read_text())
-        dados["agentCount"] = 3
-        run_json.write_text(json.dumps(dados))
-        dentro = subprocess.run([sys.executable, str(ROTA), "conferir", str(run_json)],
-                                text=True, stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT).returncode == 0
-        print(f"{'PASS' if dentro else 'FAIL'} R10c parada antecipada prevista sai 0")
-        if not dentro:
-            falhas.append("R10c: realizado abaixo do máximo foi tratado como desvio")
+    PLANO_AB = {
+        "nome": "Reconhecer", "intencao": "Ler A e B",
+        "runs": [{
+            "nome": "Reconhecimento", "verbo": "reconhecer", "porque": "dimensionar",
+            "extrai": "dois inventários", "dod": "inventário de A e B",
+            "retorno": "{ inventarios[] }",
+            "fases": [{"nome": "Ler", "padrao": "parallel", "agentes": [
+                dict(AGENTE, nome=n, registra=f"{n.replace(':', '-')}.md")
+                for n in ("ler:A", "ler:B")]}],
+        }],
+    }
+
+    def conferir(run: dict, plano: dict | None) -> subprocess.CompletedProcess:
+        with tempfile.TemporaryDirectory() as tmp:
+            rj = Path(tmp) / "wf.json"
+            rj.write_text(json.dumps(run, ensure_ascii=False))
+            args = [sys.executable, str(ROTA), "conferir", str(rj)]
+            if plano is not None:
+                pj = Path(tmp) / "plano.json"
+                pj.write_text(json.dumps(plano, ensure_ascii=False))
+                args.append(str(pj))
+            return subprocess.run(args, text=True, stdout=subprocess.PIPE,
+                                  stderr=subprocess.STDOUT)
+
+    def run_base(**over) -> dict:
+        r = {"runId": "wf_t", "workflowName": "Reconhecimento", "status": "completed",
+             "agentCount": 2, "script": "// AGENTES: 2\n", "totalTokens": 200,
+             "totalToolCalls": 2, "durationMs": 20, "defaultModel": "sonnet",
+             "workflowProgress": [{"type": "workflow_phase", "index": 1, "title": "Ler"},
+                                  agente_run("ler:A", i=0), agente_run("ler:B", i=1)]}
+        r.update(over)
+        return r
+
+    def caso_conf(lei, nome, esperado, run, plano=PLANO_AB, precisa=None):
+        r = conferir(run, plano)
+        obtido = "ok" if r.returncode == 0 else "desvio"
+        bem = obtido == esperado and (precisa is None or precisa in r.stdout)
+        print(f"{'PASS' if bem else 'FAIL'} {lei} {nome}")
+        if not bem:
+            falhas.append(f"{lei} {nome}: obteve {obtido}, esperava {esperado}"
+                          + (f" (faltou {precisa!r})" if precisa and precisa not in r.stdout else ""))
+
+    caso_conf("R11a", "run fiel ao plano", "ok", run_base())
+    caso_conf("R11b", "modelo trocado por opus", "desvio",
+              run_base(workflowProgress=[{"type": "workflow_phase", "index": 1, "title": "Ler"},
+                                         agente_run("ler:A", "opus", i=0),
+                                         agente_run("ler:B", "opus", i=1)]),
+              precisa="o plano aprovou sonnet")
+    caso_conf("R11c", "alvo trocado por um não aprovado", "desvio",
+              run_base(workflowProgress=[{"type": "workflow_phase", "index": 1, "title": "Ler"},
+                                         agente_run("ler:ALVO-NAO-APROVADO", i=0),
+                                         agente_run("ler:B", i=1)]),
+              precisa="não corresponde a agente nenhum do plano")
+    caso_conf("R11d", "agente previsto omitido, sem parada antecipada", "desvio",
+              run_base(agentCount=1,
+                       workflowProgress=[{"type": "workflow_phase", "index": 1, "title": "Ler"},
+                                         agente_run("ler:A", i=0)]),
+              precisa="não aparece na run")
+    plano_para = copy.deepcopy(PLANO_AB)
+    plano_para["runs"][0].update(multiplicador=2, condicaoParada="quando A bastar",
+                                 maxRounds=2, memoria="alvos já lidos", piorCaso=4)
+    # o cabeçalho carrega o PIOR caso (4), e a run parou em 1 porque a condição bateu
+    caso_conf("R11e", "agente omitido COM parada antecipada declarada", "ok",
+              run_base(agentCount=1, script="// AGENTES: 4\n",
+                       workflowProgress=[{"type": "workflow_phase", "index": 1, "title": "Ler"},
+                                         agente_run("ler:A", i=0)]),
+              plano=plano_para)
+    caso_conf("R11f", "script declara mais agentes que o plano", "desvio",
+              run_base(agentCount=3, script="// AGENTES: 3\n",
+                       workflowProgress=[{"type": "workflow_phase", "index": 1, "title": "Ler"},
+                                         agente_run("ler:A", i=0), agente_run("ler:B", i=1),
+                                         agente_run("ler:C", i=2)]),
+              precisa="o plano aprovado soma 2")
+    caso_conf("R11g", "fase trocada", "desvio",
+              run_base(workflowProgress=[{"type": "workflow_phase", "index": 1, "title": "Outra"},
+                                         agente_run("ler:A", i=0), agente_run("ler:B", i=1)]),
+              precisa="o plano o pôs em")
+    caso_conf("R11h", "modelo ausente no registro fica não verificado", "desvio",
+              run_base(workflowProgress=[{"type": "workflow_phase", "index": 1, "title": "Ler"},
+                                         {**agente_run("ler:A", i=0), "model": None},
+                                         agente_run("ler:B", i=1)]),
+              precisa="NÃO VERIFICADO")
+    caso_conf("R11i", "sem plano, nada é verificado", "desvio", run_base(), plano=None,
+              precisa="NÃO VERIFICADO")
+
+    # R12 — o desenho da run não pode afirmar barreira a partir do relógio
+    r = conferir(run_base(), PLANO_AB)
+    sem_barreira = "BARREIRA" not in r.stdout
+    print(f"{'PASS' if sem_barreira else 'FAIL'} R12a desenho não afirma barreira por horário")
+    if not sem_barreira:
+        falhas.append("R12a: o desenho chamou de barreira o que só é simultaneidade observada")
+    encostado = run_base(workflowProgress=[
+        {"type": "workflow_phase", "index": 1, "title": "Ler"},
+        {**agente_run("ler:A", i=0), "startedAt": 0, "durationMs": 10},
+        {**agente_run("ler:B", i=1), "startedAt": 10, "durationMs": 10}])
+    saida = conferir(encostado, PLANO_AB).stdout
+    seq = saida.count("SERIAL") == 2
+    print(f"{'PASS' if seq else 'FAIL'} R12b terminar quando o outro começa é sequência")
+    if not seq:
+        falhas.append("R12b: janelas que só se encostam foram agrupadas como simultâneas")
 
     if falhas:
         print()

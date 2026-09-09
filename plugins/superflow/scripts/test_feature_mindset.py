@@ -74,6 +74,34 @@ def assert_ready_gates_require_validator() -> None:
                 raise AssertionError(f"{path} must keep TDD boundary (behavior names only)")
 
 
+def assert_every_manifest_declares_the_same_version() -> None:
+    """Four manifests carry a version and nothing compared them.
+
+    `.agents/plugins/marketplace.json` sat at 0.5.0 through two releases while the
+    plugin manifests moved on, and the README claimed they were in sync. A catalogue
+    that advertises a version the package no longer ships misinstalls on Codex.
+    """
+    import json as _json
+
+    repo = PLUGIN_ROOT.parent.parent
+    alvos = {
+        ".claude-plugin/marketplace.json": lambda d: [p["version"] for p in d["plugins"]],
+        ".agents/plugins/marketplace.json": lambda d: [p["version"] for p in d["plugins"]],
+        "plugins/superflow/.claude-plugin/plugin.json": lambda d: [d["version"]],
+        "plugins/superflow/.codex-plugin/plugin.json": lambda d: [d["version"]],
+    }
+    achadas: dict[str, list[str]] = {}
+    for rel, pega in alvos.items():
+        caminho = repo / rel
+        if not caminho.exists():
+            raise AssertionError(f"manifesto ausente: {rel}")
+        achadas[rel] = pega(_json.loads(caminho.read_text(encoding="utf-8")))
+    distintas = {v for vs in achadas.values() for v in vs}
+    if len(distintas) != 1:
+        detalhe = "; ".join(f"{k}={','.join(v)}" for k, v in achadas.items())
+        raise AssertionError(f"manifestos discordam da versão: {detalhe}")
+
+
 def assert_readme_install_pins_release_tag() -> None:
     """Third-party install must pin the current plugin version tag (not main first)."""
     manifest = json.loads(
@@ -244,6 +272,7 @@ def main() -> int:
 
     assert_ready_gates_require_validator()
     assert_readme_install_pins_release_tag()
+    assert_every_manifest_declares_the_same_version()
     assert_safada_scope_and_decision_gates()
 
     coverage = json.loads(COVERAGE.read_text(encoding="utf-8"))
