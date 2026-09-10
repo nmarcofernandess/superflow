@@ -3,6 +3,11 @@
 `status.json` e o GPS do fluxo. Ele nao substitui o PRD, nao substitui o log e
 nao vira documento narrativo.
 
+A lei de packagehood, tipo de `phases.*`, enum, `current_phase`,
+registro cedo contra `ready`, e as distincões que o validador nao
+pode cruzar vive em `lifecycle-contract.md`. Este arquivo descreve o
+shape. Quando os dois divergirem, vale o lifecycle.
+
 ## Campos
 
 ```json
@@ -112,27 +117,22 @@ failed
 superseded
 ```
 
-Vocabulario fechado, verificado por `validate_phase_vocabulary` em
-`validate_superflow.py`. `superseded` entra como setimo valor porque
-`skipped` nao cobre o caso real: "outro pacote fez isto" e diferente de
-"decidiu-se nao fazer".
+Vocabulario fechado. Sete valores. `superseded` nao e alias de
+`skipped` nem de `complete`: outro pacote executou, e diferente de
+"decidiu-se nao fazer" e de "esta fase terminou neste pacote".
+Ship nao e oitavo valor — mora no bloco opcional `shipped`.
+Mapa medido, tipo (string apenas) e testes em
+`lifecycle-contract.md` D3 e D4.
 
-Mapa das grafias vivas que a migracao lazy resolve — nunca reescrever spec
-antiga em massa, so ao tocar no arquivo:
-
-| Grafia viva | Le-se como |
-|---|---|
-| `in_progress`, `in-progress` | `running` |
-| `done`, `complete_*`, `complete — <prosa>` | `complete` (a prosa migra para `progress.md`) |
-| `not_applicable`, `skipped_*` | `skipped` |
-| `absorbed`, `complete_via_<outro pacote>` | `superseded` |
-| `cancelled` | `superseded` quando outro pacote fez; `skipped` quando se decidiu nao fazer |
+`phases.*` e sempre string. Objeto JSON e invalido; os 14 valores
+objeto medidos no DietFlow migram pela tabela de D3.
 
 `blocked` exige `blocked_reason` com motivo assinado (campaign-contract C4).
 
-O gate nasce em **ratchet**: `PHASE_VOCABULARY_FLOOR` congela, com data, os
-pacotes que ja violavam no censo de 2026-09-09; entrada que nao viola mais
-falha como stale. A lista so encolhe.
+O ratchet de grafia fora do vocabulario mora no **consumidor**,
+`.superflow/phase-vocabulary-floor.json` (`lifecycle-contract.md` D7).
+O plugin generico nao carrega caminho de spec de um repo. A lista so
+encolhe. Entrada stale falha.
 
 ### `decision.verdict`
 
@@ -269,14 +269,27 @@ Cache de rollup é opcional e vem com gate de frescor: se
 `handbook.children_rollup` existir, seu `derived_at` não pode ser mais velho que
 o `updated_at` do filho mais novo.
 
-## `campaign` — obrigatório sob `minispecs/`
+## `campaign` — mãe se adesiva; filho não depende do nome `minispecs/`
 
-Pacote sob `minispecs/` é filho de campanha: `campaign` deixa de ser opcional e
-tem de casar com o `id` do pacote-mãe quando este existe. Sem isso o filho fica
-verde sozinho e invisível para a campanha que o encomendou.
+A mãe declara `campaign` igual ao próprio `id`. É isso que a faz
+entrar no cálculo da própria campanha. Não se inventa
+`depends_on: [próprio id]`.
 
-`depends_on` não muda: continua sendo a lista de ids de que este pacote depende,
-e o inverso ("o que depende dela") é derivado em tempo de leitura, nunca digitado.
+Um pacote é filho quando um ancestral contém `status.json`. Filho
+exige `campaign` — em `minispecs/`, `subspecs/` e qualquer outra
+pasta aninhada. A lei completa, a dívida medida e o FLOOR de adesão
+estão em `lifecycle-contract.md` D6.
+
+`depends_on` não muda: continua sendo a lista de ids de que este
+pacote depende, e o inverso é derivado em tempo de leitura, nunca
+digitado.
+
+### `current_phase`
+
+Ponteiro. Oito nomes: `inbox`, `taskgen`, `analyst`, `build`,
+`review`, `plan`, `execute`, `qa`. Não é o estado da fase. Mapa das
+25 grafias vivas e coerência com `phases.*` / `decision` em
+`lifecycle-contract.md` D5.
 
 ## Invariantes
 
@@ -306,15 +319,26 @@ e o inverso ("o que depende dela") é derivado em tempo de leitura, nunca digita
 14. Nenhuma fase de execucao roda com `prd_status = gathering`. Promova para
     `ready` ou marque `blocked` antes de executar.
 15. `HANDBOOK.md` não é obrigatório por largada — é obrigatório por condição.
-    Mas se o arquivo existir, `artifacts.handbook` tem de apontar para ele e o
-    bloco `handbook` tem de existir: retrato sem ponteiro é invisível para o
-    motor de campanha, e retrato sem bloco volta a exigir regex sobre prosa.
+    Ausência nunca falha o pacote (fóssil tipado sem handbook é caso de
+    teste obrigatório). Mas se o arquivo existir, `artifacts.handbook` tem
+    de apontar para ele e o bloco `handbook` tem de existir: retrato sem
+    ponteiro é invisível para o motor de campanha, e retrato sem bloco
+    volta a exigir regex sobre prosa. Nenhuma regra cruza a prosa do
+    handbook com `phases.*`, `current_phase` ou `decision`.
 16. O veredito do handbook (`selo`, `index_action`, `archivable`) nasce campo.
-    O `HANDBOOK.md` não tem seção de veredito.
+    O `HANDBOOK.md` não tem seção de veredito. Handbook vive na mãe; não
+    existe `HANDBOOK.md` em minispec nem subspec.
 17. Elegibilidade de execução é derivada (`kind != "human" && blocked_by == []`),
     nunca gravada. Rollup pai×filho também é derivado; cache só vale com
     `derived_at` mais novo que o filho mais novo.
-18. Pacote sob `minispecs/` exige `campaign` igual ao `id` do pacote-mãe.
+18. Mãe declara `campaign` igual ao próprio `id`. Filho (ancestral com
+    `status.json`) exige `campaign`. Não depende do pai se chamar
+    `minispecs/`. Ver `lifecycle-contract.md` D6.
+19. Packagehood é só `status.json`. Pasta com documento de spec e sem
+    `status.json` é `unregistered_spec_documents`, não `partial package`.
+    `PRD.md` só é exigido quando `prd_status` é `ready` (ou legado
+    `complete` lido como `ready`). `progress.md` não é exigência de
+    packagehood. Ver `lifecycle-contract.md` D1 e D2.
 
 ## Phase Matrix
 

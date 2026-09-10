@@ -35,9 +35,26 @@ The motor walks the package directories, reads those two fields, and computes
 the graph. Nothing is duplicated, so nothing can drift: a package that moves is
 already telling the truth about itself.
 
+The mother joins her own campaign by declaring `campaign` equal to her
+own `id`. That is self-membership, not a self-dependency. Do not put
+the mother's id in her `depends_on`. A mother without `campaign` does
+not appear in the filter that builds the campaign, even if she has
+`children_source`.
+
+A package is a child when an ancestor directory contains `status.json`.
+Children owe `campaign` in `minispecs/`, `subspecs/`, and any other
+nested folder. The old guard (`parent.name == "minispecs"`) is
+insufficient. Full condition, measured debt, and consumer FLOOR:
+`lifecycle-contract.md` D6.
+
 `depends_on` holds package ids (directory names). An id that does not exist is
 a contract error, not a warning — a dependency you cannot name is a dependency
 you have not thought about.
+
+A package with `children_source` describes itself. Its acceptance and
+Definition of Complete are about its own scope, never a handwritten
+list of child state. The set's conclusion is the campaign motor,
+recomputed, never a derived field written by hand.
 
 ## C2 — Order comes from dependencies
 

@@ -125,8 +125,16 @@ PRD itself:
 Promotion `gathering -> ready` is an act of the skill that wrote or reviewed
 the PRD content against this contract — never of a script or keyword score. A
 structurally complete file that is semantically empty ("To be filled...")
-stays `gathering`. Legacy specs may contain `draft`/`complete`/`discarded`;
-read them as `gathering`/`ready`/`superseded` (lazy migration).
+stays `gathering`. A green structural validator does not promote. Legacy
+specs may contain `draft`/`complete`/`discarded`; read them as
+`gathering`/`ready`/`superseded` (lazy migration).
+
+Registration is not maturity. A named minispec (or any package) may
+receive `status.json` in `gathering` with no `PRD.md` yet. That is
+lifecycle-contract D2-A. D2-B does not relax: `ready` still requires
+this contract's sections, a filled TL;DR, and the reviewing skill.
+The applicability condition changed; the quality bar for `ready` did
+not. See `lifecycle-contract.md` D1 and D2.
 
 ## Acceptance Criteria Rules
 
