@@ -1,25 +1,26 @@
 ---
 name: qg
-description: Gera o QG Superflow — HTML autocontido, snapshot do disco, a partir dos status.json. Use quando o dono pedir o quartel-general, o mapa das specs, a triagem visual, ou para ver o que existe / o que falta / o que pode avançar. Nunca chama LLM para ler specs. Regenere; não edite o HTML para atualizar estado.
+description: Gera o QG Superflow — HTML autocontido a partir de .superflow/status.json. Use quando o dono pedir o quartel-general, o mapa das specs, a triagem visual, ou para ver o que existe / o que falta / o que pode avançar. Nunca chama LLM para ler specs. Regenere o feed, depois o HTML. Não edite o HTML para atualizar estado.
 ---
 
-# QG — snapshot do disco
+# QG — snapshot do feed
 
 O QG é a superfície onde o dono vê o que existe, o que falta e o que pode
-avançar. **Quem responde "quais são os pacotes" é o disco**, não uma lista
-digitada. O HTML gerado **é** o retrato: carrega data e `read_base`. Não finja
-acompanhamento ao vivo.
+avançar. **Quem responde "quais são os pacotes" é `.superflow/status.json`**,
+não uma lista digitada e não um walk do HTML. O HTML gerado **é** o retrato
+do feed: carrega data e `read_base`. Não finja acompanhamento ao vivo.
 
 ## Gerar
 
-A partir da raiz do consumidor (ou de qualquer path de walk-up):
+A partir da raiz do consumidor (ou de qualquer path de walk-up), grave o
+feed e depois o HTML:
 
 ```bash
+python3 plugins/superflow/scripts/superflow_status.py .
 python3 plugins/superflow/scripts/superflow_qg.py .
 ```
 
-Atualizar um QG é rodar o mesmo comando de novo. Mudança em `status.json`
-aparece na próxima geração.
+A leaf `status.json` change appears only after the feed is written again.
 
 Destino: resolução do contrato (CLI → env → walk-up → default), pasta
 `.superflow/qg/`. Não reimplemente o walk-up.

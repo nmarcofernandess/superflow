@@ -7,8 +7,10 @@ Fixtures live in a temp dir and never land in the product.
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -17,7 +19,20 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 QG = SCRIPT_DIR / "superflow_qg.py"
+STATUS = SCRIPT_DIR / "superflow_status.py"
 BOARD = SCRIPT_DIR.parent / "assets" / "task-board" / "board.html"
+CAMPAIGN = SCRIPT_DIR.parent / "assets" / "fixtures" / "campaign"
+
+
+def _load_status():
+    spec = importlib.util.spec_from_file_location("superflow_status", STATUS)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
+
+
+S = _load_status()
 
 ABSENT = "Não contém"
 
@@ -87,9 +102,33 @@ def write_status(pkg: Path, **fields) -> dict:
     return data
 
 
+def run_status(root: Path, *args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [
+            sys.executable,
+            str(STATUS),
+            str(root),
+            "--specs",
+            str(root / "specs"),
+            "--stamp",
+            "2026-09-10",
+            *args,
+        ],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=False,
+    )
+
+
 def run_qg(root: Path, *args: str) -> subprocess.CompletedProcess:
     dest = root / "out"
     dest.mkdir(exist_ok=True)
+    feed = root / ".superflow" / "status.json"
+    if not feed.is_file():
+        written = run_status(root)
+        if written.returncode != 0:
+            return written
     return subprocess.run(
         [
             sys.executable,
@@ -289,13 +328,18 @@ def test_status_change_without_portrait_edit(root: Path) -> None:
     data["phases"]["execute"] = "complete"
     data["current_phase"] = "qa"
     write_json(pkg / "status.json", data)
-    after = snapshot_of(html_of(root, "--scope", "beta-solo", "--out", "after.html"))
+    stale = snapshot_of(html_of(root, "--scope", "beta-solo", "--out", "stale.html"))
     before_pkg = next(p for p in before["packages"] if p["id"] == "beta-solo")
+    stale_pkg = next(p for p in stale["packages"] if p["id"] == "beta-solo")
+    if stale_pkg["phases"]["execute"] != before_pkg["phases"]["execute"]:
+        raise AssertionError("QG must keep the feed snapshot until the feed regenerates")
+    refreshed = run_status(root)
+    if refreshed.returncode != 0:
+        raise AssertionError(f"feed refresh failed:\n{refreshed.stdout}")
+    after = snapshot_of(html_of(root, "--scope", "beta-solo", "--out", "after.html"))
     after_pkg = next(p for p in after["packages"] if p["id"] == "beta-solo")
-    if before_pkg["phases"]["execute"] == after_pkg["phases"]["execute"]:
-        raise AssertionError("next generation must reflect the new status.json")
     if after_pkg["phases"]["execute"] != "complete":
-        raise AssertionError("updated phase did not appear")
+        raise AssertionError("updated phase did not appear after the feed refreshed")
 
 
 def test_handbook_may_diverge(root: Path) -> None:
@@ -381,12 +425,17 @@ def test_unregistered_and_tokens(root: Path) -> None:
     board = BOARD.read_text(encoding="utf-8")
     if "--paper" not in board or "--ink" not in board:
         raise AssertionError("canonical board.html lost --paper/--ink")
-    if "load_board_css" not in QG.read_text(encoding="utf-8"):
+    src = QG.read_text(encoding="utf-8")
+    if "load_board_css" not in src:
         raise AssertionError("QG must embed board.html CSS, not a second token sheet")
-    if "resolve_qg_dir" not in QG.read_text(encoding="utf-8"):
+    if "resolve_qg_dir" not in src:
         raise AssertionError("QG must use the contract path resolver")
-    if "rastro" in QG.read_text(encoding="utf-8"):
+    if "rastro" in src:
         raise AssertionError("do not port the prose-scrape rastro")
+    if 'rglob("status.json")' in src or "rglob('status.json')" in src:
+        raise AssertionError("QG must not walk every status.json to render")
+    if ".superflow/status.json" not in text:
+        raise AssertionError("HTML must name the consolidated feed as its source")
 
 
 def test_script_payload_cannot_break_out(root: Path) -> None:
@@ -471,6 +520,204 @@ def test_duplicate_ids_keep_distinct_graph_nodes(root: Path) -> None:
             raise AssertionError(f"{rec['rel']} must diagnose the duplicate id, got {rec['diagnostics']}")
 
 
+def test_feed_covers_scanned_packages_and_declared_ghosts(root: Path) -> None:
+    setup_tree(root)
+    ghost_dir = root / "specs" / "alpha-mother" / "minispecs" / "02-ghost"
+    ghost_dir.mkdir()
+    written = run_status(root)
+    if written.returncode != 0:
+        raise AssertionError(f"feed write failed:\n{written.stdout}")
+    feed_path = root / ".superflow" / "status.json"
+    md_path = root / ".superflow" / "status.md"
+    if not feed_path.is_file() or not md_path.is_file():
+        raise AssertionError("census must write .superflow/status.json and status.md")
+    feed = json.loads(feed_path.read_text(encoding="utf-8"))
+    feed_rels = {pkg["rel"] for pkg in feed["packages"]}
+    specs = root / "specs"
+    for status_file in specs.rglob("status.json"):
+        rel = status_file.parent.relative_to(specs).as_posix()
+        if rel not in feed_rels:
+            raise AssertionError(f"scanned package {rel} has no feed row")
+    ghost = next((pkg for pkg in feed["packages"] if pkg["id"] == "02-ghost"), None)
+    if ghost is None:
+        raise AssertionError("declared child 02-ghost missing from feed")
+    if ghost["kind"] != "declared_child":
+        raise AssertionError(f"02-ghost kind={ghost['kind']!r}, want declared_child")
+    if ghost["presence"] != "missing_status":
+        raise AssertionError(f"02-ghost presence={ghost['presence']!r}, want missing_status")
+    ids = {pkg["id"] for pkg in feed["packages"]}
+    if ids != {"alpha-mother", "01-child", "02-ghost", "beta-solo"}:
+        raise AssertionError(f"feed ids drifted from the scan: {ids}")
+    md = md_path.read_text(encoding="utf-8")
+    for name in ("alpha-mother", "01-child", "beta-solo", "ghost-docs", "02-ghost"):
+        if name not in md:
+            raise AssertionError(f"status.md must list {name}")
+    again = run_status(root)
+    if again.returncode != 0:
+        raise AssertionError(f"second feed write failed:\n{again.stdout}")
+    first = json.dumps(feed, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
+    if feed_path.read_text(encoding="utf-8") != first:
+        raise AssertionError("second feed write must be byte-stable at the same stamp")
+
+
+def test_malformed_feed_package_exits_contract(root: Path) -> None:
+    setup_tree(root)
+    written = run_status(root)
+    if written.returncode != 0:
+        raise AssertionError(f"feed write failed:\n{written.stdout}")
+    feed_path = root / ".superflow" / "status.json"
+    write_json(
+        feed_path,
+        {
+            "generated_at": "2026-09-10",
+            "read_base": "disk",
+            "packages": ["x"],
+            "unregistered": [],
+            "edges": [],
+        },
+    )
+    result = run_qg(root)
+    if result.returncode != 1:
+        raise AssertionError(f"packages: [\"x\"] must exit CONTRACT, got {result.returncode}\n{result.stdout}")
+    if "CONTRACT" not in result.stdout:
+        raise AssertionError(f"must say CONTRACT, got {result.stdout!r}")
+    if "Traceback" in result.stdout:
+        raise AssertionError(f"CONTRACT must not traceback:\n{result.stdout}")
+
+
+def test_feed_diagnostics_int_exits_contract(root: Path) -> None:
+    payload = {
+        "generated_at": "2026-09-10",
+        "read_base": "disk",
+        "packages": [{"id": "a", "rel": "a", "diagnostics": 5}],
+        "unregistered": [],
+        "edges": [],
+    }
+    feed_file = root / "bad-feed.json"
+    write_json(feed_file, payload)
+    try:
+        S.load_feed(feed_file)
+    except SystemExit as exc:
+        if "CONTRACT" not in str(exc):
+            raise AssertionError(f"diagnostics: 5 must exit CONTRACT, got {exc!r}")
+    else:
+        raise AssertionError("diagnostics: 5 must exit CONTRACT at load_feed")
+    setup_tree(root)
+    written = run_status(root)
+    if written.returncode != 0:
+        raise AssertionError(f"feed write failed:\n{written.stdout}")
+    write_json(root / ".superflow" / "status.json", payload)
+    result = run_qg(root)
+    if result.returncode != 1:
+        raise AssertionError(f"diagnostics: 5 must exit CONTRACT, got {result.returncode}\n{result.stdout}")
+    if "CONTRACT" not in result.stdout:
+        raise AssertionError(f"must say CONTRACT, got {result.stdout!r}")
+    if "Traceback" in result.stdout:
+        raise AssertionError(f"CONTRACT must not traceback:\n{result.stdout}")
+
+
+def test_duplicate_ids_without_presence_do_not_traceback(root: Path) -> None:
+    payload = {
+        "generated_at": "2026-09-10",
+        "read_base": "disk",
+        "packages": [{"id": "dup", "rel": "one"}, {"id": "dup", "rel": "two"}],
+        "unregistered": [],
+        "edges": [],
+    }
+    feed_file = root / "dup-feed.json"
+    write_json(feed_file, payload)
+    loaded = None
+    try:
+        loaded = S.load_feed(feed_file)
+    except SystemExit as exc:
+        if "CONTRACT" not in str(exc):
+            raise AssertionError(f"duplicate ids without presence must exit CONTRACT, got {exc!r}")
+    if loaded is not None:
+        try:
+            S.project_feed(loaded, None)
+        except Exception as exc:
+            raise AssertionError(
+                f"project must not traceback, got {type(exc).__name__}: {exc}"
+            )
+    setup_tree(root)
+    written = run_status(root)
+    if written.returncode != 0:
+        raise AssertionError(f"feed write failed:\n{written.stdout}")
+    write_json(root / ".superflow" / "status.json", payload)
+    result = run_qg(root)
+    if "Traceback" in result.stdout:
+        raise AssertionError(f"QG must not traceback:\n{result.stdout}")
+    if result.returncode not in (0, 1):
+        raise AssertionError(f"QG exit {result.returncode}, want 0 or CONTRACT 1\n{result.stdout}")
+    if result.returncode == 1 and "CONTRACT" not in result.stdout:
+        raise AssertionError(f"QG exit 1 must say CONTRACT, got {result.stdout!r}")
+
+
+def test_feed_write_is_restart_safe(root: Path) -> None:
+    dest = root / "status.json"
+    dest.write_text("keep\n", encoding="utf-8")
+    tmp = dest.with_name(f"{dest.name}.tmp")
+    tmp.write_text("torn\n", encoding="utf-8")
+    if dest.read_text(encoding="utf-8") != "keep\n":
+        raise AssertionError("temp written and replace skipped leaves dest unchanged")
+    S.atomic_write_text(dest, "next\n")
+    if dest.read_text(encoding="utf-8") != "next\n":
+        raise AssertionError(f"atomic write must replace dest, got {dest.read_text(encoding='utf-8')!r}")
+    if tmp.exists():
+        raise AssertionError("no leftover .tmp after success")
+    setup_tree(root)
+    written = run_status(root)
+    if written.returncode != 0:
+        raise AssertionError(f"feed write failed:\n{written.stdout}")
+    leftovers = [p.name for p in (root / ".superflow").iterdir() if p.name.endswith(".tmp")]
+    if leftovers:
+        raise AssertionError(f"no leftover .tmp after success, got {leftovers}")
+
+
+def test_census_does_not_ingest_its_own_feed(root: Path) -> None:
+    tree = root / "campaign"
+    shutil.copytree(CAMPAIGN, tree)
+    first = S.write_feed(tree, tree / ".superflow", stamp="2026-09-11", read_base="disk")
+    first_ids = [pkg["id"] for pkg in first["packages"]]
+    if first_ids != ["001-foundation", "002-consumer", "003-polish"]:
+        raise AssertionError(f"first write ids {first_ids}")
+    if ".superflow" in first_ids:
+        raise AssertionError("feed must not list id .superflow")
+    json_path = tree / ".superflow" / "status.json"
+    first_bytes = json_path.read_bytes()
+    second = S.write_feed(tree, tree / ".superflow", stamp="2026-09-11", read_base="disk")
+    second_ids = [pkg["id"] for pkg in second["packages"]]
+    if second_ids != ["001-foundation", "002-consumer", "003-polish"]:
+        raise AssertionError(f"second write ids {second_ids}")
+    if ".superflow" in second_ids:
+        raise AssertionError("second write must not list id .superflow")
+    if json_path.read_bytes() != first_bytes:
+        raise AssertionError("second write at the same stamp must be byte-identical")
+
+
+def test_census_skips_hidden_declared_child_at_scanned_root(root: Path) -> None:
+    tree = root / "scanned"
+    tree.mkdir()
+    write_status(tree, id="rootpkg", children_source={"glob": "*/status.json"})
+    write_status(tree / "kid", id="kid")
+    first = S.write_feed(tree, tree / ".superflow", stamp="2026-09-11", read_base="disk")
+    first_ids = [pkg["id"] for pkg in first["packages"]]
+    if first_ids != ["rootpkg", "kid"]:
+        raise AssertionError(f"first write ids {first_ids}")
+    if ".superflow" in first_ids:
+        raise AssertionError("feed must not list id .superflow")
+    json_path = tree / ".superflow" / "status.json"
+    first_bytes = json_path.read_bytes()
+    second = S.write_feed(tree, tree / ".superflow", stamp="2026-09-11", read_base="disk")
+    second_ids = [pkg["id"] for pkg in second["packages"]]
+    if second_ids != ["rootpkg", "kid"]:
+        raise AssertionError(f"second write ids {second_ids}")
+    if ".superflow" in second_ids:
+        raise AssertionError("second write must not list id .superflow")
+    if json_path.read_bytes() != first_bytes:
+        raise AssertionError("second write at the same stamp must be byte-identical")
+
+
 def test_unregistered_is_not_a_filename_allowlist(root: Path) -> None:
     """Mutant: if the detector again asks 'do I know this filename?', this fails."""
     setup_tree(root)
@@ -519,6 +766,88 @@ def test_unregistered_is_not_a_filename_allowlist(root: Path) -> None:
         raise AssertionError("run.sh inside the folder must be described")
 
 
+def test_hidden_cache_run_sh_does_not_set_has_run_sh(root: Path) -> None:
+    specs = root / "specs"
+    ghost = specs / "ghost-docs"
+    ghost.mkdir(parents=True)
+    (ghost / "PRD.md").write_text("# PRD\nnot a package\n", encoding="utf-8")
+    cache_run = ghost / ".cache" / "run.sh"
+    cache_run.parent.mkdir()
+    cache_run.write_text("#!/bin/sh\n", encoding="utf-8")
+    feed = S.write_feed(specs, root / ".superflow", stamp="2026-09-10", read_base="disk")
+    ghost_row = next((item for item in feed["unregistered"] if item["rel"] == "ghost-docs"), None)
+    if ghost_row is None:
+        raise AssertionError("ghost-docs must stay unregistered")
+    if ghost_row["has_run_sh"]:
+        raise AssertionError("run.sh under .cache must not set has_run_sh")
+
+
+def test_resolve_specs_root_skips_hidden_status_glob(root: Path) -> None:
+    class Cfg:
+        specs_root = None
+
+    only_feed = root / "only-feed"
+    feed_dir = only_feed / ".superflow"
+    feed_dir.mkdir(parents=True)
+    (feed_dir / "status.json").write_text("{}\n", encoding="utf-8")
+    try:
+        S.resolve_specs_root(only_feed, Cfg(), None)
+    except SystemExit as exc:
+        if "CONTRACT" not in str(exc):
+            raise AssertionError(f"leftover .superflow/status.json must CONTRACT, got {exc!r}")
+    else:
+        raise AssertionError("leftover .superflow/status.json must not resolve as specs")
+
+    sibling = root / "with-pkg"
+    pkg = sibling / "pkg"
+    pkg.mkdir(parents=True)
+    (pkg / "status.json").write_text("{}\n", encoding="utf-8")
+    resolved = S.resolve_specs_root(sibling, Cfg(), None)
+    if resolved != sibling:
+        raise AssertionError(f"pkg/status.json must still resolve, got {resolved}")
+
+
+def test_hostile_feed_fields_exit_contract(root: Path) -> None:
+    cases = [
+        ("phases: \"nope\"", {"id": "a", "rel": "a", "phases": "nope"}, []),
+        ("tasks: 3", {"id": "a", "rel": "a", "tasks": 3}, []),
+        ("handbook: [\"x\"]", {"id": "a", "rel": "a", "handbook": ["x"]}, []),
+        ("contents: [1, 2]", {"id": "a", "rel": "a"}, [{"rel": "ghost", "contents": [1, 2]}]),
+    ]
+    payloads = []
+    for index, (label, pkg, unregistered) in enumerate(cases):
+        payload = {
+            "generated_at": "2026-09-10",
+            "read_base": "disk",
+            "packages": [pkg],
+            "unregistered": unregistered,
+            "edges": [],
+        }
+        payloads.append((label, payload))
+        feed_file = root / f"hostile-{index}.json"
+        write_json(feed_file, payload)
+        try:
+            S.load_feed(feed_file)
+        except SystemExit as exc:
+            if "CONTRACT" not in str(exc):
+                raise AssertionError(f"{label} must exit CONTRACT, got {exc!r}")
+        else:
+            raise AssertionError(f"{label} must exit CONTRACT at load_feed")
+    setup_tree(root)
+    written = run_status(root)
+    if written.returncode != 0:
+        raise AssertionError(f"feed write failed:\n{written.stdout}")
+    for label, payload in payloads:
+        write_json(root / ".superflow" / "status.json", payload)
+        result = run_qg(root)
+        if result.returncode != 1:
+            raise AssertionError(f"{label} must exit CONTRACT, got {result.returncode}\n{result.stdout}")
+        if "CONTRACT" not in result.stdout:
+            raise AssertionError(f"must say CONTRACT, got {result.stdout!r}")
+        if "Traceback" in result.stdout:
+            raise AssertionError(f"CONTRACT must not traceback:\n{result.stdout}")
+
+
 def main() -> int:
     tests = [
         test_same_architecture_one_and_many,
@@ -531,7 +860,17 @@ def main() -> int:
         test_handbook_may_diverge,
         test_sprint_tab_opt_in,
         test_unregistered_and_tokens,
+        test_feed_covers_scanned_packages_and_declared_ghosts,
+        test_malformed_feed_package_exits_contract,
+        test_feed_diagnostics_int_exits_contract,
+        test_duplicate_ids_without_presence_do_not_traceback,
+        test_feed_write_is_restart_safe,
+        test_census_does_not_ingest_its_own_feed,
+        test_census_skips_hidden_declared_child_at_scanned_root,
         test_unregistered_is_not_a_filename_allowlist,
+        test_hidden_cache_run_sh_does_not_set_has_run_sh,
+        test_resolve_specs_root_skips_hidden_status_glob,
+        test_hostile_feed_fields_exit_contract,
         test_script_payload_cannot_break_out,
         test_invalid_glob_does_not_abort_snapshot,
         test_sibling_glob_does_not_bind_hierarchy,
