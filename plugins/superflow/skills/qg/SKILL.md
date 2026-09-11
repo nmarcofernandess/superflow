@@ -57,6 +57,10 @@ python3 plugins/superflow/scripts/superflow_qg.py . --sprint .superflow/sprints/
 - Determinístico. Sem LLM.
 - Campo opcional ausente = `Não contém`. Conteúdo incompatível = diagnóstico na página.
 - Filho declarado com `status.json` ilegível **aparece** com diagnóstico.
+- Pasta de primeiro nível sem `status.json` e com conteúdo **aparece**, mesmo
+  sem PRD/SPEC/analysis. O detector pergunta se é pacote e se tem conteúdo,
+  não se o arquivo tem um nome da lista. Artefato interno (harness, plans,
+  context) não vira bloco próprio.
 - Handbook e `phases` podem divergir. Os dois lado a lado. Sem badge de erro.
 - Grafo: só `depends_on` e `children_source`. Sem raspar prosa. Sem inventar aresta.
 - Sem caminho absoluto de máquina no HTML.

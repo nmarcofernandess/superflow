@@ -380,6 +380,70 @@ def close_scope(records: list[dict], tokens: set[str] | None) -> list[dict]:
     return [by_rel[rel] for rel in sorted(keep) if rel in by_rel]
 
 
+def visible_children(path: Path) -> list[Path]:
+    try:
+        return sorted(
+            (child for child in path.iterdir() if not child.name.startswith(".")),
+            key=lambda child: child.name,
+        )
+    except OSError:
+        return []
+
+
+def summarize_contents(path: Path) -> list[str]:
+    """Immediate names only. Internal dirs stay content, not new blocks."""
+    labels: list[str] = []
+    for child in visible_children(path):
+        labels.append(f"{child.name}/" if child.is_dir() else child.name)
+    return labels
+
+
+def folder_is_empty(path: Path) -> bool:
+    return not visible_children(path)
+
+
+def holds_packages(path: Path) -> bool:
+    """A shelf that already stores packages (archived/). Those packages speak for themselves."""
+    return any(child.is_dir() and (child / "status.json").exists() for child in visible_children(path))
+
+
+def contains_run_sh(path: Path) -> bool:
+    try:
+        return any(child.is_file() for child in path.rglob("run.sh"))
+    except OSError:
+        return False
+
+
+def find_unregistered_folders(specs_root: Path, package_rels: set[str]) -> list[dict]:
+    """First-level non-package non-empty folders. Not a filename allowlist.
+
+    Declared children are already in the package census. Nested artifact
+    directories (harness, plans, context…) are listed inside this block.
+    """
+    found: list[dict] = []
+    try:
+        top = [child for child in specs_root.iterdir() if child.is_dir() and not child.name.startswith(".")]
+    except OSError:
+        return found
+    for child in sorted(top, key=lambda item: item.name):
+        rel = posix_rel(child, specs_root)
+        if rel in package_rels or rel == ".":
+            continue
+        if folder_is_empty(child):
+            continue
+        if holds_packages(child):
+            continue
+        found.append(
+            {
+                "rel": rel,
+                "kind": KIND_UNREGISTERED,
+                "contents": summarize_contents(child),
+                "has_run_sh": contains_run_sh(child),
+            }
+        )
+    return found
+
+
 def census(specs_root: Path, scope: set[str] | None) -> dict:
     packages: dict[str, dict] = {}
     declared_from: dict[str, str] = {}
@@ -400,11 +464,7 @@ def census(specs_root: Path, scope: set[str] | None) -> dict:
             if child_rel not in packages:
                 packages[child_rel] = read_package(child, specs_root, KIND_DECLARED_CHILD)
 
-    unregistered: list[dict] = []
-    for rel, docs in V.find_unregistered_spec_documents(specs_root):
-        if rel in packages:
-            continue
-        unregistered.append({"rel": rel, "docs": list(docs), "kind": KIND_UNREGISTERED})
+    unregistered = find_unregistered_folders(specs_root, set(packages))
 
     known = set(packages)
     for rel, record in packages.items():
@@ -412,13 +472,11 @@ def census(specs_root: Path, scope: set[str] | None) -> dict:
         record["declared_by"] = declared_from.get(rel)
 
     scoped = close_scope(list(packages.values()), scope)
-    scoped_rels = {r["rel"] for r in scoped}
     if scope:
         unregistered = [
             item
             for item in unregistered
             if item["rel"] in scope
-            or any(item["rel"].startswith(rel.rstrip("/") + "/") for rel in scoped_rels)
             or any(item["rel"] == token or item["rel"].startswith(token.rstrip("/") + "/") for token in scope)
         ]
 
@@ -606,6 +664,12 @@ svg.qg-graph.foco .n.on { opacity: 1; }
 .legend i { display: inline-block; width: 22px; height: 0; border-top: 2px solid currentColor; margin-right: 6px; vertical-align: middle; }
 .legend .dep { color: var(--accent); border-top-style: dashed; }
 .legend .hier { color: var(--ink); }
+.unreg-list { margin-top: 36px; }
+.unreg { border: 1.5px dashed var(--ink); background: var(--paper-2); padding: 14px 16px; margin-top: 12px; }
+.unreg h3 { font-family: var(--mono); font-size: 15px; letter-spacing: .02em; margin-bottom: 8px; }
+.unreg p { font-size: 15px; color: var(--ink-soft); margin-top: 6px; max-width: 62ch; }
+.unreg .kind { font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.unreg .gate { border-left: 2px solid var(--accent); padding-left: 12px; margin-top: 10px; color: var(--ink); }
 """
 
 
@@ -887,14 +951,35 @@ def render_html(data: dict) -> str:
 
     unreg_html = ""
     if data["unregistered"]:
-        items = "".join(
-            f'<li data-unregistered="{esc(item["rel"])}"><code>{esc(item["rel"])}</code> · {esc(", ".join(item["docs"]))} · diagnóstico, não pacote</li>'
-            for item in data["unregistered"]
-        )
+        cards = []
+        for item in data["unregistered"]:
+            contents = item.get("contents") or []
+            has_what = ", ".join(contents) if contents else ABSENT
+            gate = ""
+            if item.get("has_run_sh"):
+                gate = (
+                    '<p class="gate">Contém <code>run.sh</code>. Se esta pasta for movida ou '
+                    "renomeada, quebra o script que o package.json do consumidor executa "
+                    "por caminho relativo — gate de release.</p>"
+                )
+            cards.append(
+                f'<article class="unreg" data-unregistered="{esc(item["rel"])}" data-qg-kind="unregistered">'
+                f'<div class="kind">pasta sem registro · não é pacote</div>'
+                f"<h3><code>{esc(item['rel'])}</code></h3>"
+                f"<p>Não contém <code>status.json</code>. Não é pacote incompatível: "
+                f"não chegou a ser pacote.</p>"
+                f"<p>Contém: {esc(has_what)}.</p>"
+                f"<p>Se esta pasta é um pacote, escreva <code>status.json</code> aqui "
+                f"(id, route, phase_budget, confidence, current_phase, "
+                f"decision.prd_status=gathering). Se é acervo de outro pacote, "
+                f"o registro mora na pasta da mãe.</p>"
+                f"{gate}</article>"
+            )
         unreg_html = (
-            f'<div class="err" data-qg-unregistered="1"><div>Pastas com documento de spec e sem status.json '
-            f"({len(data['unregistered'])}). Não são pacote. Não são ausência silenciosa.</div>"
-            f"<ul>{items}</ul></div>"
+            f'<section class="unreg-list" data-qg-unregistered="1">'
+            f'<p class="counts" data-qg-unregistered-count="{len(data["unregistered"])}">'
+            f'{len(data["unregistered"])} pastas sem registro</p>'
+            f"{''.join(cards)}</section>"
         )
 
     graph_html = (
@@ -965,7 +1050,7 @@ def render_html(data: dict) -> str:
       <button class="subtab" type="button" data-tab-group="mapa" data-tab="tasks" aria-selected="true">Tasks</button>
       <button class="subtab" type="button" data-tab-group="mapa" data-tab="graph" aria-selected="false">Graph</button>
     </div>
-    <p class="counts" data-qg-counts="1">{n_pkg} pacotes · {n_unreg} pastas sem status · {n_edge} arestas ({n_hier} hierarquia, {n_dep} depends_on)</p>
+    <p class="counts" data-qg-counts="1">{n_pkg} pacotes · {n_unreg} pastas sem registro · {n_edge} arestas ({n_hier} hierarquia, {n_dep} depends_on)</p>
     <section class="panel" data-panel-group="mapa" data-panel="tasks">
       {task_tree}
       {unreg_html}

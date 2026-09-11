@@ -373,9 +373,11 @@ def test_unregistered_and_tokens(root: Path) -> None:
     text = html_of(root)
     assert_no_machine_path(text)
     if 'data-qg-unregistered="1"' not in text:
-        raise AssertionError("folders with spec docs and no status.json must be diagnosed")
+        raise AssertionError("folders without status.json must be diagnosed")
     if "ghost-docs" not in text:
         raise AssertionError("unregistered folder disappeared")
+    if 'data-qg-kind="unregistered"' not in text:
+        raise AssertionError("unregistered must be a fourth output, not an incompatible package")
     board = BOARD.read_text(encoding="utf-8")
     if "--paper" not in board or "--ink" not in board:
         raise AssertionError("canonical board.html lost --paper/--ink")
@@ -385,6 +387,54 @@ def test_unregistered_and_tokens(root: Path) -> None:
         raise AssertionError("QG must use the contract path resolver")
     if "rastro" in QG.read_text(encoding="utf-8"):
         raise AssertionError("do not port the prose-scrape rastro")
+
+
+def test_unregistered_is_not_a_filename_allowlist(root: Path) -> None:
+    """Mutant: if the detector again asks 'do I know this filename?', this fails."""
+    setup_tree(root)
+    specs = root / "specs"
+    handbook_only = specs / "106-exames-v2"
+    handbook_only.mkdir()
+    (handbook_only / "HANDBOOK.md").write_text("# handbook\n", encoding="utf-8")
+    (handbook_only / "ANALYST.md").write_text("# analyst\n", encoding="utf-8")
+    plan_only = specs / "053-selecao-convergencia"
+    plan_only.mkdir()
+    (plan_only / "PLAN.md").write_text("# plan\n", encoding="utf-8")
+    harness_only = specs / "091-foods-curadoria-mercado"
+    (harness_only / "harness").mkdir(parents=True)
+    (harness_only / "harness" / "run.sh").write_text("#!/bin/sh\n", encoding="utf-8")
+    (harness_only / "GOAL.md").write_text("# goal\n", encoding="utf-8")
+    pkg = specs / "real-pkg"
+    write_status(pkg)
+    (pkg / "harness").mkdir()
+    (pkg / "harness" / "run.sh").write_text("#!/bin/sh\n", encoding="utf-8")
+    shelf = specs / "archived"
+    nested = shelf / "old-pkg"
+    write_status(nested)
+
+    src = QG.read_text(encoding="utf-8")
+    if "find_unregistered_spec_documents" in src:
+        raise AssertionError("mutant: QG reused the filename-list detector")
+    if "SPEC_DOC_NAMES" in src:
+        raise AssertionError("mutant: QG filters unregistered folders by a filename allowlist")
+
+    text = html_of(root)
+    data = snapshot_of(text)
+    rels = [item["rel"] for item in data["unregistered"]]
+    for name in ("106-exames-v2", "053-selecao-convergencia", "091-foods-curadoria-mercado"):
+        if name not in text or name not in rels:
+            raise AssertionError(f"mutant: {name} vanished because it lacks PRD/SPEC/analysis")
+    if any(rel == "harness" or rel.endswith("/harness") for rel in rels):
+        raise AssertionError("internal artifact folder became its own diagnostic block")
+    if "archived" in rels or "archived/old-pkg" in rels:
+        raise AssertionError("package shelf must not become an unregistered block")
+    if "pastas sem registro" not in text:
+        raise AssertionError("HTML must declare the unregistered count by name")
+    if "Não é pacote incompatível" not in text:
+        raise AssertionError("unregistered must not be confused with incompatible")
+    foods = next(item for item in data["unregistered"] if item["rel"] == "091-foods-curadoria-mercado")
+    if not foods.get("has_run_sh"):
+        raise AssertionError("run.sh inside the folder must be described")
 
 
 def main() -> int:
@@ -399,6 +449,7 @@ def main() -> int:
         test_handbook_may_diverge,
         test_sprint_tab_opt_in,
         test_unregistered_and_tokens,
+        test_unregistered_is_not_a_filename_allowlist,
     ]
     failed = 0
     for test in tests:
