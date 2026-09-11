@@ -385,7 +385,7 @@ def main() -> int:
 
         # --- Adversarial packages A–E must FAIL ---
 
-        # C: remove status.json → partial package fail (never silent OK)
+        # C: remove status.json → unregistered_spec_documents, not a package
         exploit_c = root / "exploit-c-no-status"
         shutil.copytree(FIXTURES / "empty-headings-fail", exploit_c)
         (exploit_c / "status.json").unlink()
@@ -393,8 +393,10 @@ def main() -> int:
         assert_fail(
             c_run,
             why="exploit C: analysis without status.json",
-            needles=["partial", "missing", "status"],
+            needles=["unregistered_spec_documents", "status.json"],
         )
+        if "partial package" in c_run.stdout.lower():
+            raise AssertionError("exploit C must not be classified as partial package")
 
         # D: echo docs into mindset-depth.txt must NOT downgrade deep status
         exploit_d = root / "exploit-d-depth-hatch"

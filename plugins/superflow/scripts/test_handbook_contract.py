@@ -183,20 +183,28 @@ def main() -> int:
         expect_fail(pkg, "fora do vocabulário", "H6 grafia fora do vocabulário")
 
         pkg = fresh("h6-superseded", handbook=None)
-        write_status(pkg, phases={**json.loads((pkg / "status.json").read_text())["phases"], "qa": "superseded"})
+        write_status(
+            pkg,
+            current_phase="execute",
+            phases={
+                **json.loads((pkg / "status.json").read_text())["phases"],
+                "execute": "complete",
+                "qa": "superseded",
+            },
+        )
         expect_ok(pkg, "H6 superseded é canônico")
 
-        # H7 — filho sob minispecs/ precisa declarar a campanha do pai
+        # H7 — filho (ancestral com status.json) precisa do campaign derivado
         mother = root / "h7-mother"
         shutil.copytree(FIXTURE, mother)
-        write_status(mother, id="h7-mother")
+        write_status(mother, id="h7-mother", campaign="h7-mother")
         child = mother / "minispecs" / "01-filho"
         child.parent.mkdir()
         shutil.copytree(FIXTURE, child)
         write_status(child, id="01-filho", campaign=None)
         expect_fail(child, "campaign", "H7 filho sem campaign")
         write_status(child, campaign="outra-campanha")
-        expect_fail(child, "pacote-mãe", "H7 filho de outra campanha")
+        expect_fail(child, "valor derivado", "H7 filho de outra campanha")
         write_status(child, campaign="h7-mother")
         expect_ok(child, "H7 filho alinhado ao pai")
 
@@ -229,10 +237,10 @@ def ratchet_stale_shrinks_only() -> None:
     spec.loader.exec_module(module)
 
     canonical = {"phases": {"qa": "complete"}}
-    module.PHASE_VOCABULARY_FLOOR["fixture-stale"] = ("qa",)
+    floor = {"fixture-stale": ("qa",)}
     try:
         module.validate_phase_vocabulary(
-            canonical, label="fixture", floor_key="fixture-stale"
+            canonical, label="fixture", floor_key="fixture-stale", floor=floor
         )
     except SystemExit:
         pass
@@ -240,7 +248,9 @@ def ratchet_stale_shrinks_only() -> None:
         raise AssertionError("H9: FLOOR stale deve falhar; o ratchet só encolhe")
 
     legacy = {"phases": {"qa": "done"}}
-    module.validate_phase_vocabulary(legacy, label="fixture", floor_key="fixture-stale")
+    module.validate_phase_vocabulary(
+        legacy, label="fixture", floor_key="fixture-stale", floor=floor
+    )
 
     module.validate_phase_vocabulary(
         {"phases": None}, label="fixture", floor_key="fixture-stale"
