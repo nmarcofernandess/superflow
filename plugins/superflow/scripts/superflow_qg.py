@@ -61,6 +61,23 @@ def posix_rel(path: Path, root: Path) -> str:
     return resolved.relative_to(base).as_posix()
 
 
+def path_inside(path: Path, root: Path) -> bool:
+    try:
+        path.resolve().relative_to(root.resolve())
+        return True
+    except ValueError:
+        return False
+
+
+def script_safe_dumps(data: object) -> str:
+    return (
+        json.dumps(data, ensure_ascii=False, sort_keys=True, indent=2)
+        .replace("<", "\\u003c")
+        .replace(">", "\\u003e")
+        .replace("&", "\\u0026")
+    )
+
+
 def read_json(path: Path) -> tuple[object | None, str | None]:
     try:
         return json.loads(path.read_text(encoding="utf-8")), None
@@ -236,21 +253,32 @@ def children_source_view(status: dict) -> tuple[dict | None, list[str]]:
     }, []
 
 
-def declared_child_dirs(mother: Path, source: dict) -> list[Path]:
+def declared_child_dirs(mother: Path, source: dict, specs_root: Path) -> tuple[list[Path], list[str]]:
     glob = source.get("glob")
     if not isinstance(glob, str) or not glob.strip():
-        return []
+        return [], []
+    pattern = glob.strip()
+    if Path(pattern).is_absolute():
+        return [], ["children_source incompatível: glob absoluto"]
     seen: dict[Path, None] = {}
-    for match in sorted(mother.glob(glob)):
+    try:
+        matches = sorted(mother.glob(pattern))
+    except (NotImplementedError, ValueError, OSError):
+        return [], ["children_source incompatível: glob inválido"]
+    specs = specs_root.resolve()
+    for match in matches:
         pkg = match.parent if match.name == "status.json" else match
+        if not path_inside(pkg, specs):
+            continue
         seen.setdefault(pkg.resolve(), None)
-    parts = Path(glob).parts
+    parts = Path(pattern).parts
     if len(parts) >= 2 and parts[-1] == "status.json" and parts[-2] == "*":
         parent = mother.joinpath(*parts[:-2]) if len(parts) > 2 else mother
-        if parent.is_dir():
+        if parent.is_dir() and path_inside(parent, specs):
             for child in sorted(p for p in parent.iterdir() if p.is_dir()):
-                seen.setdefault(child.resolve(), None)
-    return list(seen)
+                if path_inside(child, specs):
+                    seen.setdefault(child.resolve(), None)
+    return list(seen), []
 
 
 def empty_record(rel: str, pkg_id: str, kind: str) -> dict:
@@ -458,7 +486,12 @@ def census(specs_root: Path, scope: set[str] | None) -> dict:
         if not source:
             continue
         mother = specs_root / rel
-        for child in declared_child_dirs(mother, source):
+        children, glob_diags = declared_child_dirs(mother, source, specs_root)
+        if glob_diags:
+            record["diagnostics"] = list(record.get("diagnostics") or []) + glob_diags
+            if record["presence"] == "ok":
+                record["presence"] = "incompatible"
+        for child in children:
             child_rel = posix_rel(child, specs_root)
             declared_from[child_rel] = rel
             if child_rel not in packages:
@@ -483,34 +516,50 @@ def census(specs_root: Path, scope: set[str] | None) -> dict:
     scoped.sort(key=lambda r: r["rel"])
     unregistered.sort(key=lambda r: r["rel"])
 
-    by_id = {r["id"]: r for r in scoped}
+    id_hits: dict[str, list[dict]] = defaultdict(list)
+    for record in scoped:
+        id_hits[record["id"]].append(record)
+    for record in scoped:
+        hits = id_hits[record["id"]]
+        if len(hits) < 2:
+            continue
+        record["diagnostics"] = list(record.get("diagnostics") or []) + [f"id duplicado: {record['id']}"]
+        if record["presence"] == "ok":
+            record["presence"] = "incompatible"
+
     edges: list[dict] = []
     seen: set[tuple[str, str, str]] = set()
 
     for record in scoped:
+        src = record["rel"]
         source = record.get("children_source")
         if source:
             mother = specs_root / record["rel"]
-            for child in declared_child_dirs(mother, source):
+            children, _ = declared_child_dirs(mother, source, specs_root)
+            for child in children:
                 child_rel = posix_rel(child, specs_root)
                 other = next((r for r in scoped if r["rel"] == child_rel), None)
-                if other is None or other["id"] == record["id"]:
+                if other is None or other["rel"] == src:
                     continue
-                key = (EDGE_HIERARCHY, record["id"], other["id"])
+                key = (EDGE_HIERARCHY, src, other["rel"])
                 if key in seen:
                     continue
                 seen.add(key)
-                edges.append({"src": record["id"], "dst": other["id"], "kind": EDGE_HIERARCHY})
+                edges.append({"src": src, "dst": other["rel"], "kind": EDGE_HIERARCHY})
         deps = record.get("depends_on")
         if isinstance(deps, list):
             for dep in deps:
-                if dep not in by_id:
+                targets = id_hits.get(dep, [])
+                if len(targets) != 1:
                     continue
-                key = (EDGE_DEPENDS, record["id"], dep)
+                dst = targets[0]["rel"]
+                if dst == src:
+                    continue
+                key = (EDGE_DEPENDS, src, dst)
                 if key in seen:
                     continue
                 seen.add(key)
-                edges.append({"src": record["id"], "dst": dep, "kind": EDGE_DEPENDS})
+                edges.append({"src": src, "dst": dst, "kind": EDGE_DEPENDS})
 
     edges.sort(key=lambda e: (e["kind"], e["src"], e["dst"]))
     return {
@@ -794,7 +843,7 @@ def graph_layout(packages: list[dict]) -> tuple[dict[str, tuple[float, float]], 
         for i, record in enumerate(items):
             col = i % cols
             row = i // cols
-            pos[record["id"]] = (left + col * col_w + col_w / 2, y + row * row_h + 12)
+            pos[record["rel"]] = (left + col * col_w + col_w / 2, y + row * row_h + 12)
         y += rows * row_h + 28
     return pos, int(width), int(y + 20)
 
@@ -832,14 +881,14 @@ def render_graph(packages: list[dict], edges: list[dict]) -> str:
             f'<title>{esc(edge["src"])} → {esc(edge["dst"])} · {esc(edge["kind"])}</title></path>'
         )
     for record in packages:
-        if record["id"] not in pos:
+        if record["rel"] not in pos:
             continue
-        x, y = pos[record["id"]]
+        x, y = pos[record["rel"]]
         nw = 96 if len(record["id"]) <= 16 else 120
         label = record["id"] if len(record["id"]) <= 18 else record["id"][:17] + "…"
         stroke = "#C2493F" if record.get("presence") != "ok" else "#161815"
         parts.append(
-            f'<g class="n" data-id="{esc(record["id"])}" tabindex="0">'
+            f'<g class="n" data-id="{esc(record["rel"])}" tabindex="0">'
             f'<rect x="{x - nw / 2:.0f}" y="{y - 11:.0f}" width="{nw:.0f}" height="22" rx="2" '
             f'fill="#FFFFFC" stroke="{stroke}" stroke-width="1.2"/>'
             f'<text x="{x:.0f}" y="{y + 4:.0f}" text-anchor="middle" fill="#161815">{esc(label)}</text>'
@@ -1005,7 +1054,7 @@ def render_html(data: dict) -> str:
         )
 
     scope_label = "todas as specs tipadas" if data["scope"] == "all" else ", ".join(data["scope"])
-    payload = json.dumps(data, ensure_ascii=False, sort_keys=True, indent=2)
+    payload = script_safe_dumps(data)
     css = load_board_css() + "\n" + QG_LAYOUT_CSS
     n_pkg = len(packages)
     n_unreg = len(data["unregistered"])

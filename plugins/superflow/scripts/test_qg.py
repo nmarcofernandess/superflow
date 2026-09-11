@@ -204,13 +204,13 @@ def test_tasks_graph_same_census(root: Path) -> None:
     setup_tree(root)
     text = html_of(root)
     data = snapshot_of(text)
-    ids = {p["id"] for p in data["packages"]}
+    keys = {p["rel"] for p in data["packages"]}
     for edge in data["edges"]:
-        if edge["src"] not in ids or edge["dst"] not in ids:
+        if edge["src"] not in keys or edge["dst"] not in keys:
             raise AssertionError("graph edge escaped the census")
     if text.count('id="qg-snapshot"') != 1:
         raise AssertionError("Tasks and Graph must share one snapshot")
-    if 'data-a="alpha-mother"' not in text or 'data-b="01-child"' not in text:
+    if 'data-a="alpha-mother"' not in text or 'data-b="alpha-mother/minispecs/01-child"' not in text:
         raise AssertionError("graph must draw the registered hierarchy edge")
     if 'data-a="alpha-mother"' not in text or 'data-b="beta-solo"' not in text:
         raise AssertionError("graph must draw the registered depends_on edge")
