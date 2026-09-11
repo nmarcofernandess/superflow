@@ -41,7 +41,7 @@ resto do diretório fica como acervo.
 | Condição | Classificação | Ação |
 |---|---|---|
 | tem `status.json` | **pacote** | entra no denominador de tipagem; aplica o contrato do pacote |
-| tem documento de spec (`PRD.md`, `SPEC.md`, `analysis.md`, `ANALYSIS-*.md`) e não tem `status.json` | **documento fora do lifecycle** | diagnóstico `unregistered_spec_documents` — não é `partial package` |
+| tem qualquer markdown e não tem `status.json` | **documento fora do lifecycle** | diagnóstico `unregistered_spec_documents` — não é `partial package`. Sem allowlist de nome: `ANALYST.md`, `HANDBOOK.md`, `GOAL.md` e qualquer ótica contam |
 | não tem `status.json` nem documento de spec | **fora** | silêncio; não é nosso |
 
 ### Diagnóstico `unregistered_spec_documents`
@@ -75,16 +75,15 @@ pode nascer só com `status.json`.
 (`decision.prd_status` ∈ {`ready`} ou legado `complete` lido como
 `ready`).
 
-`HANDBOOK.md` nunca é exigido por ausência. Fóssil tipado sem handbook
-passa. Se o arquivo existe, o ponteiro e o bloco valem — ver
-`status-schema.md`. O conteúdo do handbook não é cruzado com
-`phases.*` nem com `current_phase`.
+Handbook nunca é exigido por ausência. Fóssil tipado sem handbook
+passa. Arquivo no disco **não** força `artifacts.handbook`. O nome do
+retrato é livre. Só o ponteiro quebrado falha. Ver D10.
 
 ### Antes → depois
 
 | Situação | Antes | Agora |
 |---|---|---|
-| pasta com `PRD.md` / `SPEC.md` / `analysis.md` sem `status.json` | o validador Python trata como pacote e falha `partial package` ou `PRD missing` | não é pacote; diagnóstico `unregistered_spec_documents` |
+| pasta com markdown (`PRD.md`, `ANALYST.md`, `GOAL.md`, …) sem `status.json` | o validador Python trata como pacote e falha `partial package` ou `PRD missing` | não é pacote; diagnóstico `unregistered_spec_documents` |
 | pasta com `status.json` sem `PRD.md`, `prd_status=gathering` | falha `PRD missing` / `partial package` | passa (registro cedo) |
 | pasta com `status.json` sem `progress.md` | falha `partial package` | passa, salvo ponteiro quebrado |
 | pasta com `status.json` sem `HANDBOOK.md` | já deveria passar; qualquer falha por ausência está errada | passa; caso de teste obrigatório |
@@ -170,8 +169,50 @@ roda com `prd_status = gathering`. Promova para `ready` ou marque
 | Situação | Antes | Agora |
 |---|---|---|
 | minispec nomeada, `gathering`, sem PRD | Python falha `PRD missing` | passa |
+| `prd_status=gathering` com `PRD.md` no disco | o arquivo forçava checagens de maturidade | passa; o arquivo não promove e não exige `ready` |
 | `prd_status=ready` sem headings / TL;DR vazio | falha | falha (igual) |
 | validador verde em gathering | alguns agentes liam isso como "pode promover" | estrutural verde não é revisão; não promove |
+
+---
+
+## D10 — Artefato e status não se forçam
+
+Ordem do dono, 2026-09-10. As duas direções são proibidas de virar regra.
+
+1. **Arquivo no disco não força campo no `status.json`.** Ter
+   `analysis.md` (ou `ANALYST.md`, ou três óticas com outros nomes) na
+   pasta não significa que a fase `analyst` aconteceu, e não autoriza
+   ninguém — script ou agente — a atualizar status por causa disso.
+   `HANDBOOK.md` no disco sem `artifacts.handbook` passa.
+   `PRD.md` no disco com `prd_status=gathering` passa. Só a skill
+   revisora promove.
+2. **`status.json` dizendo que terminou não exige o artefato.**
+   `phases.analyst=complete` sem nenhum arquivo de analyst passa.
+   `phases.build=skipped` sem artefato de build passa. Ausência de
+   arquivo não é prova de fase não feita. Build ou plan direto pode
+   ter resolvido.
+3. **Nome de fase é estágio, não nome de arquivo.** A fase `analyst`
+   não exige um arquivo chamado analyst. O dono pode produzir vários
+   analysts sob óticas que não se chamam assim.
+4. **Ponteiro quebrado continua erro.** `artifacts.progress` apontando
+   para arquivo ausente falha. O que deixa de ser erro é arquivo
+   existindo sem ponteiro. O nome apontado é livre: `INTERFACE.md`
+   vale se o ponteiro diz `INTERFACE.md`.
+
+Não existe allowlist de nome de documento de spec. O diagnóstico
+`unregistered_spec_documents` lista qualquer markdown na pasta sem
+`status.json`. Ampliar uma lista fechada (`PRD.md|SPEC.md|analysis.md`)
+é o defeito que fez 13 pastas do corpus sumirem do QG.
+
+**G20 (default conservador).** `prd_status: ready` continua exigindo
+`PRD.md`, porque `ready` é veredito sobre aquele documento, não sobre
+a spec. A condição no código chama-se `READY_REQUIRES_PRD_DOCUMENT`.
+As fases não leem essa flag. Se o dono responder o G20 do outro jeito,
+troca-se essa linha.
+
+Validar **conteúdo** de um arquivo que existe (mindset, TDD, warlog,
+handbook declarado) é legítimo. Fazer a existência dele mudar exigência
+sobre `status.json` não é.
 
 ---
 
@@ -756,7 +797,7 @@ caminhos de spec do DietFlow não voltam para o `.py`.
 | WARLOG shape | sim, quando o arquivo existe | não | qualidade; sob demanda |
 | Review log + R1 code shipped | sim, quando aplica | não | qualidade; sob demanda |
 | Handbook **ausente** | **não falha** | **não falha** | doutrina; caso de teste obrigatório |
-| Handbook presente: ponteiro + bloco + 7 seções + 3 âncoras | sim | sim | estrutura do retrato, **sem** cruzar com `phases.*` |
+| Handbook **declarado** (ponteiro setado): bloco + 7 seções + 3 âncoras | sim | sim | estrutura do retrato **declarado**, sem cruzar com `phases.*`. Arquivo sem ponteiro não aplica |
 | Mermaid render | opt-in `--mermaid` | não | ferramenta local |
 | Cruzar handbook × status | **proibido** | **proibido** | doutrina |
 
@@ -788,6 +829,10 @@ bug. Linha "sim/não" é escopo declarado, não dívida escondida.
    ignora a pasta (não é tipada).
 3. Handbook diz "tudo entregue" e `phases.execute=pending` → exit 0
    nos dois. Nenhum dos dois lê a prosa para julgar a fase.
+4. `HANDBOOK.md` no disco sem ponteiro → exit 0 (D10). Ponteiro
+   quebrado → falha.
+5. `PRD.md` no disco com `prd_status=gathering` → exit 0. O arquivo
+   não promove.
 
 ---
 

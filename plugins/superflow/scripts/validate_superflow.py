@@ -352,7 +352,7 @@ PRD_REQUIRED_HEADINGS = [
 # próximo trabalho útil" para quem chega sem contexto. A prosa mora no arquivo;
 # o veredito (selo, arquivabilidade, ação de índice) mora em status.json#handbook,
 # porque veredito raspado de prosa por regex já provou errar (agregador de 2026-09).
-HANDBOOK_ARTIFACT = "HANDBOOK.md"
+# Conventional template name only. Not an allowlist — artifacts.handbook is free.
 
 # (canônico, aliases aceitos no heading). O canônico é o que a mensagem de erro
 # cobra; os aliases existem só para grafia sem acento.
@@ -434,8 +434,11 @@ CURRENT_PHASE_NAMES = [
 GATHERING_PHASES = {"inbox", "taskgen", "analyst"}
 POINTER_PHASE_STATES = {"pending", "running", "complete", "blocked", "failed"}
 READY_PRD_STATUSES = {"ready", "complete"}
+# G20 default. ready is a verdict about the PRD document, so the document
+# must exist. Flip this to False if the owner answers G20 the other way.
+# Phases (complete/skipped/superseded) never read this flag.
+READY_REQUIRES_PRD_DOCUMENT = True
 NESTED_CHILD_FOLDERS = {"minispecs", "subspecs", "units", "plans", "crystallize"}
-SPEC_DOC_NAMES = {"PRD.md", "SPEC.md", "analysis.md", "ANALYSIS.md"}
 
 PHASE_NAME_ALIASES = {
     "discovery": "analyst",
@@ -635,17 +638,18 @@ def apply_superflow_config(cfg: SuperflowConfig) -> SuperflowConfig:
 
 
 def spec_documents_in(path: Path) -> list[str]:
-    names: list[str] = []
+    """Any markdown in the folder. Not an allowlist of spec names.
+
+    ANALYST.md, HANDBOOK.md, GOAL.md and any other ótica count. A closed
+    set of filenames is what made 13 corpus folders disappear from the QG.
+    """
     if not path.is_dir():
-        return names
-    for child in path.iterdir():
-        if not child.is_file():
-            continue
-        if child.name in SPEC_DOC_NAMES or (
-            child.name.startswith("ANALYSIS-") and child.suffix == ".md"
-        ):
-            names.append(child.name)
-    return sorted(names)
+        return []
+    return sorted(
+        child.name
+        for child in path.iterdir()
+        if child.is_file() and child.suffix.lower() == ".md"
+    )
 
 
 def format_unregistered_spec_documents(rel: str, docs: list[str]) -> str:
@@ -2338,7 +2342,12 @@ def validate_prd_maturity(path: Path, status: dict, decision: dict) -> None:
         return
     prd_path = path / "PRD.md"
     if not prd_path.exists():
-        fail(f"{path}: decision.prd_status={decision.get('prd_status')!r} exige PRD.md")
+        if READY_REQUIRES_PRD_DOCUMENT:
+            fail(
+                f"{path}: decision.prd_status={decision.get('prd_status')!r} exige PRD.md "
+                "(READY_REQUIRES_PRD_DOCUMENT / G20 default)"
+            )
+        return
     prd_text = read(prd_path)
     validate_prd_tldr(prd_text, label=f"{path}/PRD.md", require_filled=True)
     for heading in PRD_REQUIRED_HEADINGS:
@@ -2430,63 +2439,42 @@ def validate_package(path: Path) -> None:
         if prd_artifact and not (path / prd_artifact).exists():
             fail(f"{path}/status.json points to missing PRD artifact")
 
+    # Handbook: broken pointer fails. File on disk without pointer does not
+    # force the field. The pointed name is free — not an allowlist of HANDBOOK.md.
     handbook_artifact = artifacts.get("handbook")
-    handbook_path = path / HANDBOOK_ARTIFACT
-    if handbook_artifact and handbook_artifact != HANDBOOK_ARTIFACT:
-        fail(f"{path}/status.json artifacts.handbook must point to {HANDBOOK_ARTIFACT}")
-    if handbook_artifact and not handbook_path.exists():
-        fail(f"{path}/status.json points to missing handbook artifact")
-    if handbook_path.exists() and not handbook_artifact:
-        fail(
-            f"{path}/{HANDBOOK_ARTIFACT} existe mas status.json artifacts.handbook "
-            "está vazio — sem o ponteiro, o motor de campanha nunca vê o retrato"
-        )
-    if handbook_path.exists():
+    if handbook_artifact:
+        handbook_path = path / str(handbook_artifact)
+        if not handbook_path.exists():
+            fail(f"{path}/status.json points to missing handbook artifact")
         validate_handbook(
-            read(handbook_path), status, label=f"{path}/{HANDBOOK_ARTIFACT}"
+            read(handbook_path), status, label=f"{path}/{handbook_artifact}"
         )
-        warn_stale_handbook_base(path, status, label=f"{path}/{HANDBOOK_ARTIFACT}")
+        warn_stale_handbook_base(path, status, label=f"{path}/{handbook_artifact}")
     validate_children_rollup(path, status, label=label)
     validate_prd_maturity(path, status, decision)
-    if (path / "PRD.md").exists() and not is_prd_ready(decision):
-        validate_dod_derived_children(
-            path, status, read(path / "PRD.md"), label=f"{path}/PRD.md"
-        )
 
     plan_artifact = artifacts.get("plan")
     task_source = status.get("task_source") or {}
-    if plan_artifact:
-        if plan_artifact != "implementation_plan.json":
-            fail(f"{path}/status.json artifacts.plan must point to implementation_plan.json")
-        if task_source.get("path") != plan_artifact:
-            fail(f"{path}/status.json task_source.path must match artifacts.plan")
+    if plan_artifact and task_source.get("path") != plan_artifact:
+        fail(f"{path}/status.json task_source.path must match artifacts.plan")
 
     plan_data: dict | None = None
     plan_path = path / "implementation_plan.json"
     if plan_path.exists():
         plan_data = json.loads(read(plan_path))
         validate_plan_tdd(plan_data, label=str(plan_path))
-        plan_body = plan_data.get("plan") if isinstance(plan_data.get("plan"), dict) else {}
-        if isinstance(plan_body, dict) and plan_body.get("workflow_type") and not status.get("workflow_type"):
-            status = {**status, "workflow_type": plan_body.get("workflow_type")}
 
     log_data: dict | None = None
     log_path = path / "implementation_log.json"
     if log_path.exists():
         log_data = json.loads(read(log_path))
         validate_log_tdd(log_data, plan_data, label=str(log_path))
-        log_artifact = artifacts.get("implementation_log")
-        if log_artifact and log_artifact != "implementation_log.json":
-            fail(f"{path}/status.json artifacts.implementation_log must be implementation_log.json")
 
     review_data: dict | None = None
     review_path = path / "review_log.json"
     if review_path.exists():
         review_data = json.loads(read(review_path))
         validate_review_log(review_data, label=str(review_path))
-        review_artifact = artifacts.get("review")
-        if review_artifact and review_artifact != "review_log.json":
-            fail(f"{path}/status.json artifacts.review must be review_log.json")
 
     workflow_type = str(status.get("workflow_type") or "").strip().lower()
     qa_complete = str(phases_map(status).get("qa") or "").lower() == "complete"

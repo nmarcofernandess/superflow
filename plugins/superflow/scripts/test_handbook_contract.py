@@ -148,12 +148,17 @@ def main() -> int:
         )
         expect_fail(pkg, "âncora", "H3 Estado real sem evidência")
 
-        # H4 — ponteiro e bloco
+        # H4 — ponteiro quebrado falha; arquivo sem ponteiro não força o campo
+        # (ordem do dono, 2026-09-10 — não "consertar" de volta)
         pkg = fresh("h4-no-pointer")
         data = json.loads((pkg / "status.json").read_text(encoding="utf-8"))
         data["artifacts"]["handbook"] = None
         (pkg / "status.json").write_text(json.dumps(data, indent=2), encoding="utf-8")
-        expect_fail(pkg, "artifacts.handbook", "H4 handbook sem ponteiro")
+        expect_ok(pkg, "H4 handbook no disco sem ponteiro passa")
+        data["artifacts"]["handbook"] = "HANDBOOK.md"
+        (pkg / "HANDBOOK.md").unlink()
+        (pkg / "status.json").write_text(json.dumps(data, indent=2), encoding="utf-8")
+        expect_fail(pkg, "missing handbook", "H4 ponteiro quebrado falha")
 
         pkg = fresh("h4-no-block", block=None)
         expect_fail(pkg, "bloco `handbook`", "H4 handbook sem bloco no status")

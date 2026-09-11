@@ -318,13 +318,12 @@ Ponteiro. Oito nomes: `inbox`, `taskgen`, `analyst`, `build`,
     apontar para o mesmo arquivo.
 14. Nenhuma fase de execucao roda com `prd_status = gathering`. Promova para
     `ready` ou marque `blocked` antes de executar.
-15. `HANDBOOK.md` não é obrigatório por largada — é obrigatório por condição.
-    Ausência nunca falha o pacote (fóssil tipado sem handbook é caso de
-    teste obrigatório). Mas se o arquivo existir, `artifacts.handbook` tem
-    de apontar para ele e o bloco `handbook` tem de existir: retrato sem
-    ponteiro é invisível para o motor de campanha, e retrato sem bloco
-    volta a exigir regex sobre prosa. Nenhuma regra cruza a prosa do
-    handbook com `phases.*`, `current_phase` ou `decision`.
+15. Handbook não é obrigatório por ausência (fóssil tipado sem handbook
+    é caso de teste obrigatório). Arquivo no disco **não** força
+    `artifacts.handbook`. O nome é livre. Só ponteiro quebrado falha.
+    Bloco e seções aplicam-se quando o ponteiro está setado. Nenhuma
+    regra cruza a prosa do handbook com `phases.*`, `current_phase` ou
+    `decision`. Ver `lifecycle-contract.md` D10.
 16. O veredito do handbook (`selo`, `index_action`, `archivable`) nasce campo.
     O `HANDBOOK.md` não tem seção de veredito. Handbook vive na mãe; não
     existe `HANDBOOK.md` em minispec nem subspec.

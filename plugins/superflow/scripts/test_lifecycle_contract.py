@@ -313,8 +313,12 @@ def family_6_mother_in_motor(root: Path) -> None:
 def family_7_fossil(root: Path) -> None:
     pkg = gathering_pkg(root, "fossil-typed")
     expect_ok(pkg, "F7 positive: fóssil tipado sem handbook e sem PRD")
+    # Ordem do dono (2026-09-10): arquivo no disco não força campo no status.
+    # Inversão — não "consertar" de volta: handbook sem ponteiro PASSA.
     (pkg / "HANDBOOK.md").write_text("# no\n", encoding="utf-8")
-    expect_fail(pkg, "artifacts.handbook", "F7 mutant: handbook no disco sem ponteiro")
+    expect_ok(pkg, "F7 inverted: handbook no disco sem ponteiro passa")
+    write_status(pkg, artifacts={"progress": "progress.md"})
+    expect_fail(pkg, "missing progress", "F7 braço legítimo: ponteiro quebrado falha")
 
 
 def family_8_handbook_diverges(root: Path) -> None:
@@ -395,6 +399,82 @@ def family_d7_consumer_floor(root: Path) -> None:
         raise AssertionError("D7: plugin must not embed DietFlow paths or a hardcoded phase floor")
 
 
+def family_d10_decoupling(root: Path) -> None:
+    """D10 — file does not force status; status does not force file."""
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("validate_superflow", VALIDATE)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    if not getattr(module, "READY_REQUIRES_PRD_DOCUMENT", False):
+        raise AssertionError("G20 default READY_REQUIRES_PRD_DOCUMENT must be True")
+    if hasattr(module, "SPEC_DOC_NAMES"):
+        raise AssertionError("SPEC_DOC_NAMES allowlist must be gone")
+
+    # 1. HANDBOOK.md without pointer passes
+    p1 = gathering_pkg(root, "d10-handbook-orphan")
+    (p1 / "HANDBOOK.md").write_text("# retrato órfão\n", encoding="utf-8")
+    expect_ok(p1, "D10.1 handbook no disco sem ponteiro")
+
+    # 2. PRD.md + gathering passes
+    p2 = gathering_pkg(root, "d10-prd-gathering")
+    (p2 / "PRD.md").write_text("# PRD stub\n\n## TL;DR\nainda gathering\n", encoding="utf-8")
+    expect_ok(p2, "D10.2 PRD.md com gathering")
+
+    # 3. free handbook name
+    p3 = root / "d10-interface"
+    shutil.copytree(FIXTURE, p3)
+    (p3 / "INTERFACE.md").write_text(HANDBOOK_OK, encoding="utf-8")
+    write_status(
+        p3,
+        artifacts={"handbook": "INTERFACE.md"},
+        handbook=HANDBOOK_BLOCK,
+    )
+    expect_ok(p3, "D10.3 artifacts.handbook=INTERFACE.md")
+
+    # 4. three analyst files, none named analysis.md, phase complete
+    p4 = gathering_pkg(
+        root,
+        "d10-many-analysts",
+        current_phase="inbox",
+        phases={"inbox": "pending", "analyst": "complete"},
+    )
+    (p4 / "oticas-produto.md").write_text("# ótica produto\n", encoding="utf-8")
+    (p4 / "oticas-backend.md").write_text("# ótica backend\n", encoding="utf-8")
+    (p4 / "GOAL.md").write_text("# ótica goal\n", encoding="utf-8")
+    expect_ok(p4, "D10.4 três analysts com outros nomes + phases.analyst=complete")
+
+    # 5. analyst complete, no analyst file
+    p5 = gathering_pkg(
+        root,
+        "d10-analyst-no-file",
+        current_phase="inbox",
+        phases={"inbox": "pending", "analyst": "complete"},
+    )
+    expect_ok(p5, "D10.5 phases.analyst=complete sem arquivo")
+
+    # 6. build skipped, no build artifact
+    p6 = gathering_pkg(
+        root,
+        "d10-build-skipped",
+        current_phase="inbox",
+        phases={"inbox": "pending", "build": "skipped"},
+    )
+    expect_ok(p6, "D10.6 phases.build=skipped sem artefato")
+
+    # 7. broken progress pointer fails
+    p7 = gathering_pkg(root, "d10-broken-progress")
+    write_status(p7, artifacts={"progress": "progress.md"})
+    expect_fail(p7, "missing progress", "D10.7 ponteiro quebrado")
+
+    # 8. ready without PRD.md fails via the named G20 condition
+    p8 = gathering_pkg(root, "d10-ready-no-prd")
+    write_status(p8, decision={"prd_status": "ready", "verdict": "prd_ready"})
+    result = expect_fail(p8, "READY_REQUIRES_PRD_DOCUMENT", "D10.8 ready sem PRD.md")
+    if "G20" not in result.stdout:
+        raise AssertionError(f"D10.8 must name G20:\n{result.stdout}")
+
+
 def main() -> int:
     source = VALIDATE.read_text(encoding="utf-8")
     if "prd_status" in source and "gathering" in source:
@@ -420,6 +500,7 @@ def main() -> int:
         family_8_handbook_diverges(root)
         family_9_dod_gate(root)
         family_d7_consumer_floor(root)
+        family_d10_decoupling(root)
 
     print("OK: superflow lifecycle contract tests")
     return 0
