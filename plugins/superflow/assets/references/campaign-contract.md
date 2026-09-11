@@ -44,8 +44,9 @@ not appear in the filter that builds the campaign, even if she has
 A package is a child when an ancestor directory contains `status.json`.
 Children owe `campaign` in `minispecs/`, `subspecs/`, and any other
 nested folder. The old guard (`parent.name == "minispecs"`) is
-insufficient. Full condition, measured debt, and consumer FLOOR:
-`lifecycle-contract.md` D6.
+insufficient. The value is derived from the tree — the immediate
+mother's `campaign`, or her `id` when she has none. There is no
+FLOOR of campaign membership. Full condition: `lifecycle-contract.md` D6.
 
 `depends_on` holds package ids (directory names). An id that does not exist is
 a contract error, not a warning — a dependency you cannot name is a dependency

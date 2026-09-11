@@ -560,13 +560,19 @@ foi apagar o `status.json`, não redesenhar profundidade. Sem
 
 ### FLOOR de adesão
 
-A regra é a lei no dia um. O consumidor pode congelar a dívida
-medida em `.superflow/campaign-membership-floor.json` (D7), ratchet
-que só encolhe, chaves relativas ao specs root. Entrada inicial
-esperada: as 16 mães + 18 subspecs + 31 units + 4 plans + 1
-crystallize = **70** caminhos, menos o Yasmin se o `status.json`
-já tiver sido apagado. Grafia nova de filho sem `campaign` falha.
-Entrada stale no FLOOR falha.
+Não existe FLOOR de adesão de `campaign`.
+
+O valor de `campaign` é derivável da árvore. Para o filho é o
+`campaign` da mãe imediata, ou o `id` dela quando ela não tem; para
+a mãe é o próprio `id`. FLOOR existe para exceção que não se computa,
+e essa se computa num passe. Congelar 70 entradas seria ganhar
+entrada para esconder dívida, o que o pedido proíbe explicitamente.
+
+O FLOOR de fases continua existindo: grafia legada de fase carrega
+significado que não se deriva. Os dois não se confundem.
+
+O consumidor deriva os valores (`--derive-campaign`) e grava. O
+plugin não congela a dívida e não escreve os 70 caminhos.
 
 ### Os três recortes, descritos e não redesenhados
 
@@ -593,9 +599,9 @@ já contratado em `status-schema.md`).
 | Situação | Antes | Agora |
 |---|---|---|
 | minispec sob `minispecs/` sem `campaign` | falha | falha (igual) |
-| subspec sob `subspecs/` sem `campaign` | passa | falha (ou FLOOR no consumidor) |
-| unit/plan/crystallize sem `campaign` | passa | falha (ou FLOOR) |
-| mãe sem `campaign` | passa; some do filtro da própria campanha | falha até gravar `campaign == id` (ou FLOOR) |
+| subspec sob `subspecs/` sem `campaign` | passa | falha; o diagnóstico diz o valor derivado |
+| unit/plan/crystallize sem `campaign` | passa | falha; o diagnóstico diz o valor derivado |
+| mãe sem `campaign` | passa; some do filtro da própria campanha | falha até gravar `campaign == id` |
 | mãe com `depends_on: [próprio id]` | ciclo, contrato error | continua error. Auto-adesão é o campo `campaign`, não `depends_on` |
 
 ---
@@ -612,20 +618,20 @@ plugin ou do CI remoto.
 .superflow/
 ├── config.json
 ├── phase-vocabulary-floor.json
-├── campaign-membership-floor.json
 ├── qg/
 │   └── study-list.json
 └── sprints/
 ```
 
-Cinco nomes. `qg/` e `sprints/` são irmãos. Não existe
+Quatro nomes. `qg/` e `sprints/` são irmãos. Não existe
 `.superflow/qg/sprints`. Não existe `.superflow/floors/` extra.
+Não existe `.superflow/campaign-membership-floor.json`: adesão de
+`campaign` deriva da árvore (D6), não se congela.
 
 | Caminho | Função |
 |---|---|
-| `.superflow/config.json` | raiz das specs, destino de escrita, ponteiros dos floors |
+| `.superflow/config.json` | raiz das specs, destino de escrita, ponteiro do floor de fases |
 | `.superflow/phase-vocabulary-floor.json` | ratchet de `phases.*` **do consumidor** |
-| `.superflow/campaign-membership-floor.json` | ratchet de adesão D6 **do consumidor** |
 | `.superflow/qg/` | material de QG; `study-list.json` é o denominador de estudo |
 | `.superflow/sprints/` | composição de sprint; nunca segunda autoridade de estado |
 
@@ -642,8 +648,7 @@ DietFlow.
   "specs": "specs",
   "destination": null,
   "floors": {
-    "phase_vocabulary": "phase-vocabulary-floor.json",
-    "campaign_membership": "campaign-membership-floor.json"
+    "phase_vocabulary": "phase-vocabulary-floor.json"
   },
   "qg": "qg",
   "sprints": "sprints"
@@ -657,8 +662,9 @@ DietFlow.
   `.superflow/` ou absoluto **só em runtime** (CLI/env). Pode ser
   fora do Git. O plugin não commita absoluto. O CI remoto não recebe
   absoluto de máquina.
-- `floors.*`: nomes de arquivo dentro de `.superflow/`. Ausentes =
-  ratchet vazio (todo ofensor é fresco).
+- `floors.phase_vocabulary`: nome de arquivo dentro de `.superflow/`.
+  Ausente = ratchet vazio (todo ofensor de fase é fresco). Não há
+  floor de adesão de `campaign`.
 
 ### Resolução (primeira que existir vence)
 
@@ -743,7 +749,7 @@ caminhos de spec do DietFlow não voltam para o `.py`.
 | `phases.*` tipo string (D3) | sim | sim | tipagem |
 | `phases.*` vocabulário + FLOOR do consumidor (D4) | sim, lendo `.superflow/phase-vocabulary-floor.json` | sim, o mesmo arquivo | tipagem; paridade bit a bit |
 | `current_phase` vocabulário + coerência (D5) | sim | sim | hoje **nenhum** dos dois valida o valor; os dois passam a validar |
-| `campaign` em filho e mãe (D6) + FLOOR de adesão | sim | sim | tipagem / campanha; o TS hoje só olha `minispecs/` |
+| `campaign` em filho e mãe (D6), valor derivado | sim | sim | tipagem / campanha; o TS hoje só olha `minispecs/` |
 | Integridade do plugin (skills, templates, markers) | sim | não | não existe plugin no CI remoto |
 | Mindset (`analysis.md` / `SPEC.md`) | sim, quando o arquivo existe | não | qualidade; sob demanda |
 | TDD plan/log | sim, quando o artefato existe | não | qualidade; sob demanda |
@@ -769,7 +775,7 @@ bug. Linha "sim/não" é escopo declarado, não dívida escondida.
 ### O que o TypeScript passa a exigir (e hoje não exige)
 
 - valor de `current_phase` (D5)
-- `campaign` em qualquer filho e na mãe (D6), com FLOOR no consumidor
+- `campaign` em qualquer filho e na mãe (D6); valor derivado, sem FLOOR
 - tipo string em `phases.*` como falha de tipo nomeada (hoje cai no
   saco de vocabulário)
 
