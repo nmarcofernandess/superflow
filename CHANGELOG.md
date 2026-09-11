@@ -34,6 +34,18 @@
 
 ## Unreleased
 
+### QG
+
+- **`qg` skill + `scripts/superflow_qg.py`** — deterministic self-contained HTML
+  snapshot of the typed specs. Tasks and Graph share one disk census. Sprint is
+  opt-in human composition. Destination uses the existing `.superflow/` resolver
+  (CLI → env → walk-up → `.superflow/qg/`). Presentation tokens are embedded
+  from `assets/task-board/board.html` (`--paper` / `--ink`).
+- **`scripts/test_qg.py`** — ten behavioural proofs (scope, accordions, shared
+  census, absent vs incompatible, unreadable declared child, byte-identical
+  regen, status change, handbook/phase divergence, sprint opt-in). Fixtures stay
+  in temp dirs.
+
 ### Standalone slash skills
 
 Three tools you can invoke with `/` without entering a Superflow route. They

@@ -5,10 +5,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
 import tempfile
+from datetime import datetime
 from pathlib import Path
 
 
@@ -66,6 +68,7 @@ REQUIRED_PLUGIN_FILES = [
     "assets/references/mermaid-contract.md",
     "assets/references/warlog-contract.md",
     "assets/references/status-schema.md",
+    "assets/references/lifecycle-contract.md",
     "assets/fixtures/mindset/coverage.json",
     "assets/templates/PRD.md",
     "assets/templates/ISSUE_PRD.md",
@@ -344,10 +347,476 @@ PRD_REQUIRED_HEADINGS = [
     "## Next Phase",
 ]
 
+# --- Handbook: o retrato operável da spec ---------------------------------
+# O HANDBOOK.md responde "o que esta spec é, do que ela depende e qual é o
+# próximo trabalho útil" para quem chega sem contexto. A prosa mora no arquivo;
+# o veredito (selo, arquivabilidade, ação de índice) mora em status.json#handbook,
+# porque veredito raspado de prosa por regex já provou errar (agregador de 2026-09).
+# Conventional template name only. Not an allowlist — artifacts.handbook is free.
+
+# (canônico, aliases aceitos no heading). O canônico é o que a mensagem de erro
+# cobra; os aliases existem só para grafia sem acento.
+HANDBOOK_REQUIRED_HEADINGS = [
+    ("Intenção", ["Intenção", "Intencao"]),
+    ("Estado real", ["Estado real"]),
+    ("Rastro", ["Rastro"]),
+    ("Dificuldade e impacto", ["Dificuldade e impacto"]),
+    ("Testes", ["Testes"]),
+    ("O que a linha não comporta", ["O que a linha não comporta", "O que a linha nao comporta"]),
+    ("Relatório de leitura", ["Relatório de leitura", "Relatorio de leitura"]),
+]
+
+# A seção que precisa provar leitura de código, e o piso de provas.
+HANDBOOK_EVIDENCE_SECTION = "Estado real"
+HANDBOOK_MIN_EVIDENCE_ANCHORS = 3
+
+HANDBOOK_SELOS = [
+    "closed",
+    "merged_dev",
+    "in_flight",
+    "pending_work",
+    "needs_marco",
+    "stale_doc",
+    "dormant",
+    "superseded",
+]
+HANDBOOK_INDEX_ACTIONS = ["archive", "new_line", "confirm_pending", "backlog"]
+HANDBOOK_ARCHIVABLE = ["no", "status_only", "yes"]
+HANDBOOK_NEXT_KINDS = [
+    "investigation",
+    "preparation",
+    "plan",
+    "implementation",
+    "human",
+]
+
+# Elegibilidade de execução é DERIVADA (kind != human && blocked_by == []) e
+# nunca gravada: campo gravado envelhece calado e passa a mentir sobre o que
+# está liberado. Estes nomes são recusados dentro de next_useful.
+HANDBOOK_DERIVED_ONLY_KEYS = [
+    "eligible",
+    "elegivel",
+    "elegível",
+    "executable",
+    "runnable",
+    "ready",
+    "actionable",
+    "unblocked",
+]
+
+# Vocabulário fechado de phases.*. `superseded` entra como sétimo valor: cobre
+# "outro pacote fez isso" — que `skipped` (decidiu-se não fazer) não descreve.
+# Os três não colapsam. Ship não é oitavo valor.
+PHASE_VOCABULARY = [
+    "pending",
+    "running",
+    "complete",
+    "skipped",
+    "blocked",
+    "failed",
+    "superseded",
+]
+
+STATUS_SCHEMA_VERSION = "superflow.status.v1"
+CONFIG_SCHEMA_VERSION = "superflow.config.v1"
+
+CURRENT_PHASE_NAMES = [
+    "inbox",
+    "taskgen",
+    "analyst",
+    "build",
+    "review",
+    "plan",
+    "execute",
+    "qa",
+]
+
+GATHERING_PHASES = {"inbox", "taskgen", "analyst"}
+POINTER_PHASE_STATES = {"pending", "running", "complete", "blocked", "failed"}
+READY_PRD_STATUSES = {"ready", "complete"}
+# G20 default. ready is a verdict about the PRD document, so the document
+# must exist. Flip this to False if the owner answers G20 the other way.
+# Phases (complete/skipped/superseded) never read this flag.
+READY_REQUIRES_PRD_DOCUMENT = True
+NESTED_CHILD_FOLDERS = {"minispecs", "subspecs", "units", "plans", "crystallize"}
+
+PHASE_NAME_ALIASES = {
+    "discovery": "analyst",
+    "critic": "review",
+    "code": "execute",
+    "units": "execute",
+}
+
+# Grafias medidas (D4). Serve para derivar e para diagnosticar — não para
+# aceitar no disco sem FLOOR do consumidor.
+PHASE_STATE_ALIASES = {
+    "pending": "pending",
+    "running": "running",
+    "complete": "complete",
+    "skipped": "skipped",
+    "blocked": "blocked",
+    "failed": "failed",
+    "superseded": "superseded",
+    "in_progress": "running",
+    "in-progress": "running",
+    "done": "complete",
+    "not_applicable": "skipped",
+    "implemented": "complete",
+    "cancelled": "skipped",
+    "complete_via_spec_105": "superseded",
+    "complete_via_105_05": "superseded",
+    "approved": "complete",
+    "absorbed": "superseded",
+    "complete_baseline": "complete",
+    "retry_pending": "pending",
+    "skipped_prompt_provided_discovery": "skipped",
+    "complete-with-codex-amendments": "complete",
+    "partial": "running",
+    "pending_migration_tests_review": "pending",
+    "layout_approved_functional_pending": "pending",
+    "artifacts_complete_external_review_pending": "pending",
+    "parts_0_to_6_shipped": "complete",
+    "dev_and_prod_schema_verified": "complete",
+    "passed": "complete",
+    "verification_delegated_to_attestation": "complete",
+    "outlined": "pending",
+    "passed-subagent-static-production-proof-and-chart-header-closeout": "complete",
+    "durable-copy-under-specs": "complete",
+    "dormant": "pending",
+    "completed": "complete",
+}
+
+CURRENT_PHASE_READS_AS = {
+    "inbox": "inbox",
+    "taskgen": "taskgen",
+    "analyst": "analyst",
+    "build": "build",
+    "review": "review",
+    "plan": "plan",
+    "execute": "execute",
+    "qa": "qa",
+    "discovery": "analyst",
+    "critic": "review",
+    "code": "execute",
+    "units": "execute",
+    "done": "qa",
+    "closed": "qa",
+    "qa_final": "qa",
+    "build_final": "build",
+    "followup_spec_pending": "qa",
+    "prd": "taskgen",
+    "coordinate": "execute",
+    "delivery": "qa",
+    "b11_f10_t1_t7_complete_ready_for_block_frontier": "qa",
+    "FASE_2_FRONTEIRA": "qa",
+    "cohort_sealed_gates_green_amendments_proposed": "qa",
+    "ship_complete_backlog_D": "qa",
+    "vibe": "qa",
+    "delivery_merged_installed_cleaned": "qa",
+    "qa_and_ship": "qa",
+}
+
+DEFAULT_CONFIG = {
+    "schema_version": CONFIG_SCHEMA_VERSION,
+    "specs": "specs",
+    "destination": None,
+    "floors": {"phase_vocabulary": "phase-vocabulary-floor.json"},
+    "qg": "qg",
+    "sprints": "sprints",
+}
+
+
+class SuperflowConfig:
+    """Resolved `.superflow/` for this run. Empty floors when none found."""
+
+    def __init__(self) -> None:
+        self.superflow_dir: Path | None = None
+        self.specs_root: Path | None = None
+        self.destination: Path | None = None
+        self.phase_floor: dict[str, tuple[str, ...]] = {}
+        self.raw: dict = dict(DEFAULT_CONFIG)
+
+
+CONFIG = SuperflowConfig()
+
+
+class ValidationFailure(Exception):
+    def __init__(self, message: str) -> None:
+        self.message = message
+        super().__init__(message)
+
+
+_COLLECT_FAILURES = False
+
+
 
 def fail(message: str) -> None:
+    if _COLLECT_FAILURES:
+        raise ValidationFailure(message)
     print(f"FAIL: {message}", file=sys.stderr)
     raise SystemExit(1)
+
+
+def _load_phase_floor(path: Path) -> dict[str, tuple[str, ...]]:
+    if not path.is_file():
+        return {}
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(raw, dict):
+        fail(f"{path}: phase-vocabulary-floor must be a JSON object")
+    floor: dict[str, tuple[str, ...]] = {}
+    for key, value in raw.items():
+        if not isinstance(key, str) or "\\" in key or key.startswith("/") or key.startswith("specs/"):
+            fail(
+                f"{path}: floor key {key!r} must be POSIX relative to the specs root, "
+                "without specs/ prefix and without an absolute path"
+            )
+        if not isinstance(value, list) or any(not isinstance(item, str) for item in value):
+            fail(f"{path}: floor[{key!r}] must be a list of phase names")
+        floor[key] = tuple(value)
+    return floor
+
+
+def resolve_superflow_dir(start: Path, cli_dir: str | None = None) -> Path | None:
+    if cli_dir:
+        return Path(cli_dir).expanduser()
+    env = os.environ.get("SUPERFLOW_DIR")
+    if env:
+        return Path(env).expanduser()
+    cursor = start.resolve()
+    for cur in [cursor, *cursor.parents]:
+        candidate = cur / ".superflow"
+        if (candidate / "config.json").is_file() or candidate.is_dir():
+            return candidate
+    return None
+
+
+def load_superflow_config(start: Path, cli_dir: str | None = None) -> SuperflowConfig:
+    """CLI → env → walk-up → defaults. No DietFlow path is baked in."""
+    cfg = SuperflowConfig()
+    superflow_dir = resolve_superflow_dir(start, cli_dir)
+    data = dict(DEFAULT_CONFIG)
+    if superflow_dir is not None:
+        cfg.superflow_dir = superflow_dir
+        config_path = superflow_dir / "config.json"
+        if config_path.is_file():
+            loaded = json.loads(config_path.read_text(encoding="utf-8"))
+            if not isinstance(loaded, dict):
+                fail(f"{config_path}: config.json must be an object")
+            data.update(loaded)
+            floors = dict(DEFAULT_CONFIG["floors"])
+            if isinstance(loaded.get("floors"), dict):
+                floors.update(loaded["floors"])
+            data["floors"] = floors
+        cfg.raw = data
+        repo_root = superflow_dir.parent
+        specs = data.get("specs") or "specs"
+        specs_path = Path(str(specs))
+        cfg.specs_root = specs_path if specs_path.is_absolute() else (repo_root / specs_path)
+        dest = data.get("destination")
+        if dest in (None, ""):
+            cfg.destination = superflow_dir
+        else:
+            dest_path = Path(str(dest))
+            cfg.destination = dest_path if dest_path.is_absolute() else (superflow_dir / dest_path)
+        floor_name = (data.get("floors") or {}).get("phase_vocabulary") or "phase-vocabulary-floor.json"
+        cfg.phase_floor = _load_phase_floor(superflow_dir / str(floor_name))
+        return cfg
+
+    cwd = Path.cwd()
+    default_specs = cwd / "specs"
+    if start.name == "specs" and not (start / "status.json").exists():
+        cfg.specs_root = start
+    elif default_specs.is_dir():
+        cfg.specs_root = default_specs
+    return cfg
+
+
+def resolve_qg_dir(cfg: SuperflowConfig, dest_override: str | None = None) -> Path:
+    """QG destination: CLI dest, then config destination, then `.superflow/qg`.
+
+    Walk-up already happened in `load_superflow_config`. This only joins the
+    `qg` name. Do not reimplement CLI → env → walk-up here.
+    """
+    if dest_override:
+        return Path(dest_override).expanduser()
+    base = cfg.destination if cfg.destination is not None else cfg.superflow_dir
+    if base is None:
+        base = Path.cwd() / ".superflow"
+    name = cfg.raw.get("qg") or DEFAULT_CONFIG["qg"]
+    return Path(base) / str(name)
+
+
+def apply_superflow_config(cfg: SuperflowConfig) -> SuperflowConfig:
+    global CONFIG
+    CONFIG = cfg
+    return cfg
+
+
+def spec_documents_in(path: Path) -> list[str]:
+    """Any markdown in the folder. Not an allowlist of spec names.
+
+    ANALYST.md, HANDBOOK.md, GOAL.md and any other ótica count. A closed
+    set of filenames is what made 13 corpus folders disappear from the QG.
+    """
+    if not path.is_dir():
+        return []
+    return sorted(
+        child.name
+        for child in path.iterdir()
+        if child.is_file() and child.suffix.lower() == ".md"
+    )
+
+
+def format_unregistered_spec_documents(rel: str, docs: list[str]) -> str:
+    listed = ", ".join(docs)
+    return (
+        f"unregistered_spec_documents: {rel}\n"
+        f"  tem {listed} e não tem status.json\n"
+        f"  se esta pasta é um pacote, escreva status.json aqui\n"
+        f"    (id, route, phase_budget, confidence, current_phase, decision.prd_status=gathering)\n"
+        f"  se é acervo de outro pacote, não registre — o registro mora na pasta da mãe\n"
+        f"  se é dossiê no lugar errado, não registre; o status.json é o que a torna pacote"
+    )
+
+
+def find_unregistered_spec_documents(specs_root: Path) -> list[tuple[str, list[str]]]:
+    found: list[tuple[str, list[str]]] = []
+    for directory in [specs_root, *sorted(p for p in specs_root.rglob("*") if p.is_dir())]:
+        if (directory / "status.json").exists():
+            continue
+        docs = spec_documents_in(directory)
+        if not docs:
+            continue
+        rel = (
+            "."
+            if directory == specs_root
+            else directory.relative_to(specs_root).as_posix()
+        )
+        found.append((rel, docs))
+    return found
+
+
+def extract_phase_string(value):
+    if isinstance(value, str):
+        return value
+    if isinstance(value, dict):
+        for key in ("status", "state"):
+            raw = value.get(key)
+            if isinstance(raw, str) and raw.strip():
+                return raw
+        if value.get("lastRun") is not None:
+            return "complete"
+    return None
+
+
+def normalize_phase_state(value: str | None) -> str | None:
+    if not value:
+        return None
+    if value in PHASE_VOCABULARY:
+        return value
+    if value in PHASE_STATE_ALIASES:
+        return PHASE_STATE_ALIASES[value]
+    if value.startswith("complete —") or value.startswith("complete -"):
+        return "complete"
+    if value.startswith("complete_deployed_dev"):
+        return "complete"
+    return None
+
+
+def map_phase_name(name: str) -> str:
+    return PHASE_NAME_ALIASES.get(name, name)
+
+
+def phases_map(status: dict) -> dict:
+    phases = status.get("phases")
+    return phases if isinstance(phases, dict) else {}
+
+
+def last_canonical_complete(phases: dict) -> str | None:
+    for name in reversed(CURRENT_PHASE_NAMES):
+        raw = extract_phase_string(phases.get(name))
+        if normalize_phase_state(raw) == "complete":
+            return name
+        for alias, canonical in PHASE_NAME_ALIASES.items():
+            if canonical != name:
+                continue
+            raw_alias = extract_phase_string(phases.get(alias))
+            if normalize_phase_state(raw_alias) == "complete":
+                return name
+    return None
+
+
+def derive_current_phase(status: dict) -> str:
+    """Value to write when current_phase is missing. Never written by the validator."""
+    phases = phases_map(status)
+    running = []
+    for name, value in phases.items():
+        if normalize_phase_state(extract_phase_string(value)) == "running":
+            running.append(map_phase_name(name))
+    if len(running) == 1 and running[0] in CURRENT_PHASE_NAMES:
+        return running[0]
+    return last_canonical_complete(phases) or "inbox"
+
+
+def reads_as_current_phase(raw: str, status: dict) -> str | None:
+    if raw in CURRENT_PHASE_NAMES:
+        return raw
+    if raw == "complete":
+        phases = phases_map(status)
+        qa = normalize_phase_state(extract_phase_string(phases.get("qa")))
+        if qa in {None, "complete"}:
+            return "qa"
+        return last_canonical_complete(phases) or "qa"
+    return CURRENT_PHASE_READS_AS.get(raw)
+
+
+def find_immediate_mother(path: Path) -> Path | None:
+    for parent in path.resolve().parents:
+        if (parent / "status.json").exists():
+            return parent
+    return None
+
+
+def is_campaign_mother(path: Path, status: dict) -> bool:
+    if isinstance(status.get("children_source"), dict):
+        return True
+    for child in path.rglob("status.json"):
+        if child.parent == path:
+            continue
+        try:
+            parts = child.parent.relative_to(path).parts
+        except ValueError:
+            continue
+        if any(part in NESTED_CHILD_FOLDERS for part in parts):
+            return True
+    return False
+
+
+def derive_expected_campaign(path: Path, status: dict | None = None) -> str | None:
+    """Consumer path: the campaign value this package should write.
+
+    Child: immediate mother's campaign, or her id when she has none.
+    Root mother: her own id. Standalone package: None.
+    """
+    path = path.resolve()
+    data = status
+    if data is None and (path / "status.json").exists():
+        data = json.loads((path / "status.json").read_text(encoding="utf-8"))
+    mother = find_immediate_mother(path)
+    if mother is not None:
+        mother_status = json.loads((mother / "status.json").read_text(encoding="utf-8"))
+        mother_campaign = mother_status.get("campaign")
+        if isinstance(mother_campaign, str) and mother_campaign.strip():
+            return mother_campaign
+        mother_id = mother_status.get("id") or mother.name
+        return str(mother_id)
+    if data is not None and is_campaign_mother(path, data):
+        return str(data.get("id") or path.name)
+    return None
+
+
+def is_prd_ready(decision: dict) -> bool:
+    return str(decision.get("prd_status") or "").lower() in READY_PRD_STATUSES
 
 
 def read(path: Path) -> str:
@@ -1459,51 +1928,443 @@ def validate_package_warlog(text: str, *, label: str) -> None:
         fail(f"{label}: PlantUML fences are forbidden in WARLOG")
 
 
-def validate_package(path: Path) -> None:
-    required = ["PRD.md", "status.json", "progress.md"]
-    missing = [rel for rel in required if not (path / rel).exists()]
-    analysis_path = path / "analysis.md"
-    spec_path = path / "SPEC.md"
-    has_mindset = analysis_path.exists() or spec_path.exists()
+def _has_heading(text: str, heading: str) -> bool:
+    """True when a markdown heading line starts with `heading`.
 
-    # Never silent-OK a partial package. Any Superflow signature (status.json,
-    # PRD.md, analysis/SPEC) means this IS a package and must be complete;
-    # a directory with none of them is simply not ours to judge.
-    if missing:
-        is_package = has_mindset or (path / "status.json").exists() or (path / "PRD.md").exists()
-        if is_package:
+    Aceita detalhe no fim do título (`## Estado real — dev@abc`), como o
+    `_section_body` já faz, e recusa heading que só contém a palavra no meio.
+    """
+    return re.search(rf"^{re.escape(heading)}(?:\s*$|[\s—:(])", text, re.M) is not None
+
+
+def _parse_iso_instant(raw: str):
+    """Parse ISO-8601 tolerante ao que as specs realmente gravam.
+
+    Python 3.9 não aceita `Z` nem offset sem dois-pontos (`-0300`); ambos
+    aparecem nos status.json vivos. Devolve None quando não dá para comparar,
+    porque comparar string ISO com offset diferente mente.
+    """
+    value = (raw or "").strip()
+    if not value:
+        return None
+    if value.endswith(("Z", "z")):
+        value = value[:-1] + "+00:00"
+    value = re.sub(r"([+-]\d{2})(\d{2})$", r"\1:\2", value)
+    try:
+        return datetime.fromisoformat(value)
+    except ValueError:
+        return None
+
+
+def _package_floor_key(path: Path, specs_root: Path | None = None) -> str:
+    """POSIX path relative to the consumer specs root. No machine path, no specs/ prefix."""
+    root = specs_root if specs_root is not None else CONFIG.specs_root
+    resolved = path.resolve()
+    if root is not None:
+        try:
+            return resolved.relative_to(root.resolve()).as_posix()
+        except ValueError:
+            pass
+    return path.name
+
+
+def _render_phase_value(value) -> str:
+    if isinstance(value, str):
+        return value if len(value) <= 48 else value[:45] + "..."
+    return f"<{type(value).__name__}>"
+
+
+def validate_phase_vocabulary(
+    status: dict,
+    *,
+    label: str,
+    floor_key: str,
+    floor: dict[str, tuple[str, ...]] | None = None,
+) -> None:
+    """D3 tipo string + D4 enum. FLOOR mora no consumidor, nunca no plugin."""
+    phases = status.get("phases")
+    if phases is None:
+        phases = {}
+    elif not isinstance(phases, dict):
+        fail(f"{label}: phases must be an object of string values, got {type(phases).__name__}")
+
+    type_offenders = []
+    vocab_offenders = []
+    for name, value in phases.items():
+        if not isinstance(value, str):
+            extracted = extract_phase_string(value)
+            mapped = normalize_phase_state(extracted)
+            extra = ""
+            if extracted is not None:
+                extra = f"; extracted {extracted!r} reads as {mapped or 'unknown'} — migrate then vocabulary applies"
+            type_offenders.append((name, value, extra))
+            continue
+        if value not in PHASE_VOCABULARY:
+            vocab_offenders.append(name)
+
+    if type_offenders:
+        detail = "; ".join(
+            f"phases.{name} must be string, got {type(value).__name__}{extra}"
+            for name, value, extra in type_offenders
+        )
+        fail(f"{label}: {detail}")
+
+    floor_map = CONFIG.phase_floor if floor is None else floor
+    allowed = floor_map.get(floor_key, ())
+
+    fresh = [name for name in vocab_offenders if name not in allowed]
+    if fresh:
+        detail = "; ".join(f"{name}={_render_phase_value(phases[name])}" for name in fresh)
+        fail(
+            f"{label}: fase fora do vocabulário ({detail}) — "
+            f"canônico: {', '.join(PHASE_VOCABULARY)}"
+        )
+
+    stale = [name for name in allowed if name not in vocab_offenders]
+    if stale:
+        fail(
+            f"{label}: entrada stale no FLOOR de fases ({', '.join(stale)}) — "
+            f"o ratchet só encolhe; remova {floor_key!r} de "
+            f".superflow/phase-vocabulary-floor.json"
+        )
+
+
+def _validate_handbook_block(block: dict, *, label: str) -> None:
+    """O bloco `handbook` do status.json: enums fechados e nada derivável gravado."""
+    for key in ["read_at", "read_base", "index_action", "selo", "archivable"]:
+        if key not in block:
+            fail(f"{label}: status.json handbook missing {key}")
+
+    read_at = str(block.get("read_at") or "")
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", read_at):
+        fail(f"{label}: handbook.read_at must be YYYY-MM-DD, got {read_at!r}")
+    if not str(block.get("read_base") or "").strip():
+        fail(f"{label}: handbook.read_base must name the base that was read (ex. 'dev@fed5faf18')")
+
+    for key, allowed in [
+        ("index_action", HANDBOOK_INDEX_ACTIONS),
+        ("selo", HANDBOOK_SELOS),
+        ("archivable", HANDBOOK_ARCHIVABLE),
+    ]:
+        value = block.get(key)
+        if value not in allowed:
+            fail(f"{label}: handbook.{key}={value!r} is not in {allowed}")
+
+    for key in ["archive_debts", "unanswered"]:
+        value = block.get(key, [])
+        if not isinstance(value, list) or any(not isinstance(item, str) for item in value):
+            fail(f"{label}: handbook.{key} must be a list of strings")
+
+    decisions = block.get("open_decisions", [])
+    if not isinstance(decisions, list):
+        fail(f"{label}: handbook.open_decisions must be a list")
+    for item in decisions:
+        if not isinstance(item, dict):
+            fail(f"{label}: handbook.open_decisions entries must be objects")
+        for key in ["id", "question", "owner"]:
+            if not str(item.get(key) or "").strip():
+                fail(f"{label}: handbook.open_decisions entry missing {key}")
+
+    next_useful = block.get("next_useful", [])
+    if not isinstance(next_useful, list):
+        fail(f"{label}: handbook.next_useful must be a list")
+    for item in next_useful:
+        if not isinstance(item, dict):
+            fail(f"{label}: handbook.next_useful entries must be objects")
+        if not str(item.get("id") or "").strip():
+            fail(f"{label}: handbook.next_useful entry missing id")
+        if item.get("kind") not in HANDBOOK_NEXT_KINDS:
             fail(
-                f"{path}: partial package — missing {', '.join(missing)} (never silent OK)"
+                f"{label}: handbook.next_useful[{item.get('id')!r}].kind="
+                f"{item.get('kind')!r} is not in {HANDBOOK_NEXT_KINDS}"
+            )
+        blocked_by = item.get("blocked_by", [])
+        if not isinstance(blocked_by, list) or any(
+            not isinstance(dep, str) for dep in blocked_by
+        ):
+            fail(
+                f"{label}: handbook.next_useful[{item.get('id')!r}].blocked_by "
+                "must be a list of strings"
+            )
+        written = [key for key in HANDBOOK_DERIVED_ONLY_KEYS if key in item]
+        if written:
+            fail(
+                f"{label}: handbook.next_useful[{item.get('id')!r}] grava "
+                f"{', '.join(written)} — elegibilidade é DERIVADA "
+                "(kind != human && blocked_by == []), nunca gravada"
+            )
+
+    if "tasks" in block:
+        fail(
+            f"{label}: handbook.tasks is forbidden — task executável mora em "
+            "implementation_plan.json (status-schema invariante 10)"
+        )
+
+    rollup = block.get("children_rollup")
+    if rollup is not None:
+        if not isinstance(rollup, dict):
+            fail(f"{label}: handbook.children_rollup must be an object or null")
+        for key in ["derived_at", "derived_from", "counts"]:
+            if key not in rollup:
+                fail(f"{label}: handbook.children_rollup missing {key}")
+        if not isinstance(rollup.get("counts"), dict):
+            fail(f"{label}: handbook.children_rollup.counts must be an object")
+
+
+def validate_handbook(text: str, status: dict, *, label: str) -> None:
+    """As sete seções de prosa, sem placeholder, com o Estado real ancorado.
+
+    A exigência de âncoras `arquivo:linha` no Estado real é o que liga o retrato
+    ao código: sem ela o handbook vira prosa bonita sobre um sistema que ninguém
+    abriu — exatamente o defeito que ele existe para corrigir.
+    """
+    for canonical, aliases in HANDBOOK_REQUIRED_HEADINGS:
+        matched = next(
+            (alias for alias in aliases if _has_heading(text, f"## {alias}")), None
+        )
+        if matched is None:
+            fail(f"{label}: missing required section: ## {canonical}")
+        body = _section_body(text, f"## {matched}")
+        if _is_placeholder_body(body):
+            fail(
+                f"{label}: section ## {canonical} is empty or a placeholder — "
+                "handbook sem conteúdo é pior que handbook ausente"
+            )
+        if canonical == HANDBOOK_EVIDENCE_SECTION:
+            anchors = sorted(set(PATH_LINE_RE.findall(body)))
+            if len(anchors) < HANDBOOK_MIN_EVIDENCE_ANCHORS:
+                fail(
+                    f"{label}: ## {canonical} tem {len(anchors)} âncora(s) "
+                    f"arquivo:linha; o contrato exige {HANDBOOK_MIN_EVIDENCE_ANCHORS} "
+                    "(backtick sozinho não conta)"
+                )
+
+    block = status.get("handbook")
+    if not isinstance(block, dict):
+        fail(
+            f"{label}: status.json precisa do bloco `handbook` — "
+            "o veredito nasce campo, nunca raspado da prosa"
+        )
+    _validate_handbook_block(block, label=label)
+
+
+def warn_stale_handbook_base(path: Path, status: dict, *, label: str) -> None:
+    """Retrato velho é dívida visível, não bloqueio.
+
+    Se `read_base` não for ancestral do HEAD, o handbook descreve um estado que
+    já andou. Isso avisa; não falha. Travar PR aqui garantiria que ninguém
+    escreve o segundo handbook.
+    """
+    block = status.get("handbook")
+    if not isinstance(block, dict):
+        return
+    base = str(block.get("read_base") or "").strip()
+    sha = base.rsplit("@", 1)[-1] if "@" in base else base
+    if not re.fullmatch(r"[0-9a-fA-F]{7,40}", sha):
+        return
+    result = subprocess.run(
+        ["git", "-C", str(path), "merge-base", "--is-ancestor", sha, "HEAD"],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=False,
+    )
+    if result.returncode in (0, 128):
+        # 0 = ancestral; 128 = fora de repo git ou sha desconhecido (não dá para julgar)
+        return
+    print(
+        f"WARN: {label}: read_base {base} não é ancestral do HEAD — "
+        "retrato envelhecido (dívida visível, não bloqueio)",
+        file=sys.stderr,
+    )
+
+
+def validate_children_rollup(path: Path, status: dict, *, label: str) -> None:
+    """`children_source` declara pacote-mãe; o rollup gravado precisa ser fresco.
+
+    O pai não copia estado do filho: ele declara onde os filhos estão e o
+    `superflow_campaign.py` deriva na hora. Se alguém cachear o resultado em
+    `handbook.children_rollup`, o cache tem de ser mais novo que o filho mais
+    novo — cache sem gate de frescor é a mentira que o status do pai já contava.
+    """
+    source = status.get("children_source")
+    if source is None:
+        return
+    if not isinstance(source, dict):
+        fail(f"{label}: children_source must be an object")
+    glob = source.get("glob")
+    if not isinstance(glob, str) or not glob.strip():
+        fail(f"{label}: children_source.glob must be a non-empty glob")
+    package_id = status.get("id")
+    if source.get("campaign") != package_id:
+        fail(
+            f"{label}: children_source.campaign={source.get('campaign')!r} "
+            f"must equal this package id ({package_id!r})"
+        )
+
+    newest = None
+    for child in sorted(path.glob(glob)):
+        try:
+            child_status = json.loads(read(child))
+        except json.JSONDecodeError as exc:
+            fail(f"{label}: child {child} is not valid JSON: {exc}")
+        if child_status.get("campaign") != package_id:
+            fail(
+                f"{label}: child {child} declares campaign="
+                f"{child_status.get('campaign')!r}; the mother package is "
+                f"{package_id!r} — filho órfão não entra no rollup"
+            )
+        stamp = _parse_iso_instant(str(child_status.get("updated_at") or ""))
+        if stamp is not None and (newest is None or stamp > newest):
+            newest = stamp
+
+    block = status.get("handbook") if isinstance(status.get("handbook"), dict) else {}
+    rollup = block.get("children_rollup")
+    if not isinstance(rollup, dict) or newest is None:
+        return
+    derived_at = _parse_iso_instant(str(rollup.get("derived_at") or ""))
+    if derived_at is None:
+        fail(f"{label}: handbook.children_rollup.derived_at is not a parseable timestamp")
+    if derived_at < newest:
+        fail(
+            f"{label}: handbook.children_rollup.derived_at={rollup.get('derived_at')!r} "
+            f"is older than the newest child updated_at ({newest.isoformat()}) — "
+            "cache stale não vale como rollup"
+        )
+
+
+def validate_campaign_membership(path: Path, status: dict, *, label: str) -> None:
+    """D6: mãe auto-adesiva por campaign==id; filho por ancestral com status.json.
+
+    O guard parent.name == minispecs morreu. Não existe FLOOR de adesão:
+    o valor deriva da árvore e o diagnóstico o nomeia.
+    """
+    expected = derive_expected_campaign(path, status)
+    campaign = status.get("campaign")
+    mother = find_immediate_mother(path)
+    if mother is not None:
+        if not isinstance(campaign, str) or not campaign.strip():
+            fail(
+                f"{label}: filho exige campaign={expected!r} "
+                f"(campaign da mãe imediata {mother.name} se ela tiver; senão o id dela)"
+            )
+        if expected is not None and campaign != expected:
+            fail(
+                f"{label}: campaign={campaign!r} não bate com o valor derivado "
+                f"{expected!r} (campaign da mãe imediata se ela tiver; senão o id dela)"
             )
         return
+    if is_campaign_mother(path, status):
+        package_id = status.get("id") or path.name
+        if campaign != package_id:
+            fail(
+                f"{label}: mãe exige campaign={package_id!r} "
+                "(auto-adesão pelo campo campaign, nunca por depends_on)"
+            )
 
-    status = json.loads(read(path / "status.json"))
-    if status.get("schema_version") != "superflow.status.v1":
-        fail(f"{path}/status.json has unexpected schema_version")
-    for key in ["id", "route", "phase_budget", "confidence", "current_phase", "decision", "phases", "artifacts", "task_source"]:
+
+def validate_current_phase(status: dict, *, label: str) -> None:
+    """D5: ponteiro ∈ oito nomes. Ausente falha com o valor derivável."""
+    raw = status.get("current_phase")
+    phases = phases_map(status)
+    derived = derive_current_phase(status)
+    if raw is None or (isinstance(raw, str) and not raw.strip()):
+        fail(
+            f"{label}: current_phase is required — derive {derived!r} "
+            f"(running phase if any; else last canonical complete; else inbox) "
+            f"and write that value; the validator does not fill it"
+        )
+    if not isinstance(raw, str):
+        fail(f"{label}: current_phase must be a string, got {type(raw).__name__}")
+    if raw not in CURRENT_PHASE_NAMES:
+        mapped = reads_as_current_phase(raw, status)
+        if mapped:
+            fail(
+                f"{label}: current_phase={raw!r} is not one of {CURRENT_PHASE_NAMES} — "
+                f"lê-se {mapped!r}; write current_phase={mapped}"
+            )
+        fail(
+            f"{label}: current_phase={raw!r} is not one of {CURRENT_PHASE_NAMES}"
+        )
+
+    running = [
+        map_phase_name(name)
+        for name, value in phases.items()
+        if normalize_phase_state(extract_phase_string(value)) == "running"
+    ]
+    running = [name for name in running if name in CURRENT_PHASE_NAMES]
+    if len(running) > 1:
+        fail(f"{label}: at most one phases.* may be running, found {running}")
+    if len(running) == 1 and raw != running[0]:
+        fail(
+            f"{label}: current_phase={raw!r} must be the running phase {running[0]!r}"
+        )
+
+    pointer_value = extract_phase_string(phases.get(raw))
+    pointer_state = normalize_phase_state(pointer_value) if pointer_value is not None else None
+    if pointer_state in {"skipped", "superseded"}:
+        fail(
+            f"{label}: current_phase={raw!r} cannot point at phases.{raw}={pointer_value!r} "
+            f"({pointer_state} is not a live pointer)"
+        )
+    if pointer_state is not None and pointer_state not in POINTER_PHASE_STATES:
+        fail(
+            f"{label}: phases[{raw}]={pointer_value!r} must be one of {sorted(POINTER_PHASE_STATES)}"
+        )
+
+    decision = status.get("decision") if isinstance(status.get("decision"), dict) else {}
+    prd_status = str(decision.get("prd_status") or "").lower()
+    if prd_status == "gathering" and raw not in GATHERING_PHASES:
+        fail(
+            f"{label}: decision.prd_status=gathering forbids current_phase={raw!r} "
+            f"(invariant 14: stay in {sorted(GATHERING_PHASES)} or promote via the PRD-owning skill)"
+        )
+
+
+def validate_registration(path: Path, status: dict, *, label: str) -> None:
+    """Condição A — cadastro. Packagehood + campos de nascimento. Não exige PRD."""
+    schema = status.get("schema_version")
+    if schema in (None, ""):
+        schema = STATUS_SCHEMA_VERSION
+    elif schema != STATUS_SCHEMA_VERSION:
+        fail(
+            f"{path}/status.json has unexpected schema_version={schema!r} "
+            f"(lazy absent reads as {STATUS_SCHEMA_VERSION})"
+        )
+    for key in ["id", "decision"]:
         if key not in status:
             fail(f"{path}/status.json missing {key}")
-    if status["artifacts"].get("prd") and not (path / status["artifacts"]["prd"]).exists():
-        fail(f"{path}/status.json points to missing PRD artifact")
+    for key in ["route", "phase_budget", "confidence", "artifacts", "task_source"]:
+        if key not in status:
+            fail(f"{path}/status.json missing {key}")
     decision = status.get("decision")
     if not isinstance(decision, dict):
         fail(f"{path}/status.json decision must be an object")
-    for key in ["verdict", "prd_status", "reason", "prd_path", "discard_path"]:
+    for key in ["verdict", "prd_status"]:
         if key not in decision:
             fail(f"{path}/status.json decision missing {key}")
-    plan_artifact = status["artifacts"].get("plan")
-    task_source = status.get("task_source") or {}
-    if plan_artifact:
-        if plan_artifact != "implementation_plan.json":
-            fail(f"{path}/status.json artifacts.plan must point to implementation_plan.json")
-        if task_source.get("path") != plan_artifact:
-            fail(f"{path}/status.json task_source.path must match artifacts.plan")
-    prd_text = read(path / "PRD.md")
-    validate_prd_tldr(
-        prd_text,
-        label=f"{path}/PRD.md",
-        require_filled=str(decision.get("prd_status") or "").lower() in {"ready", "complete"},
-    )
+    for key in ["reason", "prd_path", "discard_path"]:
+        if key not in decision:
+            fail(f"{path}/status.json decision missing {key}")
+    validate_current_phase(status, label=label)
+    validate_phase_vocabulary(status, label=label, floor_key=_package_floor_key(path))
+    validate_campaign_membership(path, status, label=label)
+
+
+def validate_prd_maturity(path: Path, status: dict, decision: dict) -> None:
+    """Condição B — ready. O contrato inteiro do PRD. Não promove gathering."""
+    if not is_prd_ready(decision):
+        return
+    prd_path = path / "PRD.md"
+    if not prd_path.exists():
+        if READY_REQUIRES_PRD_DOCUMENT:
+            fail(
+                f"{path}: decision.prd_status={decision.get('prd_status')!r} exige PRD.md "
+                "(READY_REQUIRES_PRD_DOCUMENT / G20 default)"
+            )
+        return
+    prd_text = read(prd_path)
+    validate_prd_tldr(prd_text, label=f"{path}/PRD.md", require_filled=True)
     for heading in PRD_REQUIRED_HEADINGS:
         if heading not in prd_text:
             fail(f"{path}/PRD.md missing heading: {heading}")
@@ -1523,37 +2384,115 @@ def validate_package(path: Path) -> None:
                     break
         if not matched:
             fail(f"{path}/PRD.md missing core section: {section_name}")
+    validate_dod_derived_children(path, status, prd_text, label=f"{path}/PRD.md")
+
+
+def validate_dod_derived_children(path: Path, status: dict, prd_text: str, *, label: str) -> None:
+    """DoD cannot name a child the glob finds. Greppable only — not semantic proof."""
+    source = status.get("children_source")
+    if not isinstance(source, dict):
+        return
+    glob = source.get("glob")
+    if not isinstance(glob, str) or not glob.strip():
+        return
+    section = _section_body(prd_text, "## Definition of Complete")
+    if not section:
+        return
+    hits: list[str] = []
+    for child_file in sorted(path.glob(glob)):
+        child_dir = child_file.parent if child_file.name == "status.json" else child_file
+        tokens = {child_dir.name}
+        try:
+            child_status = json.loads(read(child_file if child_file.suffix == ".json" else child_dir / "status.json"))
+        except (OSError, json.JSONDecodeError):
+            child_status = {}
+        child_id = child_status.get("id")
+        if isinstance(child_id, str) and child_id.strip():
+            tokens.add(child_id)
+        for token in sorted(tokens):
+            if token and token in section:
+                hits.append(token)
+    if hits:
+        fail(
+            f"{label}: ## Definition of Complete names child package(s) {sorted(set(hits))} "
+            f"found by children_source.glob={glob!r} — DoD describes the mother's own scope, "
+            "never a handwritten list of child state. "
+            "This gate catches the greppable violation only; it does not prove semantic "
+            "correctness of the DoD and does not recognize paraphrase."
+        )
+
+
+def validate_package(path: Path) -> None:
+    """D1: packagehood is status.json. Spec docs without it are not a package."""
+    analysis_path = path / "analysis.md"
+    spec_path = path / "SPEC.md"
+    if not (path / "status.json").exists():
+        docs = spec_documents_in(path)
+        if docs:
+            rel = path.name
+            if CONFIG.specs_root is not None:
+                try:
+                    rel = path.resolve().relative_to(CONFIG.specs_root.resolve()).as_posix()
+                except ValueError:
+                    rel = path.name
+            fail(format_unregistered_spec_documents(rel, docs))
+        return
+
+    status = json.loads(read(path / "status.json"))
+    label = f"{path}/status.json"
+    validate_registration(path, status, label=label)
+
+    artifacts = status.get("artifacts") if isinstance(status.get("artifacts"), dict) else {}
+    decision = status["decision"]
+
+    progress_artifact = artifacts.get("progress")
+    if progress_artifact and not (path / progress_artifact).exists():
+        fail(f"{path}/status.json points to missing progress artifact")
+
+    if is_prd_ready(decision):
+        prd_artifact = artifacts.get("prd")
+        if prd_artifact and not (path / prd_artifact).exists():
+            fail(f"{path}/status.json points to missing PRD artifact")
+
+    # Handbook: broken pointer fails. File on disk without pointer does not
+    # force the field. The pointed name is free — not an allowlist of HANDBOOK.md.
+    handbook_artifact = artifacts.get("handbook")
+    if handbook_artifact:
+        handbook_path = path / str(handbook_artifact)
+        if not handbook_path.exists():
+            fail(f"{path}/status.json points to missing handbook artifact")
+        validate_handbook(
+            read(handbook_path), status, label=f"{path}/{handbook_artifact}"
+        )
+        warn_stale_handbook_base(path, status, label=f"{path}/{handbook_artifact}")
+    validate_children_rollup(path, status, label=label)
+    validate_prd_maturity(path, status, decision)
+
+    plan_artifact = artifacts.get("plan")
+    task_source = status.get("task_source") or {}
+    if plan_artifact and task_source.get("path") != plan_artifact:
+        fail(f"{path}/status.json task_source.path must match artifacts.plan")
 
     plan_data: dict | None = None
     plan_path = path / "implementation_plan.json"
     if plan_path.exists():
         plan_data = json.loads(read(plan_path))
         validate_plan_tdd(plan_data, label=str(plan_path))
-        # Prefer plan workflow_type when present for depth derivation
-        plan_body = plan_data.get("plan") if isinstance(plan_data.get("plan"), dict) else {}
-        if isinstance(plan_body, dict) and plan_body.get("workflow_type") and not status.get("workflow_type"):
-            status = {**status, "workflow_type": plan_body.get("workflow_type")}
 
     log_data: dict | None = None
     log_path = path / "implementation_log.json"
     if log_path.exists():
         log_data = json.loads(read(log_path))
         validate_log_tdd(log_data, plan_data, label=str(log_path))
-        log_artifact = status["artifacts"].get("implementation_log")
-        if log_artifact and log_artifact != "implementation_log.json":
-            fail(f"{path}/status.json artifacts.implementation_log must be implementation_log.json")
 
     review_data: dict | None = None
     review_path = path / "review_log.json"
     if review_path.exists():
         review_data = json.loads(read(review_path))
         validate_review_log(review_data, label=str(review_path))
-        review_artifact = status["artifacts"].get("review")
-        if review_artifact and review_artifact != "review_log.json":
-            fail(f"{path}/status.json artifacts.review must be review_log.json")
 
     workflow_type = str(status.get("workflow_type") or "").strip().lower()
-    qa_complete = str((status.get("phases") or {}).get("qa") or "").lower() == "complete"
+    qa_complete = str(phases_map(status).get("qa") or "").lower() == "complete"
     require_review_when_code_shipped(
         review_data,
         log_data,
@@ -1562,17 +2501,14 @@ def validate_package(path: Path) -> None:
         label=str(path),
     )
 
-    # Patch 2: depth from status.json — mindset-depth.txt is NOT authority
     depth = derive_mindset_depth(status)
     marker = path / "mindset-depth.txt"
     if marker.exists():
         raw = read(marker).strip().lower()
         if raw == "skip":
             fail(f"{path}/mindset-depth.txt: 'skip' is forbidden (no mindset escape hatch)")
-        # Legacy fixture alias: trap marker only allowed when status already deep
         if raw == "trap" and depth == "deep":
             depth = "trap"
-        # Any other marker content is ignored (cannot downgrade deep → docs)
 
     if analysis_path.exists():
         validate_analysis_mindset(read(analysis_path), label=str(analysis_path), depth=depth)
@@ -1585,15 +2521,72 @@ def validate_package(path: Path) -> None:
         validate_package_warlog(read(warlog_path), label=str(warlog_path))
 
 
+def validate_specs_root(root: Path) -> None:
+    """Repo mode: every typed package plus unregistered_spec_documents."""
+    global _COLLECT_FAILURES
+    failures = 0
+    _COLLECT_FAILURES = True
+    try:
+        for status_file in sorted(root.rglob("status.json")):
+            try:
+                validate_package(status_file.parent)
+            except ValidationFailure as exc:
+                print(f"FAIL: {exc.message}", file=sys.stderr)
+                failures += 1
+        for rel, docs in find_unregistered_spec_documents(root):
+            print(f"FAIL: {format_unregistered_spec_documents(rel, docs)}", file=sys.stderr)
+            failures += 1
+    finally:
+        _COLLECT_FAILURES = False
+    if failures:
+        raise SystemExit(1)
+
+
+def _is_specs_root(root: Path) -> bool:
+    if (root / "status.json").exists():
+        return False
+    if CONFIG.specs_root is not None and root.resolve() == CONFIG.specs_root.resolve():
+        return True
+    if root.name == "specs" and any(root.rglob("status.json")):
+        return True
+    return False
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("path", help="Superflow skill root or generated specs/NNN folder.")
     parser.add_argument("--mermaid", action="store_true", help="Render Mermaid blocks with mmdc.")
+    parser.add_argument(
+        "--superflow-dir",
+        help="Directory containing config.json (runtime path; never a versioned machine path).",
+    )
+    parser.add_argument(
+        "--derive-campaign",
+        action="store_true",
+        help="Print the derived campaign value and exit. Does not write status.json.",
+    )
     args = parser.parse_args()
 
     root = Path(args.path).expanduser().resolve()
     if not root.exists():
         fail(f"path does not exist: {root}")
+
+    apply_superflow_config(load_superflow_config(root, args.superflow_dir))
+
+    if args.derive_campaign:
+        if (root / "status.json").exists():
+            print(derive_expected_campaign(root) or "")
+            return 0
+        for status_file in sorted(root.rglob("status.json")):
+            pkg = status_file.parent
+            rel = pkg.name
+            if CONFIG.specs_root is not None:
+                try:
+                    rel = pkg.resolve().relative_to(CONFIG.specs_root.resolve()).as_posix()
+                except ValueError:
+                    rel = pkg.name
+            print(f"{rel}\t{derive_expected_campaign(pkg) or ''}")
+        return 0
 
     if (root / ".codex-plugin" / "plugin.json").exists():
         validate_plugin_root(root)
@@ -1602,6 +2595,11 @@ def main() -> int:
             validate_mermaid(root)
     elif (root / "SKILL.md").exists():
         validate_skill_root(root)
+        scan_forbidden_diagrams(root)
+        if args.mermaid:
+            validate_mermaid(root)
+    elif _is_specs_root(root):
+        validate_specs_root(root)
         scan_forbidden_diagrams(root)
         if args.mermaid:
             validate_mermaid(root)

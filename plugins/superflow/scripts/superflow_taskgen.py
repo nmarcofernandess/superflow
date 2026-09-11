@@ -271,12 +271,16 @@ def phase_status(route: str) -> dict:
 
 
 def current_phase(classification: dict) -> str:
+    """Scaffold pointer. gathering only allows inbox/taskgen/analyst (D5 / invariant 14)."""
     next_phase = classification["next_phase"]
     if next_phase == "promote when mature":
         return "inbox"
     if next_phase == "route review":
         return "taskgen"
-    return str(next_phase)
+    mapped = str(next_phase)
+    if mapped in {"inbox", "taskgen", "analyst"}:
+        return mapped
+    return "taskgen"
 
 
 def decision_payload(classification: dict) -> dict:

@@ -10,6 +10,7 @@ Exit codes: 0 done, 10 next, 20 blocked, 1 contract error.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import subprocess
 import sys
@@ -74,6 +75,10 @@ def read_package(pkg: Path) -> dict:
             "a blocker nobody signed is an abandonment (campaign-contract.md C4)"
         )
 
+    # O veredito do handbook viaja como campo para o report: painel que precisa
+    # raspar prosa para saber selo/arquivabilidade volta a errar (censo 2026-09).
+    handbook = status.get("handbook") if isinstance(status.get("handbook"), dict) else {}
+
     return {
         "id": pkg.name,
         "path": str(pkg),
@@ -82,6 +87,8 @@ def read_package(pkg: Path) -> dict:
         "qa_complete": str(phases.get("qa") or "").lower() == "complete",
         "blocked_phases": blocked_phases,
         "blocked_reason": blocked_reason,
+        "selo": handbook.get("selo"),
+        "archivable": handbook.get("archivable"),
     }
 
 
@@ -114,9 +121,23 @@ def resolve_order(packages: list[dict]) -> None:
         walk(pkg["id"], [])
 
 
+def _validator_module():
+    spec = importlib.util.spec_from_file_location("validate_superflow", VALIDATE)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
+
+
+def derive_expected_campaign(pkg: Path) -> str | None:
+    """Consumer path: campaign value derived from the tree. Does not write."""
+    return _validator_module().derive_expected_campaign(pkg)
+
+
 def compute(root: Path, campaign: str | None) -> tuple[str, dict]:
     packages = [read_package(p) for p in discover_packages(root)]
     if campaign:
+        # Mother enters only by carrying campaign == id. Being the mother is not membership.
         packages = [p for p in packages if p["campaign"] == campaign]
     if not packages:
         raise ContractError(
@@ -177,6 +198,8 @@ def render_text(verdict: str, report: dict) -> str:
     for pkg in report["packages"]:
         deps = ", ".join(pkg["depends_on"]) or "—"
         line = f"  [{pkg['state']:>10}] {pkg['id']}  deps: {deps}"
+        if pkg.get("selo"):
+            line += f"  selo: {pkg['selo']}"
         if pkg["state"] == "blocked":
             line += f"\n               blocked: {pkg['blocked_reason']}"
         lines.append(line)
@@ -194,12 +217,22 @@ def main() -> int:
     parser.add_argument("root", help="Directory holding the campaign packages.")
     parser.add_argument("--campaign", help="Only packages carrying this campaign name.")
     parser.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    parser.add_argument(
+        "--derive-campaign",
+        action="store_true",
+        help="Print derived campaign values for packages under root. Does not write.",
+    )
     args = parser.parse_args()
 
     root = Path(args.root).expanduser().resolve()
     if not root.exists():
         print(f"CONTRACT: path does not exist: {root}", file=sys.stderr)
         return EXIT_CONTRACT
+
+    if args.derive_campaign:
+        for pkg in discover_packages(root):
+            print(f"{pkg.name}\t{derive_expected_campaign(pkg) or ''}")
+        return 0
 
     try:
         verdict, report = compute(root, args.campaign)

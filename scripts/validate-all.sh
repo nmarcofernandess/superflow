@@ -11,6 +11,7 @@ python3 "$ROOT/plugins/superflow/scripts/test_warlog_contract.py"
 python3 "$ROOT/plugins/superflow/scripts/test_review_contract.py"
 python3 "$ROOT/plugins/superflow/scripts/test_campaign_contract.py"
 python3 "$ROOT/plugins/superflow/scripts/test_rota_contract.py"
+python3 "$ROOT/plugins/superflow/scripts/test_qg.py"
 python3 "$ROOT/plugins/superflow/scripts/test_writing_contract.py"
 python3 "$ROOT/plugins/superflow/scripts/forward_test_superflow.py"
 
