@@ -631,6 +631,21 @@ def load_superflow_config(start: Path, cli_dir: str | None = None) -> SuperflowC
     return cfg
 
 
+def resolve_qg_dir(cfg: SuperflowConfig, dest_override: str | None = None) -> Path:
+    """QG destination: CLI dest, then config destination, then `.superflow/qg`.
+
+    Walk-up already happened in `load_superflow_config`. This only joins the
+    `qg` name. Do not reimplement CLI → env → walk-up here.
+    """
+    if dest_override:
+        return Path(dest_override).expanduser()
+    base = cfg.destination if cfg.destination is not None else cfg.superflow_dir
+    if base is None:
+        base = Path.cwd() / ".superflow"
+    name = cfg.raw.get("qg") or DEFAULT_CONFIG["qg"]
+    return Path(base) / str(name)
+
+
 def apply_superflow_config(cfg: SuperflowConfig) -> SuperflowConfig:
     global CONFIG
     CONFIG = cfg
