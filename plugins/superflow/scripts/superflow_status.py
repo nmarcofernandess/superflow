@@ -435,7 +435,7 @@ def holds_packages(path: Path) -> bool:
 
 def contains_run_sh(path: Path) -> bool:
     try:
-        return any(child.is_file() for child in path.rglob("run.sh"))
+        return any(child.is_file() and not hidden_rel(child, path) for child in path.rglob("run.sh"))
     except OSError:
         return False
 
@@ -574,7 +574,11 @@ def resolve_specs_root(start: Path, cfg, specs_override: str | None) -> Path:
         return Path(specs_override).expanduser()
     if cfg.specs_root is not None:
         return cfg.specs_root
-    if start.name == "specs" or (start / "status.json").exists() or any(start.glob("*/status.json")):
+    if (
+        start.name == "specs"
+        or (start / "status.json").exists()
+        or any(not hidden_rel(match, start) for match in start.glob("*/status.json"))
+    ):
         return start
     raise SystemExit("CONTRACT: could not resolve a specs root (pass --specs)")
 
@@ -694,6 +698,14 @@ def load_feed(path: Path) -> dict:
             raise SystemExit("CONTRACT: feed package diagnostics must be a list")
         if "presence" in item and not isinstance(item["presence"], str):
             raise SystemExit("CONTRACT: feed package presence must be a string")
+        if "phases" in item and item["phases"] is not None and not isinstance(item["phases"], dict):
+            raise SystemExit("CONTRACT: feed package phases must be an object")
+        if "tasks" in item and item["tasks"] is not None and not isinstance(item["tasks"], list):
+            raise SystemExit("CONTRACT: feed package tasks must be a list")
+        if "handbook" in item and item["handbook"] is not None and not isinstance(item["handbook"], dict):
+            raise SystemExit("CONTRACT: feed package handbook must be an object")
+        if "depends_on" in item and item["depends_on"] is not None and not isinstance(item["depends_on"], list):
+            raise SystemExit("CONTRACT: feed package depends_on must be a list")
         parsed_packages.append(item)
     parsed_unregistered = []
     for item in unregistered:
@@ -702,6 +714,10 @@ def load_feed(path: Path) -> dict:
         rel = item.get("rel")
         if not isinstance(rel, str) or not rel.strip():
             raise SystemExit("CONTRACT: feed unregistered rel must be a non-empty string")
+        if "contents" in item and item["contents"] is not None:
+            contents = item["contents"]
+            if not isinstance(contents, list) or any(not isinstance(part, str) for part in contents):
+                raise SystemExit("CONTRACT: feed unregistered contents must be a list of strings")
         parsed_unregistered.append(item)
     parsed_edges = []
     for item in edges:
