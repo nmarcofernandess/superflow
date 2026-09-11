@@ -585,6 +585,74 @@ def test_malformed_feed_package_exits_contract(root: Path) -> None:
         raise AssertionError(f"CONTRACT must not traceback:\n{result.stdout}")
 
 
+def test_feed_diagnostics_int_exits_contract(root: Path) -> None:
+    payload = {
+        "generated_at": "2026-09-10",
+        "read_base": "disk",
+        "packages": [{"id": "a", "rel": "a", "diagnostics": 5}],
+        "unregistered": [],
+        "edges": [],
+    }
+    feed_file = root / "bad-feed.json"
+    write_json(feed_file, payload)
+    try:
+        S.load_feed(feed_file)
+    except SystemExit as exc:
+        if "CONTRACT" not in str(exc):
+            raise AssertionError(f"diagnostics: 5 must exit CONTRACT, got {exc!r}")
+    else:
+        raise AssertionError("diagnostics: 5 must exit CONTRACT at load_feed")
+    setup_tree(root)
+    written = run_status(root)
+    if written.returncode != 0:
+        raise AssertionError(f"feed write failed:\n{written.stdout}")
+    write_json(root / ".superflow" / "status.json", payload)
+    result = run_qg(root)
+    if result.returncode != 1:
+        raise AssertionError(f"diagnostics: 5 must exit CONTRACT, got {result.returncode}\n{result.stdout}")
+    if "CONTRACT" not in result.stdout:
+        raise AssertionError(f"must say CONTRACT, got {result.stdout!r}")
+    if "Traceback" in result.stdout:
+        raise AssertionError(f"CONTRACT must not traceback:\n{result.stdout}")
+
+
+def test_duplicate_ids_without_presence_do_not_traceback(root: Path) -> None:
+    payload = {
+        "generated_at": "2026-09-10",
+        "read_base": "disk",
+        "packages": [{"id": "dup", "rel": "one"}, {"id": "dup", "rel": "two"}],
+        "unregistered": [],
+        "edges": [],
+    }
+    feed_file = root / "dup-feed.json"
+    write_json(feed_file, payload)
+    loaded = None
+    try:
+        loaded = S.load_feed(feed_file)
+    except SystemExit as exc:
+        if "CONTRACT" not in str(exc):
+            raise AssertionError(f"duplicate ids without presence must exit CONTRACT, got {exc!r}")
+    if loaded is not None:
+        try:
+            S.project_feed(loaded, None)
+        except Exception as exc:
+            raise AssertionError(
+                f"project must not traceback, got {type(exc).__name__}: {exc}"
+            )
+    setup_tree(root)
+    written = run_status(root)
+    if written.returncode != 0:
+        raise AssertionError(f"feed write failed:\n{written.stdout}")
+    write_json(root / ".superflow" / "status.json", payload)
+    result = run_qg(root)
+    if "Traceback" in result.stdout:
+        raise AssertionError(f"QG must not traceback:\n{result.stdout}")
+    if result.returncode not in (0, 1):
+        raise AssertionError(f"QG exit {result.returncode}, want 0 or CONTRACT 1\n{result.stdout}")
+    if result.returncode == 1 and "CONTRACT" not in result.stdout:
+        raise AssertionError(f"QG exit 1 must say CONTRACT, got {result.stdout!r}")
+
+
 def test_feed_write_is_restart_safe(root: Path) -> None:
     dest = root / "status.json"
     dest.write_text("keep\n", encoding="utf-8")
@@ -620,6 +688,29 @@ def test_census_does_not_ingest_its_own_feed(root: Path) -> None:
     second = S.write_feed(tree, tree / ".superflow", stamp="2026-09-11", read_base="disk")
     second_ids = [pkg["id"] for pkg in second["packages"]]
     if second_ids != ["001-foundation", "002-consumer", "003-polish"]:
+        raise AssertionError(f"second write ids {second_ids}")
+    if ".superflow" in second_ids:
+        raise AssertionError("second write must not list id .superflow")
+    if json_path.read_bytes() != first_bytes:
+        raise AssertionError("second write at the same stamp must be byte-identical")
+
+
+def test_census_skips_hidden_declared_child_at_scanned_root(root: Path) -> None:
+    tree = root / "scanned"
+    tree.mkdir()
+    write_status(tree, id="rootpkg", children_source={"glob": "*/status.json"})
+    write_status(tree / "kid", id="kid")
+    first = S.write_feed(tree, tree / ".superflow", stamp="2026-09-11", read_base="disk")
+    first_ids = [pkg["id"] for pkg in first["packages"]]
+    if first_ids != ["rootpkg", "kid"]:
+        raise AssertionError(f"first write ids {first_ids}")
+    if ".superflow" in first_ids:
+        raise AssertionError("feed must not list id .superflow")
+    json_path = tree / ".superflow" / "status.json"
+    first_bytes = json_path.read_bytes()
+    second = S.write_feed(tree, tree / ".superflow", stamp="2026-09-11", read_base="disk")
+    second_ids = [pkg["id"] for pkg in second["packages"]]
+    if second_ids != ["rootpkg", "kid"]:
         raise AssertionError(f"second write ids {second_ids}")
     if ".superflow" in second_ids:
         raise AssertionError("second write must not list id .superflow")
@@ -689,8 +780,11 @@ def main() -> int:
         test_unregistered_and_tokens,
         test_feed_covers_scanned_packages_and_declared_ghosts,
         test_malformed_feed_package_exits_contract,
+        test_feed_diagnostics_int_exits_contract,
+        test_duplicate_ids_without_presence_do_not_traceback,
         test_feed_write_is_restart_safe,
         test_census_does_not_ingest_its_own_feed,
+        test_census_skips_hidden_declared_child_at_scanned_root,
         test_unregistered_is_not_a_filename_allowlist,
         test_script_payload_cannot_break_out,
         test_invalid_glob_does_not_abort_snapshot,
