@@ -17,6 +17,7 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 QG = SCRIPT_DIR / "superflow_qg.py"
+STATUS = SCRIPT_DIR / "superflow_status.py"
 BOARD = SCRIPT_DIR.parent / "assets" / "task-board" / "board.html"
 
 ABSENT = "Não contém"
@@ -87,9 +88,33 @@ def write_status(pkg: Path, **fields) -> dict:
     return data
 
 
+def run_status(root: Path, *args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [
+            sys.executable,
+            str(STATUS),
+            str(root),
+            "--specs",
+            str(root / "specs"),
+            "--stamp",
+            "2026-09-10",
+            *args,
+        ],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=False,
+    )
+
+
 def run_qg(root: Path, *args: str) -> subprocess.CompletedProcess:
     dest = root / "out"
     dest.mkdir(exist_ok=True)
+    feed = root / ".superflow" / "status.json"
+    if not feed.is_file():
+        written = run_status(root)
+        if written.returncode != 0:
+            return written
     return subprocess.run(
         [
             sys.executable,
@@ -289,13 +314,18 @@ def test_status_change_without_portrait_edit(root: Path) -> None:
     data["phases"]["execute"] = "complete"
     data["current_phase"] = "qa"
     write_json(pkg / "status.json", data)
-    after = snapshot_of(html_of(root, "--scope", "beta-solo", "--out", "after.html"))
+    stale = snapshot_of(html_of(root, "--scope", "beta-solo", "--out", "stale.html"))
     before_pkg = next(p for p in before["packages"] if p["id"] == "beta-solo")
+    stale_pkg = next(p for p in stale["packages"] if p["id"] == "beta-solo")
+    if stale_pkg["phases"]["execute"] != before_pkg["phases"]["execute"]:
+        raise AssertionError("QG must keep the feed snapshot until the feed regenerates")
+    refreshed = run_status(root)
+    if refreshed.returncode != 0:
+        raise AssertionError(f"feed refresh failed:\n{refreshed.stdout}")
+    after = snapshot_of(html_of(root, "--scope", "beta-solo", "--out", "after.html"))
     after_pkg = next(p for p in after["packages"] if p["id"] == "beta-solo")
-    if before_pkg["phases"]["execute"] == after_pkg["phases"]["execute"]:
-        raise AssertionError("next generation must reflect the new status.json")
     if after_pkg["phases"]["execute"] != "complete":
-        raise AssertionError("updated phase did not appear")
+        raise AssertionError("updated phase did not appear after the feed refreshed")
 
 
 def test_handbook_may_diverge(root: Path) -> None:
@@ -381,12 +411,17 @@ def test_unregistered_and_tokens(root: Path) -> None:
     board = BOARD.read_text(encoding="utf-8")
     if "--paper" not in board or "--ink" not in board:
         raise AssertionError("canonical board.html lost --paper/--ink")
-    if "load_board_css" not in QG.read_text(encoding="utf-8"):
+    src = QG.read_text(encoding="utf-8")
+    if "load_board_css" not in src:
         raise AssertionError("QG must embed board.html CSS, not a second token sheet")
-    if "resolve_qg_dir" not in QG.read_text(encoding="utf-8"):
+    if "resolve_qg_dir" not in src:
         raise AssertionError("QG must use the contract path resolver")
-    if "rastro" in QG.read_text(encoding="utf-8"):
+    if "rastro" in src:
         raise AssertionError("do not port the prose-scrape rastro")
+    if 'rglob("status.json")' in src or "rglob('status.json')" in src:
+        raise AssertionError("QG must not walk every status.json to render")
+    if ".superflow/status.json" not in text:
+        raise AssertionError("HTML must name the consolidated feed as its source")
 
 
 def test_script_payload_cannot_break_out(root: Path) -> None:
@@ -471,6 +506,38 @@ def test_duplicate_ids_keep_distinct_graph_nodes(root: Path) -> None:
             raise AssertionError(f"{rec['rel']} must diagnose the duplicate id, got {rec['diagnostics']}")
 
 
+def test_feed_package_count_matches_scan(root: Path) -> None:
+    setup_tree(root)
+    written = run_status(root)
+    if written.returncode != 0:
+        raise AssertionError(f"feed write failed:\n{written.stdout}")
+    feed_path = root / ".superflow" / "status.json"
+    md_path = root / ".superflow" / "status.md"
+    if not feed_path.is_file() or not md_path.is_file():
+        raise AssertionError("census must write .superflow/status.json and status.md")
+    feed = json.loads(feed_path.read_text(encoding="utf-8"))
+    scanned = sorted((root / "specs").rglob("status.json"))
+    if len(feed["packages"]) != len(scanned):
+        raise AssertionError(
+            f"feed package count {len(feed['packages'])} != scanned count {len(scanned)}"
+        )
+    if len(feed["packages"]) != 3:
+        raise AssertionError(f"setup_tree has 3 packages, feed has {len(feed['packages'])}")
+    ids = {pkg["id"] for pkg in feed["packages"]}
+    if ids != {"alpha-mother", "01-child", "beta-solo"}:
+        raise AssertionError(f"feed ids drifted from the scan: {ids}")
+    md = md_path.read_text(encoding="utf-8")
+    for name in ("alpha-mother", "01-child", "beta-solo", "ghost-docs"):
+        if name not in md:
+            raise AssertionError(f"status.md must list {name}")
+    again = run_status(root)
+    if again.returncode != 0:
+        raise AssertionError(f"second feed write failed:\n{again.stdout}")
+    first = json.dumps(feed, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
+    if feed_path.read_text(encoding="utf-8") != first:
+        raise AssertionError("second feed write must be byte-stable at the same stamp")
+
+
 def test_unregistered_is_not_a_filename_allowlist(root: Path) -> None:
     """Mutant: if the detector again asks 'do I know this filename?', this fails."""
     setup_tree(root)
@@ -531,6 +598,7 @@ def main() -> int:
         test_handbook_may_diverge,
         test_sprint_tab_opt_in,
         test_unregistered_and_tokens,
+        test_feed_package_count_matches_scan,
         test_unregistered_is_not_a_filename_allowlist,
         test_script_payload_cannot_break_out,
         test_invalid_glob_does_not_abort_snapshot,

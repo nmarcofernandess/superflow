@@ -34,6 +34,14 @@
 
 ## Unreleased
 
+### Status feed
+
+- **`scripts/superflow_status.py`** — one census writes `.superflow/status.json`
+  and `.superflow/status.md` at the scanned tree. Package count in the feed
+  equals the scanned Superflow package count.
+- **`scripts/superflow_qg.py`** — HTML reads that feed. It does not walk every
+  package `status.json` to render. Topology stays out of the HTML.
+
 ### QG
 
 - **`qg` skill + `scripts/superflow_qg.py`** — deterministic self-contained HTML

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Generate a Superflow QG: a deterministic, self-contained HTML snapshot.
 
-The QG presents what exists on disk. It never calls an LLM. Tasks and Graph
-consume one census. Sprint is an opt-in human composition, never a second
-authority of spec state.
+The QG reads `.superflow/status.json`. It never calls an LLM. Tasks and Graph
+consume that feed. Sprint is an opt-in human composition, never a second
+authority of spec state. Topology of the repo stays in the feed writer.
 
 Exit codes: 0 wrote the snapshot, 1 contract error.
 """
@@ -14,59 +14,36 @@ import argparse
 import html
 import json
 import re
-import subprocess
 import sys
 from collections import defaultdict
-from datetime import date
 from pathlib import Path
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 PLUGIN_ROOT = SCRIPT_DIR.parent
 VALIDATE = SCRIPT_DIR / "validate_superflow.py"
+STATUS = SCRIPT_DIR / "superflow_status.py"
 BOARD_HTML = PLUGIN_ROOT / "assets" / "task-board" / "board.html"
 
-ABSENT = "Não contém"
-CONTRACT_PLAN = "implementation_plan.json"
 
-KIND_PACKAGE = "package"
-KIND_DECLARED_CHILD = "declared_child"
-KIND_UNREGISTERED = "unregistered"
-
-EDGE_HIERARCHY = "hierarchy"
-EDGE_DEPENDS = "depends_on"
-
-EXIT_OK = 0
-EXIT_CONTRACT = 1
-
-
-def _validator():
+def _load_script(name: str, path: Path):
     import importlib.util
 
-    spec = importlib.util.spec_from_file_location("validate_superflow", VALIDATE)
+    spec = importlib.util.spec_from_file_location(name, path)
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
     spec.loader.exec_module(module)
     return module
 
 
-V = _validator()
+V = _load_script("validate_superflow", VALIDATE)
+S = _load_script("superflow_status", STATUS)
 
-
-def posix_rel(path: Path, root: Path) -> str:
-    resolved = path.resolve()
-    base = root.resolve()
-    if resolved == base:
-        return "."
-    return resolved.relative_to(base).as_posix()
-
-
-def path_inside(path: Path, root: Path) -> bool:
-    try:
-        path.resolve().relative_to(root.resolve())
-        return True
-    except ValueError:
-        return False
+ABSENT = S.ABSENT
+EDGE_HIERARCHY = S.EDGE_HIERARCHY
+EDGE_DEPENDS = S.EDGE_DEPENDS
+EXIT_OK = S.EXIT_OK
+EXIT_CONTRACT = S.EXIT_CONTRACT
 
 
 def script_safe_dumps(data: object) -> str:
@@ -76,38 +53,6 @@ def script_safe_dumps(data: object) -> str:
         .replace(">", "\\u003e")
         .replace("&", "\\u0026")
     )
-
-
-def read_json(path: Path) -> tuple[object | None, str | None]:
-    try:
-        return json.loads(path.read_text(encoding="utf-8")), None
-    except json.JSONDecodeError as exc:
-        return None, f"{path.name} ilegível: {exc.msg} (linha {exc.lineno})"
-    except OSError as exc:
-        return None, f"{path.name} ilegível: {exc.strerror or exc}"
-
-
-def git_read_base(start: Path) -> str:
-    try:
-        ref = subprocess.run(
-            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-            cwd=start,
-            check=True,
-            capture_output=True,
-            text=True,
-        ).stdout.strip()
-        sha = subprocess.run(
-            ["git", "rev-parse", "--short=9", "HEAD"],
-            cwd=start,
-            check=True,
-            capture_output=True,
-            text=True,
-        ).stdout.strip()
-    except (subprocess.CalledProcessError, FileNotFoundError, OSError):
-        return "disk"
-    if not ref or not sha:
-        return "disk"
-    return f"{ref}@{sha}"
 
 
 def load_board_css() -> str:
@@ -123,463 +68,6 @@ def load_board_css() -> str:
     if "--papel" in css or "--tinta" in css:
         raise SystemExit("CONTRACT: board.html must not use --papel/--tinta")
     return css
-
-
-def contract_tracks_plan(status: dict) -> Path | None:
-    artifacts = status.get("artifacts") if isinstance(status.get("artifacts"), dict) else {}
-    source = status.get("task_source") if isinstance(status.get("task_source"), dict) else {}
-    plan = artifacts.get("plan")
-    path = source.get("path")
-    if plan == CONTRACT_PLAN:
-        return Path(CONTRACT_PLAN)
-    if isinstance(path, str) and Path(path).name == CONTRACT_PLAN:
-        return Path(path)
-    return None
-
-
-def collect_tasks(pkg: Path, status: dict) -> tuple[list[dict] | None, list[str]]:
-    rel = contract_tracks_plan(status)
-    if rel is None:
-        return None, []
-    plan_path = (pkg / rel).resolve()
-    if not plan_path.is_file():
-        return [], [f"plano acompanhado ausente: {rel.as_posix()}"]
-    data, err = read_json(plan_path)
-    if err:
-        return [], [err]
-    if not isinstance(data, dict):
-        return [], [f"{rel.name} incompatível: esperado objeto JSON"]
-    tasks: list[dict] = []
-    for sub in V.iter_plan_subtasks(data):
-        name = str(sub.get("id") or "").strip() or ABSENT
-        state = sub.get("status")
-        if not isinstance(state, str) or not state.strip():
-            state = ABSENT
-        tasks.append({"id": name, "name": name, "state": state})
-    if not tasks:
-        return [], [f"{rel.name} incompatível: plano sem subtasks"]
-    return tasks, []
-
-
-def handbook_view(status: dict) -> tuple[dict | None, list[str]]:
-    if "handbook" not in status:
-        return None, []
-    block = status.get("handbook")
-    if block is None:
-        return None, []
-    if not isinstance(block, dict):
-        return None, ["handbook incompatível: esperado objeto ou ausente"]
-    next_useful = block.get("next_useful")
-    useful: list[dict] = []
-    diags: list[str] = []
-    if next_useful is None:
-        useful_field: list[dict] | None = None
-    elif not isinstance(next_useful, list):
-        useful_field = None
-        diags.append("handbook.next_useful incompatível: esperado lista")
-    else:
-        useful_field = useful
-        for item in next_useful:
-            if not isinstance(item, dict):
-                diags.append("handbook.next_useful incompatível: entrada que não é objeto")
-                continue
-            useful.append(
-                {
-                    "id": str(item.get("id") or ABSENT),
-                    "kind": str(item.get("kind") or ABSENT),
-                }
-            )
-    return {
-        "selo": block["selo"] if isinstance(block.get("selo"), str) and block.get("selo") else None,
-        "next_useful": useful_field,
-        "read_base": block["read_base"]
-        if isinstance(block.get("read_base"), str) and block.get("read_base")
-        else None,
-        "read_at": block["read_at"] if isinstance(block.get("read_at"), str) and block.get("read_at") else None,
-        "index_action": block["index_action"]
-        if isinstance(block.get("index_action"), str) and block.get("index_action")
-        else None,
-        "archivable": block["archivable"]
-        if isinstance(block.get("archivable"), str) and block.get("archivable")
-        else None,
-    }, diags
-
-
-def phases_view(status: dict) -> tuple[dict | None, list[str]]:
-    if "phases" not in status:
-        return None, []
-    phases = status.get("phases")
-    if phases is None:
-        return None, []
-    if not isinstance(phases, dict):
-        return None, ["phases incompatível: esperado objeto"]
-    out: dict[str, str] = {}
-    diags: list[str] = []
-    for name, value in phases.items():
-        if isinstance(value, str) and value.strip():
-            out[str(name)] = value
-        else:
-            diags.append(f"phases.{name} incompatível: esperado string de estado")
-            out[str(name)] = "incompatível"
-    return out, diags
-
-
-def depends_view(status: dict) -> tuple[list[str] | None, list[str]]:
-    if "depends_on" not in status:
-        return None, []
-    deps = status.get("depends_on")
-    if deps is None:
-        return [], []
-    if not isinstance(deps, list) or any(not isinstance(item, str) for item in deps):
-        return None, ["depends_on incompatível: esperado lista de ids"]
-    return list(deps), []
-
-
-def children_source_view(status: dict) -> tuple[dict | None, list[str]]:
-    if "children_source" not in status:
-        return None, []
-    source = status.get("children_source")
-    if source is None:
-        return None, []
-    if not isinstance(source, dict):
-        return None, ["children_source incompatível: esperado objeto"]
-    glob = source.get("glob")
-    if not isinstance(glob, str) or not glob.strip():
-        return None, ["children_source incompatível: glob ausente"]
-    campaign = source.get("campaign")
-    return {
-        "glob": glob,
-        "campaign": campaign if isinstance(campaign, str) else None,
-    }, []
-
-
-def declared_child_dirs(mother: Path, source: dict, specs_root: Path) -> tuple[list[Path], list[str]]:
-    glob = source.get("glob")
-    if not isinstance(glob, str) or not glob.strip():
-        return [], []
-    pattern = glob.strip()
-    if Path(pattern).is_absolute():
-        return [], ["children_source incompatível: glob absoluto"]
-    if ".." in Path(pattern).parts:
-        return [], ["children_source incompatível: glob sai do pacote"]
-    seen: dict[Path, None] = {}
-    try:
-        matches = sorted(mother.glob(pattern))
-    except (NotImplementedError, ValueError, OSError):
-        return [], ["children_source incompatível: glob inválido"]
-    specs = specs_root.resolve()
-    mother_root = mother.resolve()
-    diags: list[str] = []
-    for match in matches:
-        pkg = match.parent if match.name == "status.json" else match
-        if not path_inside(pkg, specs):
-            continue
-        if not path_inside(pkg, mother_root):
-            diags.append("children_source incompatível: glob sai do pacote")
-            continue
-        seen.setdefault(pkg.resolve(), None)
-    parts = Path(pattern).parts
-    if len(parts) >= 2 and parts[-1] == "status.json" and parts[-2] == "*":
-        parent = mother.joinpath(*parts[:-2]) if len(parts) > 2 else mother
-        if not path_inside(parent, mother_root):
-            diags.append("children_source incompatível: glob sai do pacote")
-        elif parent.is_dir() and path_inside(parent, specs):
-            for child in sorted(p for p in parent.iterdir() if p.is_dir()):
-                if not path_inside(child, specs):
-                    continue
-                if not path_inside(child, mother_root):
-                    diags.append("children_source incompatível: glob sai do pacote")
-                    continue
-                seen.setdefault(child.resolve(), None)
-    return list(seen), list(dict.fromkeys(diags))
-
-
-def empty_record(rel: str, pkg_id: str, kind: str) -> dict:
-    return {
-        "id": pkg_id,
-        "rel": rel,
-        "kind": kind,
-        "title": None,
-        "presence": "missing_status",
-        "diagnostics": [],
-        "phases": None,
-        "current_phase": None,
-        "handbook": None,
-        "tasks": None,
-        "depends_on": None,
-        "children_source": None,
-        "campaign": None,
-        "parent": None,
-    }
-
-
-def read_package(pkg: Path, specs_root: Path, kind: str) -> dict:
-    rel = posix_rel(pkg, specs_root)
-    record = empty_record(rel, pkg.name, kind)
-    status_path = pkg / "status.json"
-    if not status_path.exists():
-        record["diagnostics"] = ["Não contém status.json"]
-        record["presence"] = "missing_status"
-        return record
-    data, err = read_json(status_path)
-    if err:
-        record["diagnostics"] = [err]
-        record["presence"] = "unreadable"
-        return record
-    if not isinstance(data, dict):
-        record["diagnostics"] = ["status.json incompatível: esperado objeto"]
-        record["presence"] = "incompatible"
-        return record
-
-    pkg_id = data.get("id")
-    record["id"] = pkg_id if isinstance(pkg_id, str) and pkg_id.strip() else pkg.name
-    title = data.get("title")
-    record["title"] = title if isinstance(title, str) and title.strip() else None
-    campaign = data.get("campaign")
-    record["campaign"] = campaign if isinstance(campaign, str) and campaign.strip() else None
-    current = data.get("current_phase")
-    record["current_phase"] = current if isinstance(current, str) and current.strip() else None
-
-    diags: list[str] = []
-    phases, phase_diags = phases_view(data)
-    record["phases"] = phases
-    diags.extend(phase_diags)
-    handbook, hb_diags = handbook_view(data)
-    record["handbook"] = handbook
-    diags.extend(hb_diags)
-    tasks, task_diags = collect_tasks(pkg, data)
-    record["tasks"] = tasks
-    diags.extend(task_diags)
-    depends, dep_diags = depends_view(data)
-    record["depends_on"] = depends
-    diags.extend(dep_diags)
-    children, child_diags = children_source_view(data)
-    record["children_source"] = children
-    diags.extend(child_diags)
-
-    record["diagnostics"] = diags
-    if diags:
-        record["presence"] = "incompatible"
-    else:
-        record["presence"] = "ok"
-    return record
-
-
-def parent_rel(rel: str, known: set[str]) -> str | None:
-    if rel in {".", ""}:
-        return None
-    parts = rel.split("/")
-    for i in range(len(parts) - 1, 0, -1):
-        candidate = "/".join(parts[:i])
-        if candidate in known:
-            return candidate
-    return None
-
-
-def close_scope(records: list[dict], tokens: set[str] | None) -> list[dict]:
-    if not tokens:
-        return records
-    keep: set[str] = set()
-    by_rel = {r["rel"]: r for r in records}
-
-    def matches(record: dict) -> bool:
-        rel = record["rel"]
-        pkg_id = record["id"]
-        for token in tokens:
-            if pkg_id == token or rel == token:
-                return True
-            if rel.startswith(token.rstrip("/") + "/"):
-                return True
-        return False
-
-    for record in records:
-        if matches(record):
-            keep.add(record["rel"])
-
-    changed = True
-    while changed:
-        changed = False
-        for record in records:
-            if record["rel"] in keep:
-                continue
-            parent = record.get("parent")
-            if parent and parent in keep:
-                keep.add(record["rel"])
-                changed = True
-                continue
-            for other in records:
-                if other["rel"] not in keep:
-                    continue
-                source = other.get("children_source")
-                if not source:
-                    continue
-                if record["rel"].startswith(other["rel"].rstrip("/") + "/"):
-                    keep.add(record["rel"])
-                    changed = True
-                    break
-
-    return [by_rel[rel] for rel in sorted(keep) if rel in by_rel]
-
-
-def visible_children(path: Path) -> list[Path]:
-    try:
-        return sorted(
-            (child for child in path.iterdir() if not child.name.startswith(".")),
-            key=lambda child: child.name,
-        )
-    except OSError:
-        return []
-
-
-def summarize_contents(path: Path) -> list[str]:
-    """Immediate names only. Internal dirs stay content, not new blocks."""
-    labels: list[str] = []
-    for child in visible_children(path):
-        labels.append(f"{child.name}/" if child.is_dir() else child.name)
-    return labels
-
-
-def folder_is_empty(path: Path) -> bool:
-    return not visible_children(path)
-
-
-def holds_packages(path: Path) -> bool:
-    """A shelf that already stores packages (archived/). Those packages speak for themselves."""
-    return any(child.is_dir() and (child / "status.json").exists() for child in visible_children(path))
-
-
-def contains_run_sh(path: Path) -> bool:
-    try:
-        return any(child.is_file() for child in path.rglob("run.sh"))
-    except OSError:
-        return False
-
-
-def find_unregistered_folders(specs_root: Path, package_rels: set[str]) -> list[dict]:
-    """First-level non-package non-empty folders. Not a filename allowlist.
-
-    Declared children are already in the package census. Nested artifact
-    directories (harness, plans, context…) are listed inside this block.
-    """
-    found: list[dict] = []
-    try:
-        top = [child for child in specs_root.iterdir() if child.is_dir() and not child.name.startswith(".")]
-    except OSError:
-        return found
-    for child in sorted(top, key=lambda item: item.name):
-        rel = posix_rel(child, specs_root)
-        if rel in package_rels or rel == ".":
-            continue
-        if folder_is_empty(child):
-            continue
-        if holds_packages(child):
-            continue
-        found.append(
-            {
-                "rel": rel,
-                "kind": KIND_UNREGISTERED,
-                "contents": summarize_contents(child),
-                "has_run_sh": contains_run_sh(child),
-            }
-        )
-    return found
-
-
-def census(specs_root: Path, scope: set[str] | None) -> dict:
-    packages: dict[str, dict] = {}
-    declared_from: dict[str, str] = {}
-
-    for status_file in sorted(specs_root.rglob("status.json")):
-        pkg = status_file.parent
-        rel = posix_rel(pkg, specs_root)
-        packages[rel] = read_package(pkg, specs_root, KIND_PACKAGE)
-
-    for rel, record in list(packages.items()):
-        source = record.get("children_source")
-        if not source:
-            continue
-        mother = specs_root / rel
-        children, glob_diags = declared_child_dirs(mother, source, specs_root)
-        if glob_diags:
-            record["diagnostics"] = list(record.get("diagnostics") or []) + glob_diags
-            if record["presence"] == "ok":
-                record["presence"] = "incompatible"
-        for child in children:
-            child_rel = posix_rel(child, specs_root)
-            declared_from[child_rel] = rel
-            if child_rel not in packages:
-                packages[child_rel] = read_package(child, specs_root, KIND_DECLARED_CHILD)
-
-    unregistered = find_unregistered_folders(specs_root, set(packages))
-
-    known = set(packages)
-    for rel, record in packages.items():
-        record["parent"] = parent_rel(rel, known)
-        record["declared_by"] = declared_from.get(rel)
-
-    scoped = close_scope(list(packages.values()), scope)
-    if scope:
-        unregistered = [
-            item
-            for item in unregistered
-            if item["rel"] in scope
-            or any(item["rel"] == token or item["rel"].startswith(token.rstrip("/") + "/") for token in scope)
-        ]
-
-    scoped.sort(key=lambda r: r["rel"])
-    unregistered.sort(key=lambda r: r["rel"])
-
-    id_hits: dict[str, list[dict]] = defaultdict(list)
-    for record in scoped:
-        id_hits[record["id"]].append(record)
-    for record in scoped:
-        hits = id_hits[record["id"]]
-        if len(hits) < 2:
-            continue
-        record["diagnostics"] = list(record.get("diagnostics") or []) + [f"id duplicado: {record['id']}"]
-        if record["presence"] == "ok":
-            record["presence"] = "incompatible"
-
-    edges: list[dict] = []
-    seen: set[tuple[str, str, str]] = set()
-
-    for record in scoped:
-        src = record["rel"]
-        source = record.get("children_source")
-        if source:
-            mother = specs_root / record["rel"]
-            children, _ = declared_child_dirs(mother, source, specs_root)
-            for child in children:
-                child_rel = posix_rel(child, specs_root)
-                other = next((r for r in scoped if r["rel"] == child_rel), None)
-                if other is None or other["rel"] == src:
-                    continue
-                key = (EDGE_HIERARCHY, src, other["rel"])
-                if key in seen:
-                    continue
-                seen.add(key)
-                edges.append({"src": src, "dst": other["rel"], "kind": EDGE_HIERARCHY})
-        deps = record.get("depends_on")
-        if isinstance(deps, list):
-            for dep in deps:
-                targets = id_hits.get(dep, [])
-                if len(targets) != 1:
-                    continue
-                dst = targets[0]["rel"]
-                if dst == src:
-                    continue
-                key = (EDGE_DEPENDS, src, dst)
-                if key in seen:
-                    continue
-                seen.add(key)
-                edges.append({"src": src, "dst": dst, "kind": EDGE_DEPENDS})
-
-    edges.sort(key=lambda e: (e["kind"], e["src"], e["dst"]))
-    return {
-        "packages": scoped,
-        "unregistered": unregistered,
-        "edges": edges,
-    }
 
 
 def parse_scope(raw: str | None, scope_file: Path | None) -> set[str] | None:
@@ -603,7 +91,7 @@ def parse_scope(raw: str | None, scope_file: Path | None) -> set[str] | None:
 def load_sprint(path: Path | None) -> dict | None:
     if path is None:
         return None
-    data, err = read_json(path)
+    data, err = S.read_json(path)
     if err:
         return {"name": path.name, "items": [], "diagnostics": [err], "next": None}
     if not isinstance(data, dict):
@@ -651,15 +139,13 @@ def metro_state(record: dict | None) -> str:
 
 
 def snapshot(
-    specs_root: Path,
+    feed: dict,
     *,
     scope: set[str] | None,
-    stamp: str,
-    read_base: str,
     sprint: dict | None,
     dest_name: str,
 ) -> dict:
-    counted = census(specs_root, scope)
+    counted = S.project_feed(feed, scope)
     by_id = {r["id"]: r for r in counted["packages"]}
     if sprint is not None:
         for item in sprint["items"]:
@@ -671,8 +157,8 @@ def snapshot(
                     f"{item['id']}: fora do recorte ou sem pacote"
                 )
     return {
-        "generated_at": stamp,
-        "read_base": read_base,
+        "generated_at": counted["generated_at"],
+        "read_base": counted["read_base"],
         "scope": sorted(scope) if scope else "all",
         "dest_name": dest_name,
         "packages": counted["packages"],
@@ -1083,7 +569,7 @@ def render_html(data: dict) -> str:
 <title>QG · Superflow</title>
 <!--
   QG — snapshot gerado. Não edite o HTML para atualizar estado.
-  Regenere a partir dos status.json. Template de apresentação: board.html do plugin.
+  Regenere a partir de .superflow/status.json. Template de apresentação: board.html do plugin.
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1124,7 +610,7 @@ def render_html(data: dict) -> str:
   {sprint_panel}
   <footer>
     <span>superflow · qg</span>
-    <span>fonte: status.json · destino {esc(data["dest_name"])} · projeção, não fonte de verdade</span>
+    <span>fonte: .superflow/status.json · destino {esc(data["dest_name"])} · projeção, não fonte de verdade</span>
   </footer>
 </div>
 <script type="application/json" id="qg-snapshot">
@@ -1139,16 +625,6 @@ def render_html(data: dict) -> str:
 """
 
 
-def resolve_specs_root(start: Path, cfg, specs_override: str | None) -> Path:
-    if specs_override:
-        return Path(specs_override).expanduser()
-    if cfg.specs_root is not None:
-        return cfg.specs_root
-    if start.name == "specs" or (start / "status.json").exists() or any(start.glob("*/status.json")):
-        return start
-    raise SystemExit("CONTRACT: could not resolve a specs root (pass --specs)")
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -1158,7 +634,7 @@ def main() -> int:
         help="Walk-up start for .superflow/ (CLI → env → parents → default).",
     )
     parser.add_argument("--superflow-dir", help="Runtime .superflow directory. Never version a machine path.")
-    parser.add_argument("--specs", help="Specs root. Default comes from config.specs.")
+    parser.add_argument("--specs", help="Ignored. The feed already resolved the specs root.")
     parser.add_argument("--dest", help="Output directory. Default is the resolved .superflow/qg/.")
     parser.add_argument("--out", default="qg.html", help="File name inside dest. Default qg.html.")
     parser.add_argument("--scope", help="Comma-separated package ids or relative paths. Default: everything typed.")
@@ -1170,7 +646,7 @@ def main() -> int:
         default=None,
         help="Include the Sprint tab. Optional path to a sprint JSON (human composition).",
     )
-    parser.add_argument("--stamp", help="Declared date stamp (YYYY-MM-DD). Default: today.")
+    parser.add_argument("--stamp", help="Kept for callers. The feed carries generated_at.")
     args = parser.parse_args()
 
     start = Path(args.start).expanduser()
@@ -1180,13 +656,10 @@ def main() -> int:
 
     cfg = V.load_superflow_config(start, args.superflow_dir)
     V.apply_superflow_config(cfg)
-    try:
-        specs_root = resolve_specs_root(start, cfg, args.specs)
-    except SystemExit as exc:
-        print(str(exc), file=sys.stderr)
-        return EXIT_CONTRACT
-    if not specs_root.exists():
-        print("CONTRACT: specs root does not exist", file=sys.stderr)
+    feed_dir = S.resolve_feed_dir(cfg, start)
+    json_path, _ = S.feed_paths(feed_dir)
+    if not json_path.is_file():
+        print("CONTRACT: .superflow/status.json missing. Write the feed first.", file=sys.stderr)
         return EXIT_CONTRACT
 
     dest = V.resolve_qg_dir(cfg, args.dest)
@@ -1204,13 +677,14 @@ def main() -> int:
             "next": None,
         }
 
-    stamp = args.stamp or date.today().isoformat()
-    read_base = git_read_base(specs_root)
+    try:
+        feed = S.load_feed(json_path)
+    except SystemExit as exc:
+        print(str(exc), file=sys.stderr)
+        return EXIT_CONTRACT
     data = snapshot(
-        specs_root,
+        feed,
         scope=scope,
-        stamp=stamp,
-        read_base=read_base,
         sprint=sprint,
         dest_name=out_path.name,
     )

@@ -77,9 +77,10 @@ superflow/
 - `superflow:grill-with-docs` grills against `CONTEXT.md` / ADRs. Standalone.
 - `superflow:gauntlet-loop` writes a paste-ready quality-bar loop prompt.
   Standalone.
-- `superflow:qg` generates the QG snapshot (Mapa: Tasks + Graph; Sprint only
-  when the artifact is an operation). Disk is the denominator. Regenerate; do
-  not edit the HTML to update state.
+- `superflow:qg` generates the QG snapshot from `.superflow/status.json`
+  (Mapa: Tasks + Graph; Sprint only when the artifact is an operation). Write
+  the feed with `scripts/superflow_status.py` first. Do not edit the HTML to
+  update state.
 
 ## Validate
 
@@ -159,5 +160,6 @@ python3 scripts/superflow_audit.py --format markdown \
   "implementar exportacao CSV para admin com teste e sem alterar filtros"
 python3 scripts/superflow_warlog.py specs/001-slug \
   --event "Plan complete; execution can start."
+python3 scripts/superflow_status.py . --stamp 2026-09-10
 python3 scripts/superflow_qg.py . --stamp 2026-09-10
 ```
