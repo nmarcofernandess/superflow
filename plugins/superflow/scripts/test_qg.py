@@ -766,6 +766,88 @@ def test_unregistered_is_not_a_filename_allowlist(root: Path) -> None:
         raise AssertionError("run.sh inside the folder must be described")
 
 
+def test_hidden_cache_run_sh_does_not_set_has_run_sh(root: Path) -> None:
+    specs = root / "specs"
+    ghost = specs / "ghost-docs"
+    ghost.mkdir(parents=True)
+    (ghost / "PRD.md").write_text("# PRD\nnot a package\n", encoding="utf-8")
+    cache_run = ghost / ".cache" / "run.sh"
+    cache_run.parent.mkdir()
+    cache_run.write_text("#!/bin/sh\n", encoding="utf-8")
+    feed = S.write_feed(specs, root / ".superflow", stamp="2026-09-10", read_base="disk")
+    ghost_row = next((item for item in feed["unregistered"] if item["rel"] == "ghost-docs"), None)
+    if ghost_row is None:
+        raise AssertionError("ghost-docs must stay unregistered")
+    if ghost_row["has_run_sh"]:
+        raise AssertionError("run.sh under .cache must not set has_run_sh")
+
+
+def test_resolve_specs_root_skips_hidden_status_glob(root: Path) -> None:
+    class Cfg:
+        specs_root = None
+
+    only_feed = root / "only-feed"
+    feed_dir = only_feed / ".superflow"
+    feed_dir.mkdir(parents=True)
+    (feed_dir / "status.json").write_text("{}\n", encoding="utf-8")
+    try:
+        S.resolve_specs_root(only_feed, Cfg(), None)
+    except SystemExit as exc:
+        if "CONTRACT" not in str(exc):
+            raise AssertionError(f"leftover .superflow/status.json must CONTRACT, got {exc!r}")
+    else:
+        raise AssertionError("leftover .superflow/status.json must not resolve as specs")
+
+    sibling = root / "with-pkg"
+    pkg = sibling / "pkg"
+    pkg.mkdir(parents=True)
+    (pkg / "status.json").write_text("{}\n", encoding="utf-8")
+    resolved = S.resolve_specs_root(sibling, Cfg(), None)
+    if resolved != sibling:
+        raise AssertionError(f"pkg/status.json must still resolve, got {resolved}")
+
+
+def test_hostile_feed_fields_exit_contract(root: Path) -> None:
+    cases = [
+        ("phases: \"nope\"", {"id": "a", "rel": "a", "phases": "nope"}, []),
+        ("tasks: 3", {"id": "a", "rel": "a", "tasks": 3}, []),
+        ("handbook: [\"x\"]", {"id": "a", "rel": "a", "handbook": ["x"]}, []),
+        ("contents: [1, 2]", {"id": "a", "rel": "a"}, [{"rel": "ghost", "contents": [1, 2]}]),
+    ]
+    payloads = []
+    for index, (label, pkg, unregistered) in enumerate(cases):
+        payload = {
+            "generated_at": "2026-09-10",
+            "read_base": "disk",
+            "packages": [pkg],
+            "unregistered": unregistered,
+            "edges": [],
+        }
+        payloads.append((label, payload))
+        feed_file = root / f"hostile-{index}.json"
+        write_json(feed_file, payload)
+        try:
+            S.load_feed(feed_file)
+        except SystemExit as exc:
+            if "CONTRACT" not in str(exc):
+                raise AssertionError(f"{label} must exit CONTRACT, got {exc!r}")
+        else:
+            raise AssertionError(f"{label} must exit CONTRACT at load_feed")
+    setup_tree(root)
+    written = run_status(root)
+    if written.returncode != 0:
+        raise AssertionError(f"feed write failed:\n{written.stdout}")
+    for label, payload in payloads:
+        write_json(root / ".superflow" / "status.json", payload)
+        result = run_qg(root)
+        if result.returncode != 1:
+            raise AssertionError(f"{label} must exit CONTRACT, got {result.returncode}\n{result.stdout}")
+        if "CONTRACT" not in result.stdout:
+            raise AssertionError(f"must say CONTRACT, got {result.stdout!r}")
+        if "Traceback" in result.stdout:
+            raise AssertionError(f"CONTRACT must not traceback:\n{result.stdout}")
+
+
 def main() -> int:
     tests = [
         test_same_architecture_one_and_many,
@@ -786,6 +868,9 @@ def main() -> int:
         test_census_does_not_ingest_its_own_feed,
         test_census_skips_hidden_declared_child_at_scanned_root,
         test_unregistered_is_not_a_filename_allowlist,
+        test_hidden_cache_run_sh_does_not_set_has_run_sh,
+        test_resolve_specs_root_skips_hidden_status_glob,
+        test_hostile_feed_fields_exit_contract,
         test_script_payload_cannot_break_out,
         test_invalid_glob_does_not_abort_snapshot,
         test_sibling_glob_does_not_bind_hierarchy,
