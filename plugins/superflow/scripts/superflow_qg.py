@@ -260,25 +260,38 @@ def declared_child_dirs(mother: Path, source: dict, specs_root: Path) -> tuple[l
     pattern = glob.strip()
     if Path(pattern).is_absolute():
         return [], ["children_source incompatível: glob absoluto"]
+    if ".." in Path(pattern).parts:
+        return [], ["children_source incompatível: glob sai do pacote"]
     seen: dict[Path, None] = {}
     try:
         matches = sorted(mother.glob(pattern))
     except (NotImplementedError, ValueError, OSError):
         return [], ["children_source incompatível: glob inválido"]
     specs = specs_root.resolve()
+    mother_root = mother.resolve()
+    diags: list[str] = []
     for match in matches:
         pkg = match.parent if match.name == "status.json" else match
         if not path_inside(pkg, specs):
+            continue
+        if not path_inside(pkg, mother_root):
+            diags.append("children_source incompatível: glob sai do pacote")
             continue
         seen.setdefault(pkg.resolve(), None)
     parts = Path(pattern).parts
     if len(parts) >= 2 and parts[-1] == "status.json" and parts[-2] == "*":
         parent = mother.joinpath(*parts[:-2]) if len(parts) > 2 else mother
-        if parent.is_dir() and path_inside(parent, specs):
+        if not path_inside(parent, mother_root):
+            diags.append("children_source incompatível: glob sai do pacote")
+        elif parent.is_dir() and path_inside(parent, specs):
             for child in sorted(p for p in parent.iterdir() if p.is_dir()):
-                if path_inside(child, specs):
-                    seen.setdefault(child.resolve(), None)
-    return list(seen), []
+                if not path_inside(child, specs):
+                    continue
+                if not path_inside(child, mother_root):
+                    diags.append("children_source incompatível: glob sai do pacote")
+                    continue
+                seen.setdefault(child.resolve(), None)
+    return list(seen), list(dict.fromkeys(diags))
 
 
 def empty_record(rel: str, pkg_id: str, kind: str) -> dict:
