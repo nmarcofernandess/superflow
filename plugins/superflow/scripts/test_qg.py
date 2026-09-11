@@ -389,6 +389,67 @@ def test_unregistered_and_tokens(root: Path) -> None:
         raise AssertionError("do not port the prose-scrape rastro")
 
 
+def test_script_payload_cannot_break_out(root: Path) -> None:
+    title = "</script><script>alert(1)</script>"
+    write_status(root / "specs" / "xss-pkg", title=title)
+    text = html_of(root, "--scope", "xss-pkg")
+    if title in text:
+        raise AssertionError("package title must not appear raw inside the HTML")
+    data = snapshot_of(text)
+    got = next(p["title"] for p in data["packages"] if p["id"] == "xss-pkg")
+    if got != title:
+        raise AssertionError(f"snapshot must keep the title, got {got!r}")
+
+
+def test_invalid_glob_does_not_abort_snapshot(root: Path) -> None:
+    write_status(
+        root / "specs" / "abs-tmp",
+        children_source={"glob": "/tmp/*/status.json", "campaign": "abs-tmp"},
+    )
+    write_status(
+        root / "specs" / "abs-star",
+        children_source={"glob": "/**/status.json", "campaign": "abs-star"},
+    )
+    write_status(
+        root / "specs" / "escape-mother",
+        children_source={"glob": "../../outside/*/status.json", "campaign": "escape"},
+    )
+    write_status(root / "outside" / "leak")
+    text = html_of(root)
+    data = snapshot_of(text)
+    ids = {p["id"] for p in data["packages"]}
+    rels = {p["rel"] for p in data["packages"]}
+    if ids != {"abs-tmp", "abs-star", "escape-mother"}:
+        raise AssertionError(f"invalid globs aborted or dropped packages: {ids}")
+    if any("outside" in rel or rel.endswith("leak") for rel in rels):
+        raise AssertionError(f"glob escaped the specs root: {rels}")
+    for pkg_id in ("abs-tmp", "abs-star"):
+        rec = next(p for p in data["packages"] if p["id"] == pkg_id)
+        blob = " ".join(rec["diagnostics"])
+        if "children_source" not in blob or "glob" not in blob:
+            raise AssertionError(f"{pkg_id} must diagnose the invalid glob, got {rec['diagnostics']}")
+
+
+def test_duplicate_ids_keep_distinct_graph_nodes(root: Path) -> None:
+    write_status(root / "specs" / "pkg-a", id="same", title="Alpha")
+    write_status(root / "specs" / "pkg-b", id="same", title="Beta")
+    text = html_of(root)
+    data = snapshot_of(text)
+    pkgs = [p for p in data["packages"] if p["id"] == "same"]
+    if {p["rel"] for p in pkgs} != {"pkg-a", "pkg-b"}:
+        raise AssertionError(
+            f"both packages must remain in the census, got {[(p['id'], p['rel']) for p in data['packages']]}"
+        )
+    nodes = re.findall(r'<g class="n" data-id="([^"]+)"', text)
+    if len(set(nodes)) != 2:
+        raise AssertionError(f"graph nodes collapsed to {nodes}")
+    if "same · pkg-a" not in text or "same · pkg-b" not in text:
+        raise AssertionError("each graph node must keep the package id visible")
+    for rec in pkgs:
+        if not any("id duplicado" in d for d in rec["diagnostics"]):
+            raise AssertionError(f"{rec['rel']} must diagnose the duplicate id, got {rec['diagnostics']}")
+
+
 def test_unregistered_is_not_a_filename_allowlist(root: Path) -> None:
     """Mutant: if the detector again asks 'do I know this filename?', this fails."""
     setup_tree(root)
@@ -450,6 +511,9 @@ def main() -> int:
         test_sprint_tab_opt_in,
         test_unregistered_and_tokens,
         test_unregistered_is_not_a_filename_allowlist,
+        test_script_payload_cannot_break_out,
+        test_invalid_glob_does_not_abort_snapshot,
+        test_duplicate_ids_keep_distinct_graph_nodes,
     ]
     failed = 0
     for test in tests:
