@@ -7,8 +7,10 @@ Fixtures live in a temp dir and never land in the product.
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -19,6 +21,18 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 QG = SCRIPT_DIR / "superflow_qg.py"
 STATUS = SCRIPT_DIR / "superflow_status.py"
 BOARD = SCRIPT_DIR.parent / "assets" / "task-board" / "board.html"
+CAMPAIGN = SCRIPT_DIR.parent / "assets" / "fixtures" / "campaign"
+
+
+def _load_status():
+    spec = importlib.util.spec_from_file_location("superflow_status", STATUS)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
+
+
+S = _load_status()
 
 ABSENT = "Não contém"
 
@@ -506,8 +520,10 @@ def test_duplicate_ids_keep_distinct_graph_nodes(root: Path) -> None:
             raise AssertionError(f"{rec['rel']} must diagnose the duplicate id, got {rec['diagnostics']}")
 
 
-def test_feed_package_count_matches_scan(root: Path) -> None:
+def test_feed_covers_scanned_packages_and_declared_ghosts(root: Path) -> None:
     setup_tree(root)
+    ghost_dir = root / "specs" / "alpha-mother" / "minispecs" / "02-ghost"
+    ghost_dir.mkdir()
     written = run_status(root)
     if written.returncode != 0:
         raise AssertionError(f"feed write failed:\n{written.stdout}")
@@ -516,18 +532,24 @@ def test_feed_package_count_matches_scan(root: Path) -> None:
     if not feed_path.is_file() or not md_path.is_file():
         raise AssertionError("census must write .superflow/status.json and status.md")
     feed = json.loads(feed_path.read_text(encoding="utf-8"))
-    scanned = sorted((root / "specs").rglob("status.json"))
-    if len(feed["packages"]) != len(scanned):
-        raise AssertionError(
-            f"feed package count {len(feed['packages'])} != scanned count {len(scanned)}"
-        )
-    if len(feed["packages"]) != 3:
-        raise AssertionError(f"setup_tree has 3 packages, feed has {len(feed['packages'])}")
+    feed_rels = {pkg["rel"] for pkg in feed["packages"]}
+    specs = root / "specs"
+    for status_file in specs.rglob("status.json"):
+        rel = status_file.parent.relative_to(specs).as_posix()
+        if rel not in feed_rels:
+            raise AssertionError(f"scanned package {rel} has no feed row")
+    ghost = next((pkg for pkg in feed["packages"] if pkg["id"] == "02-ghost"), None)
+    if ghost is None:
+        raise AssertionError("declared child 02-ghost missing from feed")
+    if ghost["kind"] != "declared_child":
+        raise AssertionError(f"02-ghost kind={ghost['kind']!r}, want declared_child")
+    if ghost["presence"] != "missing_status":
+        raise AssertionError(f"02-ghost presence={ghost['presence']!r}, want missing_status")
     ids = {pkg["id"] for pkg in feed["packages"]}
-    if ids != {"alpha-mother", "01-child", "beta-solo"}:
+    if ids != {"alpha-mother", "01-child", "02-ghost", "beta-solo"}:
         raise AssertionError(f"feed ids drifted from the scan: {ids}")
     md = md_path.read_text(encoding="utf-8")
-    for name in ("alpha-mother", "01-child", "beta-solo", "ghost-docs"):
+    for name in ("alpha-mother", "01-child", "beta-solo", "ghost-docs", "02-ghost"):
         if name not in md:
             raise AssertionError(f"status.md must list {name}")
     again = run_status(root)
@@ -536,6 +558,73 @@ def test_feed_package_count_matches_scan(root: Path) -> None:
     first = json.dumps(feed, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
     if feed_path.read_text(encoding="utf-8") != first:
         raise AssertionError("second feed write must be byte-stable at the same stamp")
+
+
+def test_malformed_feed_package_exits_contract(root: Path) -> None:
+    setup_tree(root)
+    written = run_status(root)
+    if written.returncode != 0:
+        raise AssertionError(f"feed write failed:\n{written.stdout}")
+    feed_path = root / ".superflow" / "status.json"
+    write_json(
+        feed_path,
+        {
+            "generated_at": "2026-09-10",
+            "read_base": "disk",
+            "packages": ["x"],
+            "unregistered": [],
+            "edges": [],
+        },
+    )
+    result = run_qg(root)
+    if result.returncode != 1:
+        raise AssertionError(f"packages: [\"x\"] must exit CONTRACT, got {result.returncode}\n{result.stdout}")
+    if "CONTRACT" not in result.stdout:
+        raise AssertionError(f"must say CONTRACT, got {result.stdout!r}")
+    if "Traceback" in result.stdout:
+        raise AssertionError(f"CONTRACT must not traceback:\n{result.stdout}")
+
+
+def test_feed_write_is_restart_safe(root: Path) -> None:
+    dest = root / "status.json"
+    dest.write_text("keep\n", encoding="utf-8")
+    tmp = dest.with_name(f"{dest.name}.tmp")
+    tmp.write_text("torn\n", encoding="utf-8")
+    if dest.read_text(encoding="utf-8") != "keep\n":
+        raise AssertionError("temp written and replace skipped leaves dest unchanged")
+    S.atomic_write_text(dest, "next\n")
+    if dest.read_text(encoding="utf-8") != "next\n":
+        raise AssertionError(f"atomic write must replace dest, got {dest.read_text(encoding='utf-8')!r}")
+    if tmp.exists():
+        raise AssertionError("no leftover .tmp after success")
+    setup_tree(root)
+    written = run_status(root)
+    if written.returncode != 0:
+        raise AssertionError(f"feed write failed:\n{written.stdout}")
+    leftovers = [p.name for p in (root / ".superflow").iterdir() if p.name.endswith(".tmp")]
+    if leftovers:
+        raise AssertionError(f"no leftover .tmp after success, got {leftovers}")
+
+
+def test_census_does_not_ingest_its_own_feed(root: Path) -> None:
+    tree = root / "campaign"
+    shutil.copytree(CAMPAIGN, tree)
+    first = S.write_feed(tree, tree / ".superflow", stamp="2026-09-11", read_base="disk")
+    first_ids = [pkg["id"] for pkg in first["packages"]]
+    if first_ids != ["001-foundation", "002-consumer", "003-polish"]:
+        raise AssertionError(f"first write ids {first_ids}")
+    if ".superflow" in first_ids:
+        raise AssertionError("feed must not list id .superflow")
+    json_path = tree / ".superflow" / "status.json"
+    first_bytes = json_path.read_bytes()
+    second = S.write_feed(tree, tree / ".superflow", stamp="2026-09-11", read_base="disk")
+    second_ids = [pkg["id"] for pkg in second["packages"]]
+    if second_ids != ["001-foundation", "002-consumer", "003-polish"]:
+        raise AssertionError(f"second write ids {second_ids}")
+    if ".superflow" in second_ids:
+        raise AssertionError("second write must not list id .superflow")
+    if json_path.read_bytes() != first_bytes:
+        raise AssertionError("second write at the same stamp must be byte-identical")
 
 
 def test_unregistered_is_not_a_filename_allowlist(root: Path) -> None:
@@ -598,7 +687,10 @@ def main() -> int:
         test_handbook_may_diverge,
         test_sprint_tab_opt_in,
         test_unregistered_and_tokens,
-        test_feed_package_count_matches_scan,
+        test_feed_covers_scanned_packages_and_declared_ghosts,
+        test_malformed_feed_package_exits_contract,
+        test_feed_write_is_restart_safe,
+        test_census_does_not_ingest_its_own_feed,
         test_unregistered_is_not_a_filename_allowlist,
         test_script_payload_cannot_break_out,
         test_invalid_glob_does_not_abort_snapshot,

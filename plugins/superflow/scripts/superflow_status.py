@@ -477,6 +477,9 @@ def census(specs_root: Path) -> dict:
     declared_from: dict[str, str] = {}
 
     for status_file in sorted(specs_root.rglob("status.json")):
+        rel_parts = status_file.resolve().relative_to(specs_root.resolve()).parts
+        if any(part.startswith(".") for part in rel_parts):
+            continue
         pkg = status_file.parent
         rel = posix_rel(pkg, specs_root)
         packages[rel] = read_package(pkg, specs_root, KIND_PACKAGE)
@@ -619,6 +622,12 @@ def render_status_md(feed: dict) -> str:
     return "\n".join(lines)
 
 
+def atomic_write_text(path: Path, text: str) -> None:
+    tmp = path.with_name(f"{path.name}.tmp")
+    tmp.write_text(text, encoding="utf-8")
+    tmp.replace(path)
+
+
 def write_feed(
     specs_root: Path,
     feed_dir: Path,
@@ -636,8 +645,12 @@ def write_feed(
     }
     feed_dir.mkdir(parents=True, exist_ok=True)
     json_path, md_path = feed_paths(feed_dir)
-    json_path.write_text(dump_feed(feed), encoding="utf-8")
-    md_path.write_text(render_status_md(feed), encoding="utf-8")
+    json_tmp = json_path.with_name(f"{json_path.name}.tmp")
+    md_tmp = md_path.with_name(f"{md_path.name}.tmp")
+    json_tmp.write_text(dump_feed(feed), encoding="utf-8")
+    md_tmp.write_text(render_status_md(feed), encoding="utf-8")
+    json_tmp.replace(json_path)
+    md_tmp.replace(md_path)
     return feed
 
 
@@ -656,12 +669,41 @@ def load_feed(path: Path) -> dict:
         raise SystemExit("CONTRACT: feed generated_at must be a string")
     if not isinstance(read_base, str) or not read_base.strip():
         raise SystemExit("CONTRACT: feed read_base must be a string")
+    parsed_packages = []
+    for item in packages:
+        if not isinstance(item, dict):
+            raise SystemExit("CONTRACT: feed package must be an object")
+        pkg_id = item.get("id")
+        rel = item.get("rel")
+        if not isinstance(pkg_id, str) or not pkg_id.strip():
+            raise SystemExit("CONTRACT: feed package id must be a non-empty string")
+        if not isinstance(rel, str) or not rel.strip():
+            raise SystemExit("CONTRACT: feed package rel must be a non-empty string")
+        parsed_packages.append(item)
+    parsed_unregistered = []
+    for item in unregistered:
+        if not isinstance(item, dict):
+            raise SystemExit("CONTRACT: feed unregistered item must be an object")
+        rel = item.get("rel")
+        if not isinstance(rel, str) or not rel.strip():
+            raise SystemExit("CONTRACT: feed unregistered rel must be a non-empty string")
+        parsed_unregistered.append(item)
+    parsed_edges = []
+    for item in edges:
+        if not isinstance(item, dict):
+            raise SystemExit("CONTRACT: feed edge must be an object")
+        src = item.get("src")
+        dst = item.get("dst")
+        kind = item.get("kind")
+        if not isinstance(src, str) or not isinstance(dst, str) or not isinstance(kind, str):
+            raise SystemExit("CONTRACT: feed edge src, dst, and kind must be strings")
+        parsed_edges.append(item)
     return {
         "generated_at": generated_at,
         "read_base": read_base,
-        "packages": packages,
-        "unregistered": unregistered,
-        "edges": edges,
+        "packages": parsed_packages,
+        "unregistered": parsed_unregistered,
+        "edges": parsed_edges,
     }
 
 
