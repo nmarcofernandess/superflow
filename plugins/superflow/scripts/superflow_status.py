@@ -68,6 +68,14 @@ def path_inside(path: Path, root: Path) -> bool:
         return False
 
 
+def hidden_rel(path: Path, root: Path) -> bool:
+    try:
+        parts = path.resolve().relative_to(root.resolve()).parts
+    except ValueError:
+        return False
+    return any(part.startswith(".") for part in parts)
+
+
 def read_json(path: Path) -> tuple[object | None, str | None]:
     try:
         return json.loads(path.read_text(encoding="utf-8")), None
@@ -247,6 +255,8 @@ def declared_child_dirs(mother: Path, source: dict, specs_root: Path) -> tuple[l
     diags: list[str] = []
     for match in matches:
         pkg = match.parent if match.name == "status.json" else match
+        if hidden_rel(pkg, specs_root):
+            continue
         if not path_inside(pkg, specs):
             continue
         if not path_inside(pkg, mother_root):
@@ -260,6 +270,8 @@ def declared_child_dirs(mother: Path, source: dict, specs_root: Path) -> tuple[l
             diags.append("children_source incompatível: glob sai do pacote")
         elif parent.is_dir() and path_inside(parent, specs):
             for child in sorted(p for p in parent.iterdir() if p.is_dir()):
+                if hidden_rel(child, specs_root):
+                    continue
                 if not path_inside(child, specs):
                     continue
                 if not path_inside(child, mother_root):
@@ -467,7 +479,7 @@ def annotate_duplicates(records: list[dict]) -> list[dict]:
         if len(hits) < 2:
             continue
         record["diagnostics"] = list(record.get("diagnostics") or []) + [f"id duplicado: {record['id']}"]
-        if record["presence"] == "ok":
+        if record.get("presence") == "ok":
             record["presence"] = "incompatible"
     return projected
 
@@ -477,8 +489,7 @@ def census(specs_root: Path) -> dict:
     declared_from: dict[str, str] = {}
 
     for status_file in sorted(specs_root.rglob("status.json")):
-        rel_parts = status_file.resolve().relative_to(specs_root.resolve()).parts
-        if any(part.startswith(".") for part in rel_parts):
+        if hidden_rel(status_file, specs_root):
             continue
         pkg = status_file.parent
         rel = posix_rel(pkg, specs_root)
@@ -679,6 +690,10 @@ def load_feed(path: Path) -> dict:
             raise SystemExit("CONTRACT: feed package id must be a non-empty string")
         if not isinstance(rel, str) or not rel.strip():
             raise SystemExit("CONTRACT: feed package rel must be a non-empty string")
+        if "diagnostics" in item and not isinstance(item["diagnostics"], list):
+            raise SystemExit("CONTRACT: feed package diagnostics must be a list")
+        if "presence" in item and not isinstance(item["presence"], str):
+            raise SystemExit("CONTRACT: feed package presence must be a string")
         parsed_packages.append(item)
     parsed_unregistered = []
     for item in unregistered:
