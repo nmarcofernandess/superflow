@@ -430,6 +430,27 @@ def test_invalid_glob_does_not_abort_snapshot(root: Path) -> None:
             raise AssertionError(f"{pkg_id} must diagnose the invalid glob, got {rec['diagnostics']}")
 
 
+def test_sibling_glob_does_not_bind_hierarchy(root: Path) -> None:
+    write_status(
+        root / "specs" / "a",
+        children_source={"glob": "../*/status.json", "campaign": "a"},
+    )
+    write_status(root / "specs" / "b")
+    text = html_of(root)
+    data = snapshot_of(text)
+    sibling = [
+        edge
+        for edge in data["edges"]
+        if edge["src"] == "a" and edge["dst"] == "b" and edge["kind"] == "hierarchy"
+    ]
+    if sibling:
+        raise AssertionError(f"sibling glob must not bind a to b, got {sibling}")
+    rec = next(pkg for pkg in data["packages"] if pkg["id"] == "a")
+    blob = " ".join(rec["diagnostics"])
+    if "children_source" not in blob or "glob" not in blob:
+        raise AssertionError(f"a must diagnose the sibling glob, got {rec['diagnostics']}")
+
+
 def test_duplicate_ids_keep_distinct_graph_nodes(root: Path) -> None:
     write_status(root / "specs" / "pkg-a", id="same", title="Alpha")
     write_status(root / "specs" / "pkg-b", id="same", title="Beta")
@@ -513,6 +534,7 @@ def main() -> int:
         test_unregistered_is_not_a_filename_allowlist,
         test_script_payload_cannot_break_out,
         test_invalid_glob_does_not_abort_snapshot,
+        test_sibling_glob_does_not_bind_hierarchy,
         test_duplicate_ids_keep_distinct_graph_nodes,
     ]
     failed = 0
