@@ -3,8 +3,9 @@
 Use quando o trabalho já existe e alguém precisa descobrir a próxima ação sem
 confiar na memória da conversa ou em agente ainda online.
 
-1. Leia status.md, PRD.md, SPEC.md, analysis.md, plan.json e progress.md que
-   existirem, junto das fontes do projeto que comprovam a última evidência.
+1. Comece por status.md e PRD.md. Leia a task atual no plan.json quando houver;
+   abra SPEC.md, analysis.md e o trecho relevante de progress.md somente quando
+   necessários para a decisão ou para comprovar a última evidência.
 2. Identifique a fase, task, dependência, espera, evidência inválida ou decisão
    humana que realmente impede o avanço.
 3. Atualize status somente se a realidade conferida divergir do cadastro.

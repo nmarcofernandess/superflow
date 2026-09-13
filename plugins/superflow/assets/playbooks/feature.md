@@ -8,7 +8,10 @@ Use para uma entrega autorizada, correção ou mudança de produto.
 3. Use build se há uma decisão de arquitetura, contrato, integração, migração,
    risco ou fronteira que não deve ser escolhida durante a implementação.
 4. Use plan somente se a sequência, dependência ou retomada precisa de tasks.
-5. Execute pelas ferramentas, worktree e regras do projeto. Para comportamento
+5. Ao começar, use status para registrar execute/in_progress e a task em curso
+   quando existir plano. Ao interromper, registre paused ou a espera concreta;
+   não deixe um cadastro sugerir execução que já parou.
+   Execute pelas ferramentas, worktree e regras do projeto. Para comportamento
    novo ou corrigido, observe uma falha útil antes da correção e a prova verde
    depois; para trabalho sem teste útil, registre a verificação alternativa.
 6. Use review no desenho quando ele precisa de crítica antes do plano e no diff
