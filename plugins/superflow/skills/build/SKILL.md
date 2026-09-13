@@ -1,95 +1,35 @@
 ---
 name: build
-description: "Create the Superflow technical blueprint/spec for architecture, schema, migration, API, auth, shared primitive, cross-module, or high-risk implementation work. Use when route is build_plan_execute, when analyst output is ready for architecture, or when a mature PRD still needs file-level contracts before plan/execution."
+description: "Feche uma arquitetura verificável em SPEC a partir de um PRD pronto e do terreno real. Use para mudanças com fronteiras, contratos, migração, integração, segurança, estado compartilhado ou risco que a execução não deve decidir no caminho."
 ---
 
 # Build
 
-Build turns a mature PRD or one or more analyses into an implementation-safe
-technical spec. It is not brainstorm and not Plan.
+Build decide arquitetura; não decompõe tarefas nem cria uma lista de progresso.
+Use-o quando a implementação precisa de uma escolha técnica explícita antes de
+começar.
 
-Build closes architecture, contracts, boundaries, risks, and validation
-strategy under **feature-mindset-contract.md** (facetas + Synthesis + Recode +
-Copy). Plan later owns executable tasks and TDD pre-compile (`tdd-contract.md`).
+## Procedimento
 
-## Required Reading
+1. Leia o PRD.md pronto e qualquer analysis.md que sustente a decisão. Volte a
+   analyst se a promessa, os fatos ou a decisão humana ainda não estiverem
+   maduros.
+2. Reconheça o sistema real antes de desenhar: interfaces, dados, fluxos,
+   limites de autorização, superfícies, dependências e testes existentes.
+   Afirmações materiais recebem path:line; hipótese continua hipótese.
+3. Considere somente as facetas relevantes: produto, dados e Backend,
+   interface, cópia, risco e operação; registre como elas se afetam.
+4. Procure reuso antes de criar. Mostre a implementação ou padrão considerado e
+   justifique reusar, adaptar ou introduzir algo novo.
+5. Escreva SPEC.md com o [template](../../assets/templates/SPEC.md): decisão,
+   fronteiras, fluxo, comportamentos observáveis, sequência de alto nível,
+   verificação, riscos e rollback quando aplicável.
+6. Atualize o PRD se a arquitetura revelou que a promessa ou o escopo precisava
+   mudar. Atualize status.md apenas quando a fase de fato avançar, seguindo o
+   [contrato de estado](../../assets/references/state-contract.md).
 
-1. `../../assets/references/execution-contract.md`
-2. `../../assets/references/status-schema.md`
-3. `../../assets/references/feature-mindset-contract.md`
-4. `../../assets/references/reuse-guard-protocol.md`
-5. `../../assets/references/build-protocol.md`
-6. `../../assets/references/code-recon-protocol.md`
-7. `../../assets/references/technical-blueprint-protocol.md`
-8. `../../assets/references/mermaid-contract.md`
-9. `../../assets/templates/SPEC.md`
+## Saída
 
-## Procedure
-
-1. Confirm mature input (PRD, analyses, or explicit blueprint ask).
-2. If promise/entities/evidence weak → route to `analyst`.
-3. Read ALL analyses; Build is the single canonical synthesis listing sources.
-4. Recon real files (payload, **Reuse Guard**, copy) before boundaries —
-   re-run guard if analysis has `new` without evidence.
-5. Close **facets** Product, Backend, Frontend, Copy — attention order may be
-   P→B→F→Copy; if evidence breaks an earlier facet, **recode** and log it.
-   Do not freeze waterfall stages.
-6. Write **Synthesis** first (binding paragraph).
-7. Fill Cross-facet dependencies + Recode Log + Copy contract table.
-8. Write `SPEC.md` (default; legacy `technical_blueprint.md` ok).
-9. List testable **behaviors** for Plan — **no fake test commands** (D1–D2).
-10. Grill; update `status.json` build complete + blueprint artifact.
-11. **Run the package validator** on the package directory (see Ready Gate).
-    Non-zero exit = not ready.
-12. Leave granular tasks to Plan.
-
-## Required Blueprint
-
-- Synthesis (H2)
-- Goal and product promise
-- Terrain with evidence (path:line|UNPROVEN)
-- Files and ownership boundaries
-- Facets Product / Backend / Frontend / Copy
-- Cross-facet dependencies
-- Recode Log
-- Reuse decisions vs new code
-- Testable behaviors (names only)
-- Implementation sequence (dependency order)
-- Verification strategy + risks + rollback
-- Coherence check (ready ≠ headings)
-
-## Ready Gate
-
-**Package validator is mandatory.** Before declaring Build ready, run the
-shipped validator on the **real package path** (folder with `SPEC.md` /
-`status.json` / `PRD.md`):
-
-```bash
-python3 <plugin-root>/scripts/validate_superflow.py <path-to-package>
-```
-
-- Exit code **must be 0**. Non-zero means **not ready**.
-- The same gates that reject hollow `analysis.md` apply to `SPEC.md`
-  (facet placeholders, path:line|UNPROVEN, Recode honesty, strings-safadas).
-- Do not invent TDD commands here — hand Plan **behavior names** only
-  (`tdd-contract.md` owns RED/GREEN).
-
-Build is not ready if:
-
-- package validator not run or exit ≠ 0;
-- technical claims lack source proof;
-- Synthesis missing or is section-collage;
-- local patterns not searched before `new` (Reuse Guard missing);
-- Copy approves safada instance prose;
-- Cross-facet table missing when multiple facets change;
-- sequence not dependency-ordered;
-- validation vague;
-- human decision can still change architecture;
-- slice too large without split;
-- blueprint tracks task progress instead of architecture;
-- ready would only mean filled headings;
-- invents TDD commands (belongs to Plan + tdd-contract).
-
-## Mermaid
-
-Architecture flow, sequence, ER, dependency graph. Mermaid only.
+Uma SPEC permite que a próxima pessoa implemente sem redescobrir as fronteiras
+ou inventar contratos. Ela não precisa de diagrama, tabela de facetas ou plano
+de tarefas quando isso não esclarece a mudança.

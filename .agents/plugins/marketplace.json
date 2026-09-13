@@ -6,8 +6,8 @@
   "plugins": [
     {
       "name": "superflow",
-      "version": "0.7.0",
-      "description": "Production phase-budget Agent Skills workflow with faceted Analyst/Build, Ready gates, TDD I1–I3, and semantic reconstruction before human-facing prose.",
+      "version": "0.8.0",
+      "description": "Organiza PRDs, decisões, planos e status com fases proporcionais.",
       "source": {
         "source": "local",
         "path": "./plugins/superflow"

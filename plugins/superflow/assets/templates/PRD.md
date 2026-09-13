@@ -1,101 +1,31 @@
-# PRD: {title}
+# PRD: {{title}}
 
-## TL;DR
+## Problema
 
-<!--
-Write this section last, after rereading the full PRD. Use explain-clearly in
-TL;DR mode to reconstruct the subject, not merely simplify the draft. Make it
-stand alone: familiar situation -> concrete mechanism -> mismatch -> observable
-consequence -> target -> boundary. Close "why?" and "isn't that desired?"
-objections. An ASCII sketch or Mermaid diagram may remove inference work.
--->
-{tldr}
+Descreva a situação atual, o mecanismo que a causa e a consequência observável.
 
-## State
+## Promessa
 
-- Source: {source}
-- Confidence: {confidence}
-- Route: {route}
-- Phase budget: {phase_budget}
-- Execution strategy: {execution_strategy}
-- Created: {created_at}
+Qual resultado a pessoa ou o sistema deve obter quando o trabalho estiver pronto?
 
-## Problem
+## Escopo
 
-{problem}
+### Inclui
 
-## Goal
+- Item incluído.
 
-{goal}
+### Não inclui
 
-## Users / Actors
+- Item fora do escopo.
 
-- {actor}
+## Aceite
 
-## Story de Usuario
+- [ ] Critério observável que demonstra a promessa.
 
-{user_story}
+## Contexto e fatos
 
-## Story Tecnica
+- Fonte, path:line, cenário ou hipótese a confirmar.
 
-{technical_story}
+## Perguntas abertas
 
-## Scope
-
-### In Scope
-
-- {in_scope}
-
-### Out of Scope
-
-- {out_of_scope}
-
-## Expected Behavior
-
-{expected_behavior}
-
-## Current Behavior / Bug
-
-{current_behavior}
-
-## Desired Behavior
-
-{desired_behavior}
-
-## System Pattern / Contract
-
-{system_pattern}
-
-## Acceptance Criteria
-
-- [ ] {acceptance_criteria}
-
-## Definition of Complete
-
-- [ ] {definition_of_complete}
-- [ ] `status.json` reflects the current phase and final verdict.
-- [ ] Human progress is recorded in `progress.md`.
-
-## Technical Context
-
-{technical_context}
-
-## Data / Contracts
-
-{data_contracts}
-
-## UX / States
-
-{ux_states}
-
-## Risks
-
-- {risks}
-
-## Open Questions
-
-- {open_questions}
-
-## Next Phase
-
-{next_phase}
+- Decisão que ainda muda promessa, escopo, aceite, risco ou autorização.

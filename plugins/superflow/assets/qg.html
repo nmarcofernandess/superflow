@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>QG · Superflow</title>
+  <style>
+    :root {
+      --paper: #f6f7f5;
+      --surface: #ffffff;
+      --surface-muted: #eef1ed;
+      --ink: #17211d;
+      --soft-ink: #52605a;
+      --muted: #718078;
+      --line: #d8dfd9;
+      --line-strong: #afbbb2;
+      --accent: #0d7455;
+      --accent-soft: #dcefe6;
+      --warn: #996419;
+      --warn-soft: #fff2d9;
+      --danger: #af3d32;
+      --danger-soft: #fde9e6;
+      --violet: #584a9a;
+      --sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+      --shadow: 0 16px 44px rgba(26, 48, 38, .08);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: var(--paper);
+      color: var(--ink);
+      font: 16px/1.5 var(--sans);
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input, select { font: inherit; }
+    button, select { cursor: pointer; }
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
+      outline: 3px solid rgba(13, 116, 85, .35);
+      outline-offset: 2px;
+    }
+    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+    a:hover { color: #07543d; }
+    code { font: 13px/1.5 var(--mono); overflow-wrap: anywhere; }
+    .skip-link { position: absolute; left: 12px; top: -50px; z-index: 5; background: var(--ink); color: white; padding: 8px 12px; }
+    .skip-link:focus { top: 12px; }
+    .page { width: min(1440px, calc(100% - 36px)); margin: 0 auto; padding-bottom: 56px; }
+
+    .masthead {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 24px;
+      padding: 42px 0 24px;
+      border-bottom: 1px solid var(--line-strong);
+    }
+    .eyebrow, .label, .meta-label, .chip, .diagnostic-code {
+      font: 700 11px/1.25 var(--mono);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .eyebrow { color: var(--accent); margin: 0 0 7px; }
+    h1 { margin: 0; font-size: clamp(30px, 4vw, 46px); letter-spacing: -.04em; line-height: 1; }
+    .lead { max-width: 67ch; margin: 12px 0 0; color: var(--soft-ink); }
+    .snapshot-meta { min-width: 220px; color: var(--soft-ink); font: 12px/1.6 var(--mono); text-align: right; }
+    .snapshot-meta b { color: var(--ink); font-weight: 700; }
+
+    .controls {
+      display: grid;
+      grid-template-columns: minmax(240px, 1fr) repeat(3, minmax(130px, auto));
+      gap: 10px;
+      align-items: end;
+      padding: 20px;
+      margin: 24px 0;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface);
+      box-shadow: 0 4px 18px rgba(26, 48, 38, .04);
+    }
+    .control { min-width: 0; }
+    .control label { display: block; margin: 0 0 5px; color: var(--soft-ink); }
+    .control input, .control select {
+      width: 100%; min-height: 40px; padding: 8px 10px;
+      border: 1px solid var(--line-strong); border-radius: 8px;
+      background: var(--surface); color: var(--ink);
+    }
+    .control input::placeholder { color: var(--muted); }
+    .result-summary { grid-column: 1 / -1; margin: 2px 0 0; color: var(--soft-ink); font-size: 14px; }
+    .result-summary strong { color: var(--ink); }
+
+    .workspace { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(320px, .88fr); gap: 24px; align-items: start; }
+    .pane { min-width: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+    .pane-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 18px 20px 14px; border-bottom: 1px solid var(--line); }
+    .pane-head h2 { margin: 0; font-size: 18px; letter-spacing: -.015em; }
+    .pane-head p { margin: 0; color: var(--muted); font-size: 13px; }
+    .record-list { padding: 8px; }
+    .record {
+      width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px;
+      padding: 14px 12px; border: 0; border-radius: 9px; background: transparent; color: inherit; text-align: left;
+    }
+    .record:hover { background: var(--surface-muted); }
+    .record[aria-current="true"] { background: var(--accent-soft); }
+    .record + .record { border-top: 1px solid var(--line); border-radius: 0; }
+    .record-main { min-width: 0; }
+    .record-id { display: block; color: var(--accent); font: 700 12px/1.2 var(--mono); overflow-wrap: anywhere; }
+    .record-title { display: block; margin-top: 4px; font-size: 15px; font-weight: 650; overflow-wrap: anywhere; }
+    .record-path { display: block; margin-top: 4px; color: var(--muted); font: 11px/1.35 var(--mono); overflow-wrap: anywhere; }
+    .record-badges { display: flex; flex-wrap: wrap; justify-content: end; align-content: start; gap: 5px; }
+    .chip { display: inline-flex; align-items: center; min-height: 21px; padding: 3px 6px; border: 1px solid currentColor; border-radius: 999px; color: var(--soft-ink); white-space: nowrap; }
+    .chip.done { color: var(--accent); background: var(--accent-soft); }
+    .chip.archived { color: var(--warn); background: var(--warn-soft); }
+    .chip.waiting, .chip.blocked { color: var(--danger); background: var(--danger-soft); }
+    .chip.absorbed { color: var(--violet); background: #eeebfb; }
+    .pager { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 14px 20px 18px; border-top: 1px solid var(--line); }
+    .pager button { min-height: 34px; padding: 5px 10px; border: 1px solid var(--line-strong); border-radius: 7px; background: var(--surface); color: var(--ink); }
+    .pager button:disabled { cursor: not-allowed; color: var(--muted); opacity: .65; }
+    .pager-status { color: var(--soft-ink); font: 12px/1.35 var(--mono); text-align: center; }
+
+    .detail { position: sticky; top: 16px; overflow: hidden; }
+    .detail-content { padding: 20px; }
+    .empty, .notice { margin: 0; padding: 20px; color: var(--soft-ink); }
+    .notice { margin: 0 20px 18px; padding: 10px 12px; border-left: 3px solid var(--warn); background: var(--warn-soft); color: #6f4b12; font-size: 14px; }
+    .detail-title { margin: 0; font-size: 24px; line-height: 1.15; letter-spacing: -.025em; overflow-wrap: anywhere; }
+    .detail-id { display: block; margin: 0 0 7px; color: var(--accent); font: 700 12px/1.2 var(--mono); overflow-wrap: anywhere; }
+    .detail-badges { display: flex; flex-wrap: wrap; gap: 6px; margin: 13px 0 17px; }
+    .facts { display: grid; grid-template-columns: minmax(106px, .4fr) minmax(0, 1fr); gap: 8px 16px; margin: 0; padding: 16px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .facts dt { color: var(--muted); font: 700 11px/1.35 var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+    .facts dd { min-width: 0; margin: 0; overflow-wrap: anywhere; }
+    .detail-section { padding: 18px 0; border-bottom: 1px solid var(--line); }
+    .detail-section:last-child { border-bottom: 0; }
+    .detail-section h3 { margin: 0 0 9px; font-size: 14px; }
+    .detail-section p { margin: 0; color: var(--soft-ink); }
+    .ref-list, .task-list, .evidence-list, .diagnostic-list { margin: 0; padding: 0; list-style: none; }
+    .ref-list li, .evidence-list li { padding: 7px 0; border-bottom: 1px dashed var(--line); overflow-wrap: anywhere; }
+    .ref-list li:last-child, .evidence-list li:last-child { border-bottom: 0; }
+    .ref-note { display: block; margin-top: 3px; color: var(--soft-ink); font-size: 13px; }
+    .missing-ref { color: var(--danger); font: 12px/1.4 var(--mono); }
+    .task-list { display: grid; gap: 8px; }
+    .task { padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-muted); }
+    .task-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+    .task-name { font-weight: 650; overflow-wrap: anywhere; }
+    .task p { margin: 5px 0 0; font-size: 14px; }
+    details.body-disclosure { border: 1px solid var(--line); border-radius: 8px; background: var(--surface-muted); }
+    details.body-disclosure summary { padding: 10px; cursor: pointer; font-weight: 650; }
+    .body-text { margin: 0; padding: 0 10px 12px; color: var(--soft-ink); font: 13px/1.55 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+
+    .diagnostics { margin-top: 24px; border: 1px solid #e5c5c0; border-radius: 14px; background: #fffafa; overflow: hidden; }
+    .diagnostics .pane-head { border-bottom-color: #efd5d1; }
+    .diagnostics .pane-head h2 { color: var(--danger); }
+    .diagnostic-list { padding: 8px 20px 16px; }
+    .diagnostic { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; padding: 10px 0; border-bottom: 1px solid #efd5d1; }
+    .diagnostic:last-child { border-bottom: 0; }
+    .diagnostic-code { align-self: start; color: var(--danger); }
+    .diagnostic-message { min-width: 0; overflow-wrap: anywhere; }
+    .diagnostic-path { display: block; margin-top: 3px; color: var(--soft-ink); font: 12px/1.4 var(--mono); overflow-wrap: anywhere; }
+    .diagnostic-empty { padding: 0 20px 16px; color: var(--soft-ink); }
+
+    footer { display: flex; justify-content: space-between; gap: 16px; padding-top: 26px; color: var(--muted); font: 11px/1.5 var(--mono); }
+    [hidden] { display: none !important; }
+    @media (max-width: 880px) {
+      .masthead { align-items: start; flex-direction: column; }
+      .snapshot-meta { text-align: left; }
+      .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .controls .control:first-child { grid-column: 1 / -1; }
+      .workspace { grid-template-columns: 1fr; }
+      .detail { position: static; }
+    }
+    @media (max-width: 560px) {
+      .page { width: min(100% - 20px, 1440px); }
+      .masthead { padding-top: 28px; }
+      .controls { padding: 14px; grid-template-columns: 1fr; }
+      .controls .control:first-child { grid-column: auto; }
+      .pane-head, .detail-content { padding-left: 14px; padding-right: 14px; }
+      .record { grid-template-columns: 1fr; }
+      .record-badges { justify-content: start; }
+      .pager { padding-left: 14px; padding-right: 14px; }
+      footer { flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    @media print { .controls, .pager, .skip-link { display: none; } .workspace { grid-template-columns: 1fr; } .detail { position: static; } }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#qg-list-heading">Pular para a lista de tickets</a>
+  <div class="page">
+    <header class="masthead">
+      <div>
+        <p class="eyebrow">Superflow · fotografia de leitura</p>
+        <h1>QG de tickets</h1>
+        <p class="lead">Lista, relações e evidências da mesma fotografia. Esta página não edita status, plano ou execução.</p>
+      </div>
+      <div class="snapshot-meta" aria-label="Metadados da fotografia">
+        <div>snapshot <b id="qg-snapshot-id">—</b></div>
+        <div>gerado <b id="qg-generated-at">—</b></div>
+        <div>revisão <b id="qg-source-revision">—</b></div>
+      </div>
+    </header>
+
+    <section class="controls" aria-label="Filtros dos tickets">
+      <div class="control">
+        <label class="label" for="qg-search">Buscar em todos os tickets</label>
+        <input id="qg-search" type="search" autocomplete="off" placeholder="ID, título, caminho ou conteúdo">
+      </div>
+      <div class="control">
+        <label class="label" for="qg-phase">Fase</label>
+        <select id="qg-phase"><option value="">Todas as fases</option></select>
+      </div>
+      <div class="control">
+        <label class="label" for="qg-state">Estado</label>
+        <select id="qg-state"><option value="">Todos os estados</option></select>
+      </div>
+      <div class="control">
+        <label class="label" for="qg-archived">Arquivamento</label>
+        <select id="qg-archived">
+          <option value="all">Todos, inclusive arquivados</option>
+          <option value="active">Somente não arquivados</option>
+          <option value="archived">Somente arquivados</option>
+        </select>
+      </div>
+      <div class="control">
+        <label class="label" for="qg-page-size">Itens por página</label>
+        <select id="qg-page-size"><option value="50">50</option><option value="1000">1.000</option></select>
+      </div>
+      <p class="result-summary" id="qg-summary" aria-live="polite"></p>
+    </section>
+
+    <main class="workspace">
+      <section class="pane" aria-labelledby="qg-list-heading">
+        <div class="pane-head">
+          <h2 id="qg-list-heading">Tickets</h2>
+          <p id="qg-list-note"></p>
+        </div>
+        <div class="record-list" id="qg-list" aria-live="polite"></div>
+        <nav class="pager" aria-label="Paginação dos tickets">
+          <button id="qg-prev" type="button">Anterior</button>
+          <span class="pager-status" id="qg-page-status"></span>
+          <button id="qg-next" type="button">Próxima</button>
+        </nav>
+      </section>
+
+      <aside class="pane detail" aria-labelledby="qg-detail-heading">
+        <div class="pane-head"><h2 id="qg-detail-heading">Detalhe</h2><p>via ID no endereço</p></div>
+        <p class="notice" id="qg-outside-filter" hidden></p>
+        <div class="detail-content" id="qg-detail" aria-live="polite"></div>
+      </aside>
+    </main>
+
+    <section class="diagnostics" aria-labelledby="qg-diagnostics-heading">
+      <div class="pane-head"><h2 id="qg-diagnostics-heading">Diagnósticos da fotografia</h2><p id="qg-diagnostic-count"></p></div>
+      <ul class="diagnostic-list" id="qg-diagnostics"></ul>
+      <p class="diagnostic-empty" id="qg-diagnostics-empty" hidden>Nenhum diagnóstico foi informado nesta fotografia.</p>
+    </section>
+
+    <footer>
+      <span>Superflow · QG offline · leitura somente</span>
+      <span>O estado exibido pertence ao snapshot embutido acima.</span>
+    </footer>
+  </div>
+
+  <script type="application/json" id="qg-snapshot">__QG_SNAPSHOT__</script>
+  <script type="application/json" id="qg-links">__QG_LINKS__</script>
+  <script>
+  (function () {
+    "use strict";
+
+    function parseJson(id, fallback) {
+      try { return JSON.parse(document.getElementById(id).textContent); }
+      catch (error) { return fallback; }
+    }
+    function object(value) { return value && typeof value === "object" && !Array.isArray(value); }
+    function array(value) { return Array.isArray(value) ? value : []; }
+    function text(value, fallback) {
+      if (value === null || value === undefined || value === "") return fallback || "—";
+      return String(value);
+    }
+    function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+    function make(tag, className, content) {
+      var node = document.createElement(tag);
+      if (className) node.className = className;
+      if (content !== undefined && content !== null) node.textContent = String(content);
+      return node;
+    }
+    function allowedHref(value) { return typeof value === "string" && /^(?:https?:|file:)/i.test(value); }
+    function appendExternal(parent, label, href) {
+      if (allowedHref(href)) {
+        var anchor = make("a", "", label);
+        anchor.href = href;
+        if (/^https?:/i.test(href)) { anchor.target = "_blank"; anchor.rel = "noopener noreferrer"; }
+        parent.appendChild(anchor);
+      } else parent.appendChild(document.createTextNode(label));
+    }
+    function phaseChip(record) {
+      var chip = make("span", "chip" + (record.phase === "done" ? " done" : ""), text(record.phase));
+      return chip;
+    }
+    function detailLink(id, suffix) {
+      var anchor = make("a", "", id);
+      anchor.href = "#" + encodeURIComponent(id);
+      if (suffix) anchor.appendChild(document.createTextNode(suffix));
+      return anchor;
+    }
+    function valueHaystack(record) {
+      var taskText = array(record.tasks).map(function (task) { return object(task) ? JSON.stringify(task) : String(task); }).join(" ");
+      var blockerText = array(record.blockers).map(function (blocker) { return object(blocker) ? JSON.stringify(blocker) : String(blocker); }).join(" ");
+      return [record.id, record.title, record.path, record.phase, record.state, record.prd, record.waiting_for,
+        record.body_md, array(record.evidence).join(" "), taskText, blockerText].map(function (value) {
+          return text(value, "");
+        }).join(" ").toLocaleLowerCase("pt-BR");
+    }
+    function recordName(record) { return text(record.title, text(record.id)); }
+
+    var feed = parseJson("qg-snapshot", {});
+    var links = parseJson("qg-links", {});
+    if (!object(feed)) feed = {};
+    if (!object(links)) links = {};
+    var records = array(feed.records).filter(object);
+    var byId = Object.create(null);
+    records.forEach(function (record, index) {
+      record.__qgIndex = index;
+      if (typeof record.id === "string" && !Object.prototype.hasOwnProperty.call(byId, record.id)) byId[record.id] = record;
+    });
+    var children = Object.create(null);
+    records.forEach(function (record) {
+      if (typeof record.parent_id === "string") (children[record.parent_id] || (children[record.parent_id] = [])).push(record);
+    });
+    var controls = {
+      search: document.getElementById("qg-search"), phase: document.getElementById("qg-phase"),
+      state: document.getElementById("qg-state"), archived: document.getElementById("qg-archived"),
+      pageSize: document.getElementById("qg-page-size"), prev: document.getElementById("qg-prev"),
+      next: document.getElementById("qg-next")
+    };
+    var nodes = {
+      list: document.getElementById("qg-list"), listNote: document.getElementById("qg-list-note"),
+      summary: document.getElementById("qg-summary"), page: document.getElementById("qg-page-status"),
+      detail: document.getElementById("qg-detail"), outside: document.getElementById("qg-outside-filter"),
+      diagnostics: document.getElementById("qg-diagnostics"), diagnosticsEmpty: document.getElementById("qg-diagnostics-empty")
+    };
+    var page = 1;
+
+    document.getElementById("qg-snapshot-id").textContent = text(feed.snapshot_id, "sem identificador");
+    document.getElementById("qg-generated-at").textContent = text(feed.generated_at, "não informado");
+    document.getElementById("qg-source-revision").textContent = feed.source_revision === null || feed.source_revision === undefined ? "sem Git" : text(feed.source_revision);
+
+    function addOptions(select, values) {
+      values.sort().forEach(function (value) {
+        var option = make("option", "", value);
+        option.value = value;
+        select.appendChild(option);
+      });
+    }
+    addOptions(controls.phase, Array.from(new Set(records.map(function (record) { return typeof record.phase === "string" ? record.phase : ""; }).filter(Boolean))));
+    addOptions(controls.state, Array.from(new Set(records.map(function (record) { return typeof record.state === "string" ? record.state : ""; }).filter(Boolean))));
+
+    function selectedId() {
+      if (!window.location.hash || window.location.hash.length < 2) return null;
+      try { return decodeURIComponent(window.location.hash.slice(1)); }
+      catch (error) { return null; }
+    }
+    function filteredRecords() {
+      var query = controls.search.value.trim().toLocaleLowerCase("pt-BR");
+      return records.filter(function (record) {
+        if (controls.phase.value && record.phase !== controls.phase.value) return false;
+        if (controls.state.value && record.state !== controls.state.value) return false;
+        if (controls.archived.value === "active" && record.archived === true) return false;
+        if (controls.archived.value === "archived" && record.archived !== true) return false;
+        return !query || valueHaystack(record).indexOf(query) !== -1;
+      });
+    }
+    function addRecordCard(record, currentId) {
+      var button = make("button", "record");
+      button.type = "button";
+      button.setAttribute("data-qg-record", text(record.id));
+      button.setAttribute("aria-current", record.id === currentId ? "true" : "false");
+      button.addEventListener("click", function () { window.location.hash = encodeURIComponent(text(record.id)); });
+      var main = make("span", "record-main");
+      main.appendChild(make("span", "record-id", text(record.id)));
+      main.appendChild(make("span", "record-title", recordName(record)));
+      main.appendChild(make("span", "record-path", text(record.path, "caminho não informado")));
+      var badges = make("span", "record-badges");
+      badges.appendChild(phaseChip(record));
+      if (record.archived === true) badges.appendChild(make("span", "chip archived", "arquivado"));
+      if (record.waiting_for) badges.appendChild(make("span", "chip waiting", "aguarda"));
+      if (record.absorbed_by) badges.appendChild(make("span", "chip absorbed", "absorvido"));
+      button.appendChild(main); button.appendChild(badges);
+      return button;
+    }
+    function addReference(list, id, note) {
+      var item = make("li");
+      var target = typeof id === "string" ? byId[id] : null;
+      if (target) item.appendChild(detailLink(id, " · " + recordName(target)));
+      else item.appendChild(make("span", "missing-ref", text(id, "sem referência") + " · não encontrado nesta fotografia"));
+      if (note) item.appendChild(make("span", "ref-note", note));
+      list.appendChild(item);
+    }
+    function relationSection(title, ids, note) {
+      var section = make("section", "detail-section");
+      section.appendChild(make("h3", "", title));
+      if (!ids.length) section.appendChild(make("p", "", "Nenhuma referência declarada."));
+      else {
+        var list = make("ul", "ref-list");
+        ids.forEach(function (id) { addReference(list, id, note); });
+        section.appendChild(list);
+      }
+      return section;
+    }
+    function appendTasks(container, record) {
+      var section = make("section", "detail-section");
+      section.appendChild(make("h3", "", "Plano de tarefas"));
+      var tasks = array(record.tasks);
+      if (!tasks.length) section.appendChild(make("p", "", "Nenhuma tarefa registrada no plano."));
+      else {
+        var list = make("ul", "task-list");
+        tasks.forEach(function (task, index) {
+          var item = make("li", "task");
+          var taskValue = object(task) ? task : { id: String(task) };
+          var head = make("div", "task-head");
+          head.appendChild(make("span", "task-name", text(taskValue.id, "Tarefa " + (index + 1))));
+          head.appendChild(make("span", "chip", text(taskValue.status, "sem estado")));
+          item.appendChild(head);
+          if (taskValue.behavior) item.appendChild(make("p", "", taskValue.behavior));
+          if (taskValue.acceptance) item.appendChild(make("p", "", "Aceite: " + taskValue.acceptance));
+          var taskEvidence = array(taskValue.evidence);
+          var taskEvidenceLinks = array(array(links.task_evidence)[record.__qgIndex]);
+          if (taskEvidence.length) {
+            var proofLine = make("p", "");
+            proofLine.appendChild(document.createTextNode("Evidência: "));
+            taskEvidence.forEach(function (entry, evidenceIndex) {
+              if (evidenceIndex) proofLine.appendChild(document.createTextNode(" · "));
+              appendExternal(proofLine, text(entry), array(taskEvidenceLinks[index])[evidenceIndex]);
+            });
+            item.appendChild(proofLine);
+          }
+          list.appendChild(item);
+        });
+        section.appendChild(list);
+      }
+      container.appendChild(section);
+    }
+    function appendEvidence(container, record) {
+      var section = make("section", "detail-section");
+      section.appendChild(make("h3", "", "Evidências"));
+      var evidence = array(record.evidence);
+      var evidenceLinks = array(array(links.evidence)[record.__qgIndex]);
+      if (!evidence.length) section.appendChild(make("p", "", "Nenhuma evidência foi declarada."));
+      else {
+        var list = make("ul", "evidence-list");
+        evidence.forEach(function (entry, index) {
+          var item = make("li");
+          appendExternal(item, text(entry), evidenceLinks[index]);
+          list.appendChild(item);
+        });
+        section.appendChild(list);
+      }
+      container.appendChild(section);
+    }
+    function appendBody(container, record) {
+      var section = make("section", "detail-section");
+      section.appendChild(make("h3", "", "Corpo do ticket"));
+      var body = typeof record.body_md === "string" ? record.body_md : "";
+      if (!body) section.appendChild(make("p", "", "Sem prosa registrada neste ticket."));
+      else {
+        var disclosure = make("details", "body-disclosure");
+        disclosure.appendChild(make("summary", "", "Mostrar texto registrado"));
+        disclosure.appendChild(make("pre", "body-text", body));
+        section.appendChild(disclosure);
+      }
+      container.appendChild(section);
+    }
+    function drawDetail(visible) {
+      clear(nodes.detail); nodes.outside.hidden = true;
+      var id = selectedId();
+      var record = id && byId[id];
+      if (!id) { nodes.detail.appendChild(make("p", "empty", "Selecione um ticket na lista ou abra um ID pelo endereço.")); return; }
+      if (!record) { nodes.detail.appendChild(make("p", "empty", "O ID solicitado não existe nesta fotografia: " + id)); return; }
+      if (visible.indexOf(record) === -1) {
+        nodes.outside.hidden = false;
+        nodes.outside.textContent = "Este ticket está fora do filtro atual, mas continua visível porque foi aberto pelo ID.";
+      }
+      nodes.detail.setAttribute("data-qg-detail-id", text(record.id));
+      nodes.detail.appendChild(make("span", "detail-id", text(record.id)));
+      nodes.detail.appendChild(make("h3", "detail-title", recordName(record)));
+      var badges = make("div", "detail-badges");
+      badges.appendChild(phaseChip(record));
+      badges.appendChild(make("span", "chip", record.state === null || record.state === undefined ? "terminal" : text(record.state)));
+      badges.appendChild(make("span", "chip", text(record.prd, "PRD não informado")));
+      if (record.archived === true) badges.appendChild(make("span", "chip archived", "arquivado"));
+      nodes.detail.appendChild(badges);
+      var facts = make("dl", "facts");
+      function fact(label, value, href) {
+        facts.appendChild(make("dt", "", label));
+        var description = make("dd"); appendExternal(description, text(value), href); facts.appendChild(description);
+      }
+      fact("Caminho", text(record.path, "não informado"), array(links.record_paths)[record.__qgIndex]);
+      fact("Atualizado", text(record.updated_at, "não informado"));
+      fact("Espera", text(record.waiting_for, "nenhuma"));
+      nodes.detail.appendChild(facts);
+      if (typeof record.parent_id === "string") nodes.detail.appendChild(relationSection("Mãe", [record.parent_id], "Agrupamento para navegação; não é bloqueio."));
+      nodes.detail.appendChild(relationSection("Dependências", array(record.depends_on), "Este ticket depende desta entrega."));
+      nodes.detail.appendChild(relationSection("Complementos", array(children[record.id]).map(function (child) { return child.id; }), "Filho de organização; não cria bloqueio."));
+      if (record.absorbed_by) nodes.detail.appendChild(relationSection("Restante assumido por", [record.absorbed_by], "O restante declarado foi assumido por este ticket."));
+      var blockers = array(record.blockers);
+      var blockerSection = make("section", "detail-section");
+      blockerSection.appendChild(make("h3", "", "Bloqueios declarados"));
+      if (!blockers.length) blockerSection.appendChild(make("p", "", "Nenhum bloqueio declarado."));
+      else {
+        var blockerList = make("ul", "ref-list");
+        blockers.forEach(function (blocker) {
+          var value = object(blocker) ? blocker : {};
+          var item = make("li");
+          item.appendChild(make("span", "chip blocked", text(value.kind, "bloqueio")));
+          item.appendChild(document.createTextNode(" "));
+          if (typeof value.ref === "string" && byId[value.ref]) item.appendChild(detailLink(value.ref, " · " + recordName(byId[value.ref])));
+          else if (value.ref) item.appendChild(make("span", "missing-ref", text(value.ref)));
+          if (value.reason) item.appendChild(make("span", "ref-note", value.reason));
+          blockerList.appendChild(item);
+        });
+        blockerSection.appendChild(blockerList);
+      }
+      nodes.detail.appendChild(blockerSection);
+      appendEvidence(nodes.detail, record); appendTasks(nodes.detail, record); appendBody(nodes.detail, record);
+    }
+    function drawDiagnostics() {
+      clear(nodes.diagnostics);
+      var diagnostics = array(feed.diagnostics);
+      document.getElementById("qg-diagnostic-count").textContent = diagnostics.length + (diagnostics.length === 1 ? " item" : " itens");
+      nodes.diagnosticsEmpty.hidden = diagnostics.length !== 0;
+      diagnostics.forEach(function (entry) {
+        var diagnostic = object(entry) ? entry : { code: "DIAGNÓSTICO", message: String(entry), severity: "erro" };
+        var item = make("li", "diagnostic");
+        item.appendChild(make("span", "diagnostic-code", text(diagnostic.severity, "erro") + " · " + text(diagnostic.code, "sem código")));
+        var content = make("div", "diagnostic-message", text(diagnostic.message, "Diagnóstico sem mensagem."));
+        if (diagnostic.path) content.appendChild(make("span", "diagnostic-path", diagnostic.path));
+        item.appendChild(content); nodes.diagnostics.appendChild(item);
+      });
+    }
+    function draw() {
+      var visible = filteredRecords();
+      var size = Number(controls.pageSize.value) || 50;
+      var pages = Math.max(1, Math.ceil(visible.length / size));
+      page = Math.min(Math.max(page, 1), pages);
+      var start = (page - 1) * size;
+      var slice = visible.slice(start, start + size);
+      var currentId = selectedId();
+      clear(nodes.list);
+      if (!slice.length) nodes.list.appendChild(make("p", "empty", records.length ? "Nenhum ticket corresponde aos filtros." : "Nenhum ticket foi encontrado nesta fotografia."));
+      else slice.forEach(function (record) { nodes.list.appendChild(addRecordCard(record, currentId)); });
+      nodes.listNote.textContent = visible.length + " de " + records.length;
+      nodes.summary.replaceChildren(document.createTextNode("Exibindo "), make("strong", "", visible.length), document.createTextNode(" de " + records.length + " tickets. A busca considera o corpus inteiro."));
+      nodes.page.textContent = "Página " + page + " de " + pages;
+      controls.prev.disabled = page <= 1; controls.next.disabled = page >= pages;
+      drawDetail(visible);
+    }
+    [controls.search, controls.phase, controls.state, controls.archived, controls.pageSize].forEach(function (control) {
+      control.addEventListener("input", function () { page = 1; draw(); });
+      control.addEventListener("change", function () { page = 1; draw(); });
+    });
+    controls.prev.addEventListener("click", function () { page -= 1; draw(); });
+    controls.next.addEventListener("click", function () { page += 1; draw(); });
+    window.addEventListener("hashchange", draw);
+    drawDiagnostics(); draw();
+  }());
+  </script>
+</body>
+</html>

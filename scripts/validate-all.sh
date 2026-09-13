@@ -1,25 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+readonly ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+readonly PLUGIN="$ROOT/plugins/superflow"
 
-python3 "$ROOT/plugins/superflow/scripts/validate_superflow.py" "$ROOT/plugins/superflow"
-python3 "$ROOT/plugins/superflow/scripts/test_superflow_routes.py"
-python3 "$ROOT/plugins/superflow/scripts/test_tdd_contract.py"
-python3 "$ROOT/plugins/superflow/scripts/test_feature_mindset.py"
-python3 "$ROOT/plugins/superflow/scripts/test_warlog_contract.py"
-python3 "$ROOT/plugins/superflow/scripts/test_review_contract.py"
-python3 "$ROOT/plugins/superflow/scripts/test_campaign_contract.py"
-python3 "$ROOT/plugins/superflow/scripts/test_rota_contract.py"
-python3 "$ROOT/plugins/superflow/scripts/test_qg.py"
-python3 "$ROOT/plugins/superflow/scripts/test_writing_contract.py"
-python3 "$ROOT/plugins/superflow/scripts/forward_test_superflow.py"
+python3 -I "$PLUGIN/scripts/validate_superflow.py" "$PLUGIN"
 
-if command -v claude >/dev/null 2>&1; then
-  claude plugin validate "$ROOT"
-  claude plugin validate "$ROOT/plugins/superflow"
-fi
+for test_name in test_model.py test_commands.py test_qg.py test_distribution.py; do
+  test_path="$PLUGIN/scripts/$test_name"
+  if [[ ! -f "$test_path" ]]; then
+    echo "missing required test: $test_path" >&2
+    exit 1
+  fi
+  python3 -I "$test_path"
+done
 
-if command -v codex >/dev/null 2>&1; then
-  codex plugin marketplace list >/dev/null
-fi
+echo "validate-all: passed"

@@ -1,0 +1,30 @@
+{
+  "name": "@superflow/runtime",
+  "version": "0.8.0",
+  "description": "Portable Python runtime for Superflow spec creation, validation and projections.",
+  "private": true,
+  "license": "MIT",
+  "files": [
+    "LICENSE",
+    "plugins/superflow/.codex-plugin/plugin.json",
+    "plugins/superflow/assets/qg.html",
+    "plugins/superflow/assets/playbooks/capture.md",
+    "plugins/superflow/assets/playbooks/feature.md",
+    "plugins/superflow/assets/playbooks/retomar.md",
+    "plugins/superflow/assets/playbooks/fechar.md",
+    "plugins/superflow/assets/playbooks/reconciliar.md",
+    "plugins/superflow/assets/references/state-contract.md",
+    "plugins/superflow/assets/references/commands-contract.md",
+    "plugins/superflow/assets/references/quality-contract.md",
+    "plugins/superflow/assets/templates/PRD.md",
+    "plugins/superflow/assets/templates/status.md",
+    "plugins/superflow/assets/templates/analysis.md",
+    "plugins/superflow/assets/templates/SPEC.md",
+    "plugins/superflow/assets/templates/plan.json",
+    "plugins/superflow/scripts/superflow.py",
+    "plugins/superflow/scripts/superflow_model.py",
+    "plugins/superflow/scripts/superflow_qg.py",
+    "plugins/superflow/scripts/validate_superflow.py",
+    "plugins/superflow/scripts/vendor/"
+  ]
+}

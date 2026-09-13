@@ -1,0 +1,17 @@
+{
+  "tasks": [
+    {
+      "id": "T01",
+      "behavior": "Resultado observável desta unidade",
+      "files": [
+        "caminho/alvo"
+      ],
+      "depends_on": [],
+      "acceptance": [
+        "AC-01"
+      ],
+      "status": "pending",
+      "evidence": []
+    }
+  ]
+}
