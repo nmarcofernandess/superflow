@@ -58,6 +58,12 @@ New cria o cadastro inicial; check é somente leitura; feed e QG são projeçõe
 geradas a partir da mesma fotografia. Eles nunca executam proof, ship ou outro
 comando configurado pelo repositório.
 
+O QG abre em **Em aberto**, com specs em acordeões e minispecs aninhadas.
+A narrativa completa de `status.md` aparece dentro da spec; tarefas ficam em
+**Plano**. A busca cobre o conteúdo completo e abre a cadeia até a minispec.
+**Concluídas** e **Arquivadas** são visões separadas: filtrar não altera arquivos
+nem arquiva nada. Uma spec concluída pode aparecer como contexto de filhos abertos.
+
 ## Instalação
 
 Instale uma release identificada por tag e confira a versão declarada nos

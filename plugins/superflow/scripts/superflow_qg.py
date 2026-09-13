@@ -95,6 +95,30 @@ def safe_link(value: Any, root: Path) -> Optional[str]:
     return _relative_file_url(root / candidate, root)
 
 
+def _body_links(record: Any, root: Path) -> Dict[str, Optional[str]]:
+    """Resolve document-relative links without permitting project traversal."""
+    if not isinstance(record, dict):
+        return {}
+    body = record.get("body_md")
+    if not isinstance(body, str):
+        return {}
+    result = {}
+    for reference in re.findall(r"\[[^\]]+\]\(([^)]+)\)", body):
+        if reference.startswith("#"):
+            # Fragment navigation belongs to the QG record IDs, not local files.
+            result[reference] = reference
+            continue
+        if re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:", reference):
+            candidate = reference
+        elif reference.startswith(("/", "~")):
+            result[reference] = None
+            continue
+        else:
+            candidate = str(Path(record.get("path", "")) / reference)
+        result[reference] = safe_link(candidate, root)
+    return result
+
+
 def _link_data(feed: Dict[str, Any], root: Path) -> Dict[str, List[Any]]:
     records = feed.get("records")
     if not isinstance(records, list):
@@ -124,6 +148,7 @@ def _link_data(feed: Dict[str, Any], root: Path) -> Dict[str, List[Any]]:
                 for task in tasks
             ])
     return {
+        "body_links": [_body_links(record, root) for record in records],
         "record_paths": record_paths,
         "evidence": evidence_links,
         "task_evidence": task_evidence_links,

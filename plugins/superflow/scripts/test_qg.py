@@ -105,7 +105,7 @@ def test_zero_one_and_thousand_records(root: Path) -> None:
     zero = QG.render(feed([]), root)
     if embedded(zero, "qg-snapshot")["records"] != []:
         raise AssertionError("QG vazio deve conservar feed vazio")
-    if "Nenhum ticket foi encontrado nesta fotografia." not in zero:
+    if "Nenhuma spec nesta visão." not in zero:
         raise AssertionError("QG vazio não explica a ausência de tickets")
 
     long_title = "Título longo " + ("muito útil para verificar quebra de linha " * 14)
@@ -122,8 +122,8 @@ def test_zero_one_and_thousand_records(root: Path) -> None:
     snapshot = embedded(thousand, "qg-snapshot")
     if len(snapshot["records"]) != 1000:
         raise AssertionError("QG deve embutir todos os mil tickets")
-    if 'value="50"' not in thousand or 'value="1000"' not in thousand:
-        raise AssertionError("QG precisa oferecer paginação de 50 e 1.000 itens")
+    if 'id="qg-next"' not in thousand:
+        raise AssertionError("QG precisa paginar sem remover registros da fotografia")
 
 
 def test_links_and_untrusted_text_are_safe(root: Path) -> None:
@@ -219,7 +219,8 @@ def test_browser_dom_smoke(root: Path) -> None:
         return
     parent = record("base", title="Base concluída", phase="done", state=None)
     child = record("complemento", parent_id="base", depends_on=["base"], phase="plan", state="pending")
-    records = [parent, child]
+    child['body_md'] = '## Handbook completo\n\nNarrativa exclusiva de uma minispec.\n\n| Campo | Valor |\n| --- | --- |\n| Promessa | Integral |\n\n- Primeiro item\n- Segundo item\n\n<script>window.qgPwned=1</script>'
+    records = [parent, child, record('fechada', phase='done', state=None), record('arquivo', archived=True)]
     records.extend(record("ticket-%04d" % index, title="Ticket de teste %04d" % index) for index in range(2, 1000))
     page = QG.render(feed(records), root)
     with tempfile.TemporaryDirectory(prefix="superflow-qg-dom.") as temp_dir:
@@ -234,19 +235,25 @@ const dom = new JSDOM(fs.readFileSync(process.argv[1], "utf8"), {
 const w = dom.window;
 const d = w.document;
 function fail(message) { throw new Error(message); }
-if (d.querySelectorAll("[data-qg-record]").length !== 50) fail("initial page needs 50 records");
-if (d.querySelector("#qg-archived").value !== "all") fail("archived must start included");
+if (d.querySelectorAll("#qg-list > details").length !== 50) fail("initial page needs 50 roots");
+if (!d.getElementById("base")) fail("done parent must contextualize open child");
+if (d.getElementById("fechada") || d.getElementById("arquivo")) fail("closed and archived must not appear initially");
 const search = d.querySelector("#qg-search");
+search.value = "Narrativa exclusiva";
+search.dispatchEvent(new w.Event("input", { bubbles: true }));
+if (!d.getElementById("base").open || !d.getElementById("complemento").open) fail("search must open parent and matching child");
+if (!d.querySelector("#complemento table") || d.querySelectorAll("#complemento li").length !== 2) fail("handbook table/list must render inline");
+if (w.qgPwned) fail("markdown must not execute HTML");
 search.value = "ticket-0999";
 search.dispatchEvent(new w.Event("input", { bubbles: true }));
-if (d.querySelectorAll("[data-qg-record]").length !== 1) fail("search must inspect all 1000 records");
-w.location.hash = "#base";
+if (!d.getElementById("ticket-0999")) fail("search must inspect all 1000 records");
+w.location.hash = "#complemento";
 w.dispatchEvent(new w.Event("hashchange"));
-if (d.querySelector("#qg-detail").getAttribute("data-qg-detail-id") !== "base") fail("hash must select detail by ID");
-const phase = d.querySelector("#qg-phase");
-phase.value = "plan";
-phase.dispatchEvent(new w.Event("change", { bubbles: true }));
-if (d.querySelector("#qg-outside-filter").hidden) fail("detail outside filter needs an explicit notice");
+if (!d.getElementById("base").open || !d.getElementById("complemento").open) fail("hash must open parent chain");
+d.querySelector('[data-view="done"]').click();
+if (!d.getElementById("fechada") || d.getElementById("arquivo")) fail("done view must separate archive");
+d.querySelector('[data-view="archived"]').click();
+if (!d.getElementById("arquivo") || d.getElementById("fechada")) fail("archive view must be independent");
 const noScript = Array.from(d.querySelectorAll("script")).every((node) => node.src === "");
 if (!noScript) fail("QG must not require an external script");
 dom.window.close();

@@ -1,568 +1,608 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light">
-  <title>QG · Superflow</title>
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  /><title>Superflow · Specs</title>
   <style>
     :root {
-      --paper: #f6f7f5;
-      --surface: #ffffff;
-      --surface-muted: #eef1ed;
-      --ink: #17211d;
-      --soft-ink: #52605a;
-      --muted: #718078;
-      --line: #d8dfd9;
-      --line-strong: #afbbb2;
-      --accent: #0d7455;
-      --accent-soft: #dcefe6;
-      --warn: #996419;
-      --warn-soft: #fff2d9;
-      --danger: #af3d32;
-      --danger-soft: #fde9e6;
-      --violet: #584a9a;
-      --sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-      --shadow: 0 16px 44px rgba(26, 48, 38, .08);
+      --ink: #253532;
+      --muted: #5c6656;
+      --line: #d8dcd0;
+      --paper: #f4f4ed;
+      --green: #257669;
+      --orange: #bb5734;
     }
-
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    * {
+      box-sizing: border-box;
+    }
     body {
       margin: 0;
-      min-width: 320px;
       background: var(--paper);
       color: var(--ink);
-      font: 16px/1.5 var(--sans);
-      -webkit-font-smoothing: antialiased;
+      font:
+        16px/1.65 "Avenir Next",
+        "Segoe UI",
+        sans-serif;
     }
-    button, input, select { font: inherit; }
-    button, select { cursor: pointer; }
-    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
-      outline: 3px solid rgba(13, 116, 85, .35);
-      outline-offset: 2px;
+    header {
+      background: #243631;
+      color: #f4f4ed;
+      padding: 18px max(24px, calc((100vw - 1120px) / 2));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
-    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
-    a:hover { color: #07543d; }
-    code { font: 13px/1.5 var(--mono); overflow-wrap: anywhere; }
-    .skip-link { position: absolute; left: 12px; top: -50px; z-index: 5; background: var(--ink); color: white; padding: 8px 12px; }
-    .skip-link:focus { top: 12px; }
-    .page { width: min(1440px, calc(100% - 36px)); margin: 0 auto; padding-bottom: 56px; }
-
-    .masthead {
+    header strong {
+      font-size: 24px;
+      letter-spacing: -1px;
+    }
+    header span {
+      font-size: 13px;
+      opacity: 0.7;
+    }
+    main {
+      max-width: 1120px;
+      margin: auto;
+      padding: 32px 24px;
+    }
+    h1 {
+      font-size: 36px;
+      letter-spacing: -1.5px;
+      margin: 0 0 20px;
+    }
+    nav {
+      display: flex;
+      gap: 20px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 20px;
+    }
+    button,
+    input {
+      font: inherit;
+      color: inherit;
+    }
+    button {
+      cursor: pointer;
+      background: none;
+      border: 0;
+      padding: 10px 0;
+    }
+    nav button[aria-pressed="true"] {
+      border-bottom: 3px solid var(--orange);
+      font-weight: 700;
+    }
+    input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fcfcf7;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+    }
+    summary {
+      cursor: pointer;
+      list-style: none;
+    }
+    summary::-webkit-details-marker {
+      display: none;
+    }
+    .spec {
+      border-top: 1px solid var(--line);
+    }
+    .spec > summary {
+      padding: 17px 8px;
+      display: grid;
+      grid-template-columns: 20px 1fr auto;
+      gap: 12px;
+      align-items: start;
+    }
+    .spec > summary:before {
+      content: "›";
+      font-size: 24px;
+      line-height: 1.4;
+    }
+    .spec[open] > summary:before {
+      transform: rotate(90deg);
+    }
+    .spec[open] > summary {
+      background: #e9eddf;
+    }
+    .name {
+      font-size: 18px;
+      font-weight: 650;
+      display: block;
+    }
+    .id {
+      font:
+        12px/1.6 Menlo,
+        monospace;
+      color: var(--muted);
+    }
+    .state {
+      font-size: 13px;
+      color: var(--green);
+      padding-top: 6px;
+      text-align: right;
+    }
+    .content {
+      padding: 12px 32px 32px;
+      background: #fcfcf7;
+    }
+    .prose {
+      max-width: 78ch;
+      overflow-wrap: anywhere;
+    }
+    .prose h1 {
+      font-size: 27px;
+      margin-top: 24px;
+    }
+    .prose h2 {
+      font-size: 22px;
+      margin: 28px 0 10px;
+    }
+    .prose h3 {
+      font-size: 18px;
+      margin: 20px 0 8px;
+    }
+    .prose p {
+      margin: 10px 0;
+    }
+    .prose pre {
+      white-space: pre-wrap;
+      background: #f0f1e9;
+      padding: 16px;
+      font-size: 13px;
+    }
+    .prose code {
+      font-family: Menlo, monospace;
+      font-size: 0.85em;
+    }
+    .prose blockquote {
+      border-left: 3px solid var(--line);
+      margin: 16px 0;
+      padding-left: 16px;
+      color: var(--muted);
+    }
+    .table-wrap {
+      overflow: auto;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 14px;
+    }
+    td,
+    th {
+      border: 1px solid var(--line);
+      padding: 8px;
+      text-align: left;
+      min-width: 100px;
+    }
+    a {
+      color: var(--green);
+      text-underline-offset: 3px;
+    }
+    .children {
+      margin-top: 28px;
+    }
+    .children > .spec {
+      margin-left: 8px;
+    }
+    .children .content {
+      padding-left: 20px;
+      padding-right: 12px;
+    }
+    .secondary {
+      margin-top: 22px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .secondary > summary {
+      font-weight: 600;
+      padding: 8px 0;
+    }
+    .notice {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    footer {
       display: flex;
       justify-content: space-between;
-      align-items: end;
-      gap: 24px;
-      padding: 42px 0 24px;
-      border-bottom: 1px solid var(--line-strong);
+      align-items: center;
+      margin-top: 20px;
+      font-size: 13px;
+      color: var(--muted);
     }
-    .eyebrow, .label, .meta-label, .chip, .diagnostic-code {
-      font: 700 11px/1.25 var(--mono);
-      letter-spacing: .08em;
-      text-transform: uppercase;
+    :focus-visible {
+      outline: 2px solid var(--orange);
+      outline-offset: 4px;
     }
-    .eyebrow { color: var(--accent); margin: 0 0 7px; }
-    h1 { margin: 0; font-size: clamp(30px, 4vw, 46px); letter-spacing: -.04em; line-height: 1; }
-    .lead { max-width: 67ch; margin: 12px 0 0; color: var(--soft-ink); }
-    .snapshot-meta { min-width: 220px; color: var(--soft-ink); font: 12px/1.6 var(--mono); text-align: right; }
-    .snapshot-meta b { color: var(--ink); font-weight: 700; }
-
-    .controls {
-      display: grid;
-      grid-template-columns: minmax(240px, 1fr) repeat(3, minmax(130px, auto));
-      gap: 10px;
-      align-items: end;
-      padding: 20px;
-      margin: 24px 0;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: var(--surface);
-      box-shadow: 0 4px 18px rgba(26, 48, 38, .04);
+    @media (max-width: 600px) {
+      main {
+        padding: 24px 14px;
+      }
+      header {
+        padding: 14px;
+      }
+      .content {
+        padding: 12px 16px 24px;
+      }
+      .spec > summary {
+        grid-template-columns: 14px 1fr;
+        gap: 8px;
+      }
+      .state {
+        grid-column: 2;
+        text-align: left;
+        padding: 0;
+      }
+      nav {
+        gap: 14px;
+        font-size: 14px;
+      }
+      .name {
+        font-size: 17px;
+      }
     }
-    .control { min-width: 0; }
-    .control label { display: block; margin: 0 0 5px; color: var(--soft-ink); }
-    .control input, .control select {
-      width: 100%; min-height: 40px; padding: 8px 10px;
-      border: 1px solid var(--line-strong); border-radius: 8px;
-      background: var(--surface); color: var(--ink);
-    }
-    .control input::placeholder { color: var(--muted); }
-    .result-summary { grid-column: 1 / -1; margin: 2px 0 0; color: var(--soft-ink); font-size: 14px; }
-    .result-summary strong { color: var(--ink); }
-
-    .workspace { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(320px, .88fr); gap: 24px; align-items: start; }
-    .pane { min-width: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
-    .pane-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 18px 20px 14px; border-bottom: 1px solid var(--line); }
-    .pane-head h2 { margin: 0; font-size: 18px; letter-spacing: -.015em; }
-    .pane-head p { margin: 0; color: var(--muted); font-size: 13px; }
-    .record-list { padding: 8px; }
-    .record {
-      width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px;
-      padding: 14px 12px; border: 0; border-radius: 9px; background: transparent; color: inherit; text-align: left;
-    }
-    .record:hover { background: var(--surface-muted); }
-    .record[aria-current="true"] { background: var(--accent-soft); }
-    .record + .record { border-top: 1px solid var(--line); border-radius: 0; }
-    .record-main { min-width: 0; }
-    .record-id { display: block; color: var(--accent); font: 700 12px/1.2 var(--mono); overflow-wrap: anywhere; }
-    .record-title { display: block; margin-top: 4px; font-size: 15px; font-weight: 650; overflow-wrap: anywhere; }
-    .record-path { display: block; margin-top: 4px; color: var(--muted); font: 11px/1.35 var(--mono); overflow-wrap: anywhere; }
-    .record-badges { display: flex; flex-wrap: wrap; justify-content: end; align-content: start; gap: 5px; }
-    .chip { display: inline-flex; align-items: center; min-height: 21px; padding: 3px 6px; border: 1px solid currentColor; border-radius: 999px; color: var(--soft-ink); white-space: nowrap; }
-    .chip.done { color: var(--accent); background: var(--accent-soft); }
-    .chip.archived { color: var(--warn); background: var(--warn-soft); }
-    .chip.waiting, .chip.blocked { color: var(--danger); background: var(--danger-soft); }
-    .chip.absorbed { color: var(--violet); background: #eeebfb; }
-    .pager { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 14px 20px 18px; border-top: 1px solid var(--line); }
-    .pager button { min-height: 34px; padding: 5px 10px; border: 1px solid var(--line-strong); border-radius: 7px; background: var(--surface); color: var(--ink); }
-    .pager button:disabled { cursor: not-allowed; color: var(--muted); opacity: .65; }
-    .pager-status { color: var(--soft-ink); font: 12px/1.35 var(--mono); text-align: center; }
-
-    .detail { position: sticky; top: 16px; overflow: hidden; }
-    .detail-content { padding: 20px; }
-    .empty, .notice { margin: 0; padding: 20px; color: var(--soft-ink); }
-    .notice { margin: 0 20px 18px; padding: 10px 12px; border-left: 3px solid var(--warn); background: var(--warn-soft); color: #6f4b12; font-size: 14px; }
-    .detail-title { margin: 0; font-size: 24px; line-height: 1.15; letter-spacing: -.025em; overflow-wrap: anywhere; }
-    .detail-id { display: block; margin: 0 0 7px; color: var(--accent); font: 700 12px/1.2 var(--mono); overflow-wrap: anywhere; }
-    .detail-badges { display: flex; flex-wrap: wrap; gap: 6px; margin: 13px 0 17px; }
-    .facts { display: grid; grid-template-columns: minmax(106px, .4fr) minmax(0, 1fr); gap: 8px 16px; margin: 0; padding: 16px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-    .facts dt { color: var(--muted); font: 700 11px/1.35 var(--mono); letter-spacing: .06em; text-transform: uppercase; }
-    .facts dd { min-width: 0; margin: 0; overflow-wrap: anywhere; }
-    .detail-section { padding: 18px 0; border-bottom: 1px solid var(--line); }
-    .detail-section:last-child { border-bottom: 0; }
-    .detail-section h3 { margin: 0 0 9px; font-size: 14px; }
-    .detail-section p { margin: 0; color: var(--soft-ink); }
-    .ref-list, .task-list, .evidence-list, .diagnostic-list { margin: 0; padding: 0; list-style: none; }
-    .ref-list li, .evidence-list li { padding: 7px 0; border-bottom: 1px dashed var(--line); overflow-wrap: anywhere; }
-    .ref-list li:last-child, .evidence-list li:last-child { border-bottom: 0; }
-    .ref-note { display: block; margin-top: 3px; color: var(--soft-ink); font-size: 13px; }
-    .missing-ref { color: var(--danger); font: 12px/1.4 var(--mono); }
-    .task-list { display: grid; gap: 8px; }
-    .task { padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-muted); }
-    .task-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
-    .task-name { font-weight: 650; overflow-wrap: anywhere; }
-    .task p { margin: 5px 0 0; font-size: 14px; }
-    details.body-disclosure { border: 1px solid var(--line); border-radius: 8px; background: var(--surface-muted); }
-    details.body-disclosure summary { padding: 10px; cursor: pointer; font-weight: 650; }
-    .body-text { margin: 0; padding: 0 10px 12px; color: var(--soft-ink); font: 13px/1.55 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
-
-    .diagnostics { margin-top: 24px; border: 1px solid #e5c5c0; border-radius: 14px; background: #fffafa; overflow: hidden; }
-    .diagnostics .pane-head { border-bottom-color: #efd5d1; }
-    .diagnostics .pane-head h2 { color: var(--danger); }
-    .diagnostic-list { padding: 8px 20px 16px; }
-    .diagnostic { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; padding: 10px 0; border-bottom: 1px solid #efd5d1; }
-    .diagnostic:last-child { border-bottom: 0; }
-    .diagnostic-code { align-self: start; color: var(--danger); }
-    .diagnostic-message { min-width: 0; overflow-wrap: anywhere; }
-    .diagnostic-path { display: block; margin-top: 3px; color: var(--soft-ink); font: 12px/1.4 var(--mono); overflow-wrap: anywhere; }
-    .diagnostic-empty { padding: 0 20px 16px; color: var(--soft-ink); }
-
-    footer { display: flex; justify-content: space-between; gap: 16px; padding-top: 26px; color: var(--muted); font: 11px/1.5 var(--mono); }
-    [hidden] { display: none !important; }
-    @media (max-width: 880px) {
-      .masthead { align-items: start; flex-direction: column; }
-      .snapshot-meta { text-align: left; }
-      .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .controls .control:first-child { grid-column: 1 / -1; }
-      .workspace { grid-template-columns: 1fr; }
-      .detail { position: static; }
-    }
-    @media (max-width: 560px) {
-      .page { width: min(100% - 20px, 1440px); }
-      .masthead { padding-top: 28px; }
-      .controls { padding: 14px; grid-template-columns: 1fr; }
-      .controls .control:first-child { grid-column: auto; }
-      .pane-head, .detail-content { padding-left: 14px; padding-right: 14px; }
-      .record { grid-template-columns: 1fr; }
-      .record-badges { justify-content: start; }
-      .pager { padding-left: 14px; padding-right: 14px; }
-      footer { flex-direction: column; }
-    }
-    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-    @media print { .controls, .pager, .skip-link { display: none; } .workspace { grid-template-columns: 1fr; } .detail { position: static; } }
   </style>
-</head>
-<body>
-  <a class="skip-link" href="#qg-list-heading">Pular para a lista de tickets</a>
-  <div class="page">
-    <header class="masthead">
-      <div>
-        <p class="eyebrow">Superflow · fotografia de leitura</p>
-        <h1>QG de tickets</h1>
-        <p class="lead">Lista, relações e evidências da mesma fotografia. Esta página não edita status, plano ou execução.</p>
-      </div>
-      <div class="snapshot-meta" aria-label="Metadados da fotografia">
-        <div>snapshot <b id="qg-snapshot-id">—</b></div>
-        <div>gerado <b id="qg-generated-at">—</b></div>
-        <div>revisão <b id="qg-source-revision">—</b></div>
-      </div>
-    </header>
-
-    <section class="controls" aria-label="Filtros dos tickets">
-      <div class="control">
-        <label class="label" for="qg-search">Buscar em todos os tickets</label>
-        <input id="qg-search" type="search" autocomplete="off" placeholder="ID, título, caminho ou conteúdo">
-      </div>
-      <div class="control">
-        <label class="label" for="qg-phase">Fase</label>
-        <select id="qg-phase"><option value="">Todas as fases</option></select>
-      </div>
-      <div class="control">
-        <label class="label" for="qg-state">Estado</label>
-        <select id="qg-state"><option value="">Todos os estados</option></select>
-      </div>
-      <div class="control">
-        <label class="label" for="qg-archived">Arquivamento</label>
-        <select id="qg-archived">
-          <option value="all">Todos, inclusive arquivados</option>
-          <option value="active">Somente não arquivados</option>
-          <option value="archived">Somente arquivados</option>
-        </select>
-      </div>
-      <div class="control">
-        <label class="label" for="qg-page-size">Itens por página</label>
-        <select id="qg-page-size"><option value="50">50</option><option value="1000">1.000</option></select>
-      </div>
-      <p class="result-summary" id="qg-summary" aria-live="polite"></p>
-    </section>
-
-    <main class="workspace">
-      <section class="pane" aria-labelledby="qg-list-heading">
-        <div class="pane-head">
-          <h2 id="qg-list-heading">Tickets</h2>
-          <p id="qg-list-note"></p>
-        </div>
-        <div class="record-list" id="qg-list" aria-live="polite"></div>
-        <nav class="pager" aria-label="Paginação dos tickets">
-          <button id="qg-prev" type="button">Anterior</button>
-          <span class="pager-status" id="qg-page-status"></span>
-          <button id="qg-next" type="button">Próxima</button>
-        </nav>
-      </section>
-
-      <aside class="pane detail" aria-labelledby="qg-detail-heading">
-        <div class="pane-head"><h2 id="qg-detail-heading">Detalhe</h2><p>via ID no endereço</p></div>
-        <p class="notice" id="qg-outside-filter" hidden></p>
-        <div class="detail-content" id="qg-detail" aria-live="polite"></div>
-      </aside>
-    </main>
-
-    <section class="diagnostics" aria-labelledby="qg-diagnostics-heading">
-      <div class="pane-head"><h2 id="qg-diagnostics-heading">Diagnósticos da fotografia</h2><p id="qg-diagnostic-count"></p></div>
-      <ul class="diagnostic-list" id="qg-diagnostics"></ul>
-      <p class="diagnostic-empty" id="qg-diagnostics-empty" hidden>Nenhum diagnóstico foi informado nesta fotografia.</p>
-    </section>
-
+  <header><strong>superflow</strong><span>QG · Specs</span></header>
+  <main>
+    <h1>Specs</h1>
+    <nav aria-label="Visibilidade">
+      <button data-view="open" aria-pressed="true">Em aberto</button
+      ><button data-view="done" aria-pressed="false">Concluídas</button
+      ><button data-view="archived" aria-pressed="false">Arquivadas</button>
+    </nav>
+    <input
+      id="qg-search"
+      type="search"
+      aria-label="Buscar nas specs"
+      placeholder="Buscar por título, ID ou conteúdo…"
+    />
+    <p id="qg-summary" class="notice"></p>
+    <section id="qg-list" aria-label="Specs"></section>
     <footer>
-      <span>Superflow · QG offline · leitura somente</span>
-      <span>O estado exibido pertence ao snapshot embutido acima.</span>
+      <button id="qg-prev">← Anteriores</button><span id="qg-page-status"></span
+      ><button id="qg-next">Próximas →</button>
     </footer>
-  </div>
-
-  <script type="application/json" id="qg-snapshot">__QG_SNAPSHOT__</script>
-  <script type="application/json" id="qg-links">__QG_LINKS__</script>
-  <script>
-  (function () {
-    "use strict";
-
-    function parseJson(id, fallback) {
-      try { return JSON.parse(document.getElementById(id).textContent); }
-      catch (error) { return fallback; }
-    }
-    function object(value) { return value && typeof value === "object" && !Array.isArray(value); }
-    function array(value) { return Array.isArray(value) ? value : []; }
-    function text(value, fallback) {
-      if (value === null || value === undefined || value === "") return fallback || "—";
-      return String(value);
-    }
-    function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
-    function make(tag, className, content) {
-      var node = document.createElement(tag);
-      if (className) node.className = className;
-      if (content !== undefined && content !== null) node.textContent = String(content);
-      return node;
-    }
-    function allowedHref(value) { return typeof value === "string" && /^(?:https?:|file:)/i.test(value); }
-    function appendExternal(parent, label, href) {
-      if (allowedHref(href)) {
-        var anchor = make("a", "", label);
-        anchor.href = href;
-        if (/^https?:/i.test(href)) { anchor.target = "_blank"; anchor.rel = "noopener noreferrer"; }
-        parent.appendChild(anchor);
-      } else parent.appendChild(document.createTextNode(label));
-    }
-    function phaseChip(record) {
-      var chip = make("span", "chip" + (record.phase === "done" ? " done" : ""), text(record.phase));
-      return chip;
-    }
-    function detailLink(id, suffix) {
-      var anchor = make("a", "", id);
-      anchor.href = "#" + encodeURIComponent(id);
-      if (suffix) anchor.appendChild(document.createTextNode(suffix));
-      return anchor;
-    }
-    function valueHaystack(record) {
-      var taskText = array(record.tasks).map(function (task) { return object(task) ? JSON.stringify(task) : String(task); }).join(" ");
-      var blockerText = array(record.blockers).map(function (blocker) { return object(blocker) ? JSON.stringify(blocker) : String(blocker); }).join(" ");
-      return [record.id, record.title, record.path, record.phase, record.state, record.prd, record.waiting_for,
-        record.body_md, array(record.evidence).join(" "), taskText, blockerText].map(function (value) {
-          return text(value, "");
-        }).join(" ").toLocaleLowerCase("pt-BR");
-    }
-    function recordName(record) { return text(record.title, text(record.id)); }
-
-    var feed = parseJson("qg-snapshot", {});
-    var links = parseJson("qg-links", {});
-    if (!object(feed)) feed = {};
-    if (!object(links)) links = {};
-    var records = array(feed.records).filter(object);
-    var byId = Object.create(null);
-    records.forEach(function (record, index) {
-      record.__qgIndex = index;
-      if (typeof record.id === "string" && !Object.prototype.hasOwnProperty.call(byId, record.id)) byId[record.id] = record;
-    });
-    var children = Object.create(null);
-    records.forEach(function (record) {
-      if (typeof record.parent_id === "string") (children[record.parent_id] || (children[record.parent_id] = [])).push(record);
-    });
-    var controls = {
-      search: document.getElementById("qg-search"), phase: document.getElementById("qg-phase"),
-      state: document.getElementById("qg-state"), archived: document.getElementById("qg-archived"),
-      pageSize: document.getElementById("qg-page-size"), prev: document.getElementById("qg-prev"),
-      next: document.getElementById("qg-next")
-    };
-    var nodes = {
-      list: document.getElementById("qg-list"), listNote: document.getElementById("qg-list-note"),
-      summary: document.getElementById("qg-summary"), page: document.getElementById("qg-page-status"),
-      detail: document.getElementById("qg-detail"), outside: document.getElementById("qg-outside-filter"),
-      diagnostics: document.getElementById("qg-diagnostics"), diagnosticsEmpty: document.getElementById("qg-diagnostics-empty")
-    };
-    var page = 1;
-
-    document.getElementById("qg-snapshot-id").textContent = text(feed.snapshot_id, "sem identificador");
-    document.getElementById("qg-generated-at").textContent = text(feed.generated_at, "não informado");
-    document.getElementById("qg-source-revision").textContent = feed.source_revision === null || feed.source_revision === undefined ? "sem Git" : text(feed.source_revision);
-
-    function addOptions(select, values) {
-      values.sort().forEach(function (value) {
-        var option = make("option", "", value);
-        option.value = value;
-        select.appendChild(option);
-      });
-    }
-    addOptions(controls.phase, Array.from(new Set(records.map(function (record) { return typeof record.phase === "string" ? record.phase : ""; }).filter(Boolean))));
-    addOptions(controls.state, Array.from(new Set(records.map(function (record) { return typeof record.state === "string" ? record.state : ""; }).filter(Boolean))));
-
-    function selectedId() {
-      if (!window.location.hash || window.location.hash.length < 2) return null;
-      try { return decodeURIComponent(window.location.hash.slice(1)); }
-      catch (error) { return null; }
-    }
-    function filteredRecords() {
-      var query = controls.search.value.trim().toLocaleLowerCase("pt-BR");
-      return records.filter(function (record) {
-        if (controls.phase.value && record.phase !== controls.phase.value) return false;
-        if (controls.state.value && record.state !== controls.state.value) return false;
-        if (controls.archived.value === "active" && record.archived === true) return false;
-        if (controls.archived.value === "archived" && record.archived !== true) return false;
-        return !query || valueHaystack(record).indexOf(query) !== -1;
-      });
-    }
-    function addRecordCard(record, currentId) {
-      var button = make("button", "record");
-      button.type = "button";
-      button.setAttribute("data-qg-record", text(record.id));
-      button.setAttribute("aria-current", record.id === currentId ? "true" : "false");
-      button.addEventListener("click", function () { window.location.hash = encodeURIComponent(text(record.id)); });
-      var main = make("span", "record-main");
-      main.appendChild(make("span", "record-id", text(record.id)));
-      main.appendChild(make("span", "record-title", recordName(record)));
-      main.appendChild(make("span", "record-path", text(record.path, "caminho não informado")));
-      var badges = make("span", "record-badges");
-      badges.appendChild(phaseChip(record));
-      if (record.archived === true) badges.appendChild(make("span", "chip archived", "arquivado"));
-      if (record.waiting_for) badges.appendChild(make("span", "chip waiting", "aguarda"));
-      if (record.absorbed_by) badges.appendChild(make("span", "chip absorbed", "absorvido"));
-      button.appendChild(main); button.appendChild(badges);
-      return button;
-    }
-    function addReference(list, id, note) {
-      var item = make("li");
-      var target = typeof id === "string" ? byId[id] : null;
-      if (target) item.appendChild(detailLink(id, " · " + recordName(target)));
-      else item.appendChild(make("span", "missing-ref", text(id, "sem referência") + " · não encontrado nesta fotografia"));
-      if (note) item.appendChild(make("span", "ref-note", note));
-      list.appendChild(item);
-    }
-    function relationSection(title, ids, note) {
-      var section = make("section", "detail-section");
-      section.appendChild(make("h3", "", title));
-      if (!ids.length) section.appendChild(make("p", "", "Nenhuma referência declarada."));
-      else {
-        var list = make("ul", "ref-list");
-        ids.forEach(function (id) { addReference(list, id, note); });
-        section.appendChild(list);
-      }
-      return section;
-    }
-    function appendTasks(container, record) {
-      var section = make("section", "detail-section");
-      section.appendChild(make("h3", "", "Plano de tarefas"));
-      var tasks = array(record.tasks);
-      if (!tasks.length) section.appendChild(make("p", "", "Nenhuma tarefa registrada no plano."));
-      else {
-        var list = make("ul", "task-list");
-        tasks.forEach(function (task, index) {
-          var item = make("li", "task");
-          var taskValue = object(task) ? task : { id: String(task) };
-          var head = make("div", "task-head");
-          head.appendChild(make("span", "task-name", text(taskValue.id, "Tarefa " + (index + 1))));
-          head.appendChild(make("span", "chip", text(taskValue.status, "sem estado")));
-          item.appendChild(head);
-          if (taskValue.behavior) item.appendChild(make("p", "", taskValue.behavior));
-          if (taskValue.acceptance) item.appendChild(make("p", "", "Aceite: " + taskValue.acceptance));
-          var taskEvidence = array(taskValue.evidence);
-          var taskEvidenceLinks = array(array(links.task_evidence)[record.__qgIndex]);
-          if (taskEvidence.length) {
-            var proofLine = make("p", "");
-            proofLine.appendChild(document.createTextNode("Evidência: "));
-            taskEvidence.forEach(function (entry, evidenceIndex) {
-              if (evidenceIndex) proofLine.appendChild(document.createTextNode(" · "));
-              appendExternal(proofLine, text(entry), array(taskEvidenceLinks[index])[evidenceIndex]);
-            });
-            item.appendChild(proofLine);
-          }
-          list.appendChild(item);
-        });
-        section.appendChild(list);
-      }
-      container.appendChild(section);
-    }
-    function appendEvidence(container, record) {
-      var section = make("section", "detail-section");
-      section.appendChild(make("h3", "", "Evidências"));
-      var evidence = array(record.evidence);
-      var evidenceLinks = array(array(links.evidence)[record.__qgIndex]);
-      if (!evidence.length) section.appendChild(make("p", "", "Nenhuma evidência foi declarada."));
-      else {
-        var list = make("ul", "evidence-list");
-        evidence.forEach(function (entry, index) {
-          var item = make("li");
-          appendExternal(item, text(entry), evidenceLinks[index]);
-          list.appendChild(item);
-        });
-        section.appendChild(list);
-      }
-      container.appendChild(section);
-    }
-    function appendBody(container, record) {
-      var section = make("section", "detail-section");
-      section.appendChild(make("h3", "", "Corpo do ticket"));
-      var body = typeof record.body_md === "string" ? record.body_md : "";
-      if (!body) section.appendChild(make("p", "", "Sem prosa registrada neste ticket."));
-      else {
-        var disclosure = make("details", "body-disclosure");
-        disclosure.appendChild(make("summary", "", "Mostrar texto registrado"));
-        disclosure.appendChild(make("pre", "body-text", body));
-        section.appendChild(disclosure);
-      }
-      container.appendChild(section);
-    }
-    function drawDetail(visible) {
-      clear(nodes.detail); nodes.outside.hidden = true;
-      var id = selectedId();
-      var record = id && byId[id];
-      if (!id) { nodes.detail.appendChild(make("p", "empty", "Selecione um ticket na lista ou abra um ID pelo endereço.")); return; }
-      if (!record) { nodes.detail.appendChild(make("p", "empty", "O ID solicitado não existe nesta fotografia: " + id)); return; }
-      if (visible.indexOf(record) === -1) {
-        nodes.outside.hidden = false;
-        nodes.outside.textContent = "Este ticket está fora do filtro atual, mas continua visível porque foi aberto pelo ID.";
-      }
-      nodes.detail.setAttribute("data-qg-detail-id", text(record.id));
-      nodes.detail.appendChild(make("span", "detail-id", text(record.id)));
-      nodes.detail.appendChild(make("h3", "detail-title", recordName(record)));
-      var badges = make("div", "detail-badges");
-      badges.appendChild(phaseChip(record));
-      badges.appendChild(make("span", "chip", record.state === null || record.state === undefined ? "terminal" : text(record.state)));
-      badges.appendChild(make("span", "chip", text(record.prd, "PRD não informado")));
-      if (record.archived === true) badges.appendChild(make("span", "chip archived", "arquivado"));
-      nodes.detail.appendChild(badges);
-      var facts = make("dl", "facts");
-      function fact(label, value, href) {
-        facts.appendChild(make("dt", "", label));
-        var description = make("dd"); appendExternal(description, text(value), href); facts.appendChild(description);
-      }
-      fact("Caminho", text(record.path, "não informado"), array(links.record_paths)[record.__qgIndex]);
-      fact("Atualizado", text(record.updated_at, "não informado"));
-      fact("Espera", text(record.waiting_for, "nenhuma"));
-      nodes.detail.appendChild(facts);
-      if (typeof record.parent_id === "string") nodes.detail.appendChild(relationSection("Mãe", [record.parent_id], "Agrupamento para navegação; não é bloqueio."));
-      nodes.detail.appendChild(relationSection("Dependências", array(record.depends_on), "Este ticket depende desta entrega."));
-      nodes.detail.appendChild(relationSection("Complementos", array(children[record.id]).map(function (child) { return child.id; }), "Filho de organização; não cria bloqueio."));
-      if (record.absorbed_by) nodes.detail.appendChild(relationSection("Restante assumido por", [record.absorbed_by], "O restante declarado foi assumido por este ticket."));
-      var blockers = array(record.blockers);
-      var blockerSection = make("section", "detail-section");
-      blockerSection.appendChild(make("h3", "", "Bloqueios declarados"));
-      if (!blockers.length) blockerSection.appendChild(make("p", "", "Nenhum bloqueio declarado."));
-      else {
-        var blockerList = make("ul", "ref-list");
-        blockers.forEach(function (blocker) {
-          var value = object(blocker) ? blocker : {};
-          var item = make("li");
-          item.appendChild(make("span", "chip blocked", text(value.kind, "bloqueio")));
-          item.appendChild(document.createTextNode(" "));
-          if (typeof value.ref === "string" && byId[value.ref]) item.appendChild(detailLink(value.ref, " · " + recordName(byId[value.ref])));
-          else if (value.ref) item.appendChild(make("span", "missing-ref", text(value.ref)));
-          if (value.reason) item.appendChild(make("span", "ref-note", value.reason));
-          blockerList.appendChild(item);
-        });
-        blockerSection.appendChild(blockerList);
-      }
-      nodes.detail.appendChild(blockerSection);
-      appendEvidence(nodes.detail, record); appendTasks(nodes.detail, record); appendBody(nodes.detail, record);
-    }
-    function drawDiagnostics() {
-      clear(nodes.diagnostics);
-      var diagnostics = array(feed.diagnostics);
-      document.getElementById("qg-diagnostic-count").textContent = diagnostics.length + (diagnostics.length === 1 ? " item" : " itens");
-      nodes.diagnosticsEmpty.hidden = diagnostics.length !== 0;
-      diagnostics.forEach(function (entry) {
-        var diagnostic = object(entry) ? entry : { code: "DIAGNÓSTICO", message: String(entry), severity: "erro" };
-        var item = make("li", "diagnostic");
-        item.appendChild(make("span", "diagnostic-code", text(diagnostic.severity, "erro") + " · " + text(diagnostic.code, "sem código")));
-        var content = make("div", "diagnostic-message", text(diagnostic.message, "Diagnóstico sem mensagem."));
-        if (diagnostic.path) content.appendChild(make("span", "diagnostic-path", diagnostic.path));
-        item.appendChild(content); nodes.diagnostics.appendChild(item);
-      });
-    }
-    function draw() {
-      var visible = filteredRecords();
-      var size = Number(controls.pageSize.value) || 50;
-      var pages = Math.max(1, Math.ceil(visible.length / size));
-      page = Math.min(Math.max(page, 1), pages);
-      var start = (page - 1) * size;
-      var slice = visible.slice(start, start + size);
-      var currentId = selectedId();
-      clear(nodes.list);
-      if (!slice.length) nodes.list.appendChild(make("p", "empty", records.length ? "Nenhum ticket corresponde aos filtros." : "Nenhum ticket foi encontrado nesta fotografia."));
-      else slice.forEach(function (record) { nodes.list.appendChild(addRecordCard(record, currentId)); });
-      nodes.listNote.textContent = visible.length + " de " + records.length;
-      nodes.summary.replaceChildren(document.createTextNode("Exibindo "), make("strong", "", visible.length), document.createTextNode(" de " + records.length + " tickets. A busca considera o corpus inteiro."));
-      nodes.page.textContent = "Página " + page + " de " + pages;
-      controls.prev.disabled = page <= 1; controls.next.disabled = page >= pages;
-      drawDetail(visible);
-    }
-    [controls.search, controls.phase, controls.state, controls.archived, controls.pageSize].forEach(function (control) {
-      control.addEventListener("input", function () { page = 1; draw(); });
-      control.addEventListener("change", function () { page = 1; draw(); });
-    });
-    controls.prev.addEventListener("click", function () { page -= 1; draw(); });
-    controls.next.addEventListener("click", function () { page += 1; draw(); });
-    window.addEventListener("hashchange", draw);
-    drawDiagnostics(); draw();
-  }());
+    <details class="secondary" id="diagnostics">
+      <summary>Sobre esta fotografia</summary>
+      <div id="diagnostic-content"></div>
+    </details>
+  </main>
+  <script type="application/json" id="qg-snapshot">
+    __QG_SNAPSHOT__
   </script>
-</body>
+  <script type="application/json" id="qg-links">
+    __QG_LINKS__
+  </script>
+  <script>
+    "use strict";
+    const feed = JSON.parse(document.getElementById("qg-snapshot").textContent),
+      links = JSON.parse(document.getElementById("qg-links").textContent),
+      records = feed.records || [],
+      byId = new Map(records.map((r, i) => [r.id, { ...r, index: i }])),
+      children = new Map();
+    for (const r of byId.values()) {
+      const p =
+        byId.has(r.parent_id) && r.parent_id !== r.id ? r.parent_id : null;
+      if (!children.has(p)) children.set(p, []);
+      children.get(p).push(r);
+    }
+    const el = (tag, text, cls) => {
+        const n = document.createElement(tag);
+        if (text !== undefined) n.textContent = text;
+        if (cls) n.className = cls;
+        return n;
+      },
+      list = document.getElementById("qg-list"),
+      search = document.getElementById("qg-search");
+    let view = "open",
+      page = 0;
+    const expanded = new Set();
+    function inline(n, text, r) {
+      const pattern = /\[([^\]]+)\]\(([^)]+)\)|`([^`]+)`|\*\*([^*]+)\*\*/g;
+      let pos = 0,
+        m;
+      while ((m = pattern.exec(text))) {
+        n.append(document.createTextNode(text.slice(pos, m.index)));
+        if (m[1]) {
+          const target = (links.body_links || [])[r.index]?.[m[2]];
+          if (target) {
+            const a = el("a", m[1]);
+            a.href = target;
+            a.rel = "noopener noreferrer";
+            n.append(a);
+          } else n.append(document.createTextNode(m[1] + " (" + m[2] + ")"));
+        } else n.append(el(m[3] ? "code" : "strong", m[3] || m[4]));
+        pos = pattern.lastIndex;
+      }
+      n.append(document.createTextNode(text.slice(pos)));
+    }
+    function markdown(text, r) {
+      const out = el("div", undefined, "prose"),
+        lines = String(text || "").split("\n");
+      let i = 0;
+      while (i < lines.length) {
+        let s = lines[i];
+        if (!s.trim()) {
+          i++;
+          continue;
+        }
+        if (/^```/.test(s)) {
+          const block = [];
+          i++;
+          while (i < lines.length && !/^```/.test(lines[i]))
+            block.push(lines[i++]);
+          out.append(el("pre", block.join("\n")));
+          i++;
+          continue;
+        }
+        if (
+          i + 1 < lines.length &&
+          s.includes("|") &&
+          /^\s*\|?\s*:?-{3}/.test(lines[i + 1])
+        ) {
+          const wrap = el("div", undefined, "table-wrap"),
+            table = el("table");
+          const row = (s, tag) => {
+            const tr = el("tr");
+            s.trim()
+              .replace(/^\||\|$/g, "")
+              .split("|")
+              .forEach((v) => {
+                const c = el(tag);
+                inline(c, v.trim(), r);
+                tr.append(c);
+              });
+            table.append(tr);
+          };
+          row(s, "th");
+          i += 2;
+          while (i < lines.length && lines[i].includes("|"))
+            row(lines[i++], "td");
+          wrap.append(table);
+          out.append(wrap);
+          continue;
+        }
+        const heading = s.match(/^(#{1,6})\s+(.+)/),
+          bullet = s.match(/^\s*(?:[-*+] |\d+\. )(.+)/);
+        if (heading) {
+          const h = el("h" + heading[1].length);
+          inline(h, heading[2], r);
+          out.append(h);
+          i++;
+          continue;
+        }
+        if (bullet) {
+          const ul = el(/^\s*\d/.test(s) ? "ol" : "ul");
+          while (i < lines.length) {
+            const b = lines[i].match(/^\s*(?:[-*+] |\d+\. )(.+)/);
+            if (!b) break;
+            const li = el("li");
+            inline(li, b[1], r);
+            ul.append(li);
+            i++;
+          }
+          out.append(ul);
+          continue;
+        }
+        const p = el(s.startsWith(">") ? "blockquote" : "p");
+        inline(p, s.replace(/^>\s?/, ""), r);
+        out.append(p);
+        i++;
+      }
+      return out;
+    }
+    const terminal = (r) =>
+      ["done", "cancelled", "skipped"].includes(r.state) ||
+      ["done", "cancelled"].includes(r.phase);
+    const own = (r) =>
+      view === "archived"
+        ? r.archived
+        : view === "done"
+          ? !r.archived && terminal(r)
+          : !r.archived && !terminal(r);
+    function visible(r, seen = new Set()) {
+      if (seen.has(r.id)) return false;
+      seen = new Set(seen).add(r.id);
+      return own(r) || (children.get(r.id) || []).some((c) => visible(c, seen));
+    }
+    function matches(r, seen = new Set()) {
+      if (seen.has(r.id)) return false;
+      seen = new Set(seen).add(r.id);
+      const q = search.value.trim().toLocaleLowerCase();
+      return (
+        !q ||
+        [r.id, r.title, r.body_md, JSON.stringify(r.tasks || [])]
+          .join(" ")
+          .toLocaleLowerCase()
+          .includes(q) ||
+        (children.get(r.id) || []).some((c) => matches(c, seen))
+      );
+    }
+    const labels = {
+      pending: "Pendente",
+      executing: "Em execução",
+      in_progress: "Em execução",
+      blocked: "Aguardando",
+      done: "Concluída",
+      cancelled: "Cancelada",
+      skipped: "Dispensada",
+      plan: "Planejamento",
+      execute: "Execução",
+      qa: "QA",
+      build: "Preparação",
+      prd: "PRD",
+    };
+    function spec(r, seen = new Set()) {
+      if (seen.has(r.id)) return el("p", "Relação circular: " + r.id);
+      seen = new Set(seen).add(r.id);
+      const d = el("details", undefined, "spec");
+      d.id = r.id;
+      const s = el("summary"),
+        title = el("span");
+      title.append(el("span", r.id, "id"), el("span", r.title, "name"));
+      s.append(
+        title,
+        el(
+          "span",
+          (labels[r.state] || labels[r.phase] || r.state || r.phase) +
+            (own(r) ? "" : " · contexto"),
+          "state",
+        ),
+      );
+      d.append(s);
+      let built = false;
+      const populate = () => {
+        if (built) return;
+        built = true;
+        const body = el("div", undefined, "content");
+        body.append(
+          markdown(
+            r.body_md || "Esta spec ainda não tem uma descrição escrita.",
+            r,
+          ),
+        );
+        if ((r.tasks || []).length) {
+          const plan = el("details", undefined, "secondary");
+          plan.append(el("summary", "Plano · " + r.tasks.length + " tarefas"));
+          for (const t of r.tasks)
+            plan.append(
+              el(
+                "p",
+                (t.status === "done" ? "✓ " : "○ ") +
+                  (t.id || "") +
+                  " · " +
+                  (t.behavior || t.title || t.description || t.text || "") +
+                  " — " +
+                  (t.status || ""),
+              ),
+            );
+          body.append(plan);
+        }
+        const evidence = el("details", undefined, "secondary");
+        evidence.append(el("summary", "Referências e andamento"));
+        evidence.append(el("p", "Fase: " + (labels[r.phase] || r.phase)));
+        if (r.waiting_for)
+          evidence.append(
+            el("p", "Aguardando: " + JSON.stringify(r.waiting_for)),
+          );
+        for (const id of r.depends_on || []) {
+          const a = el("a", "Depende de " + id);
+          a.href = "#" + id;
+          evidence.append(a, el("br"));
+        }
+        for (const [i, ref] of (r.evidence || []).entries()) {
+          const href = links.evidence?.[r.index]?.[i];
+          if (href) {
+            const a = el("a", ref);
+            a.href = href;
+            evidence.append(a, el("br"));
+          } else evidence.append(el("p", String(ref)));
+        }
+        body.append(evidence);
+        const nested = (children.get(r.id) || []).filter(
+          (c) => visible(c) && matches(c),
+        );
+        if (nested.length) {
+          const box = el("section", undefined, "children");
+          box.append(el("h3", "Minispecs"));
+          for (const c of nested) box.append(spec(c, seen));
+          body.append(box);
+        }
+        d.append(body);
+      };
+      d.addEventListener("toggle", () => {
+        if (d.open) {
+          expanded.add(r.id);
+          populate();
+        } else expanded.delete(r.id);
+      });
+      if (expanded.has(r.id) || search.value.trim()) {
+        populate();
+        d.open = true;
+      }
+      return d;
+    }
+    function render() {
+      list.replaceChildren();
+      const roots = (children.get(null) || []).filter(
+        (r) => visible(r) && matches(r),
+      );
+      page = Math.min(page, Math.max(0, Math.ceil(roots.length / 50) - 1));
+      for (const r of roots.slice(page * 50, page * 50 + 50))
+        list.append(spec(r));
+      if (!roots.length) list.append(el("p", "Nenhuma spec nesta visão."));
+      document.getElementById("qg-summary").textContent =
+        roots.length + " specs principais · minispecs dentro de cada spec";
+      document.getElementById("qg-page-status").textContent = roots.length
+        ? "Página " + (page + 1) + " de " + Math.ceil(roots.length / 50)
+        : "";
+      document.getElementById("qg-prev").disabled = page === 0;
+      document.getElementById("qg-next").disabled =
+        (page + 1) * 50 >= roots.length;
+      document
+        .querySelectorAll("[data-view]")
+        .forEach((b) =>
+          b.setAttribute("aria-pressed", String(b.dataset.view === view)),
+        );
+    }
+    document.querySelectorAll("[data-view]").forEach(
+      (b) =>
+        (b.onclick = () => {
+          view = b.dataset.view;
+          page = 0;
+          render();
+        }),
+    );
+    search.oninput = () => {
+      page = 0;
+      render();
+    };
+    document.getElementById("qg-prev").onclick = () => {
+      page--;
+      render();
+    };
+    document.getElementById("qg-next").onclick = () => {
+      page++;
+      render();
+    };
+    function locate() {
+      let id;
+      try {
+        id = decodeURIComponent(location.hash.slice(1));
+      } catch {
+        return;
+      }
+      const r = byId.get(id);
+      if (!r) return;
+      search.value = "";
+      view = r.archived ? "archived" : terminal(r) ? "done" : "open";
+      let p = r,
+        seen = new Set();
+      while (p && !seen.has(p.id)) {
+        seen.add(p.id);
+        expanded.add(p.id);
+        if (!byId.has(p.parent_id)) break;
+        p = byId.get(p.parent_id);
+      }
+      const roots = (children.get(null) || []).filter((r) => visible(r));
+      page = Math.max(
+        0,
+        Math.floor(roots.findIndex((x) => x.id === p.id) / 50),
+      );
+      render();
+      document.getElementById(id)?.scrollIntoView?.({ block: "start" });
+    }
+    window.addEventListener("hashchange", locate);
+    document.getElementById("diagnostic-content").textContent = JSON.stringify(
+      { snapshot: feed.snapshot_id, diagnostics: feed.diagnostics },
+      null,
+      2,
+    );
+    render();
+    if (location.hash) locate();
+  </script>
 </html>
