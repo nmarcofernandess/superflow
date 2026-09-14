@@ -1,21 +1,9 @@
-# Receita: fechar
+# Fechar
 
-Use quando uma entrega parece pronta e precisa de aceite honesto.
+1. Confirme todas as tasks e predecessoras done.
+2. Confira os aceites do plano e do PRD.
+3. Execute revisão, testes, prova e ship exigidos pelo projeto, respeitando autorização e ambiente.
+4. Resolva reprovações e volte as tasks afetadas para pending.
+5. Remova esperas satisfeitas e marque o status global done somente após o aceite próprio.
 
-1. Faça review do desenho ou diff se ele ainda for aplicável; resolva achados
-   bloqueantes e maiores e revalide as correções.
-2. Compare cada aceite do PRD com a prova correspondente. Consulte as regras
-   do projeto e proof_cmd/ship_cmd na configuração quando existirem. Execute
-   proof_cmd se ele for aplicável ao aceite; sua ausência não dispensa prova.
-   Rode checks e proofs proporcionais ao risco. Registre qa quando o plano
-   estiver encerrado e a verificação final começar; tasks ainda abertas
-   continuam em execute. Um aceite que falha reabre a execução.
-3. Faça ship, deploy, migration ou comunicação externa somente se o pedido e as
-   regras do repositório autorizarem. Use ship_cmd quando definido e aplicável;
-   a configuração não concede autorização adicional.
-4. Atualize status para done apenas quando aceite próprio, dependências, plano,
-   espera e evidências atendem ao contrato.
-5. Rode check e, quando útil, feed para conferir a projeção da fonte atual.
-
-Se o aceite falhar, reabra o trabalho que falhou e volte à execução. Não feche
-por mensagem de sucesso, passagem de tempo ou arquivo arquivado.
+Não grave evidence ou fase; a prova permanece na fonte do projeto.

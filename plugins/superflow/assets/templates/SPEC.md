@@ -1,35 +1,17 @@
-# SPEC: {{title}}
+# SPEC — {{title}}
 
-## Decisão
+## Integração
 
-Escolha técnica e por que ela atende à promessa do PRD.
+Onde esta mudança entra no sistema existente?
 
-## Terreno e fronteiras
+## Contratos
 
-| Área ou arquivo | Fato ou contrato | Mudança | Risco |
-|---|---|---|---|
-| path:line |  |  |  |
+Quais dados, interfaces e invariantes governam a implementação?
 
-## Facetas relevantes
+## Decisões técnicas
 
-- Produto:
-- Dados ou Backend:
-- Interface e reuso:
-- Cópia:
-- Risco ou operação:
+Quais escolhas foram feitas e por quê?
 
-## Fluxo e contratos
+## Verificação
 
-Entradas, saídas, estados inválidos, autorizações e compatibilidade relevantes.
-
-## Comportamentos verificáveis
-
-- Comportamento que a mudança deve tornar observável.
-
-## Sequência de alto nível
-
-- Passo que antecede a próxima fronteira.
-
-## Verificação, riscos e rollback
-
-- Verificação proporcional e condição de rollback, quando aplicável.
+Quais gates protegem as regras estruturais e quais aceites dependem de julgamento?

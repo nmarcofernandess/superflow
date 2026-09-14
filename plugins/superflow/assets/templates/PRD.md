@@ -1,31 +1,18 @@
-# PRD: {{title}}
+# {{title}}
 
 ## Problema
 
-Descreva a situação atual, o mecanismo que a causa e a consequência observável.
+O que precisa mudar e para quem?
 
 ## Promessa
 
-Qual resultado a pessoa ou o sistema deve obter quando o trabalho estiver pronto?
+Qual resultado completo será entregue?
 
 ## Escopo
 
-### Inclui
+- Inclui:
+- Não inclui:
 
-- Item incluído.
+## Critérios de aceite
 
-### Não inclui
-
-- Item fora do escopo.
-
-## Aceite
-
-- [ ] Critério observável que demonstra a promessa.
-
-## Contexto e fatos
-
-- Fonte, path:line, cenário ou hipótese a confirmar.
-
-## Perguntas abertas
-
-- Decisão que ainda muda promessa, escopo, aceite, risco ou autorização.
+1. Comportamento observável que prova a promessa.

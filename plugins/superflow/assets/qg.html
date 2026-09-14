@@ -1,608 +1,82 @@
 <!doctype html>
 <html lang="pt-BR">
-  <meta charset="utf-8" /><meta
-    name="viewport"
-    content="width=device-width,initial-scale=1"
-  /><title>Superflow · Specs</title>
-  <style>
-    :root {
-      --ink: #253532;
-      --muted: #5c6656;
-      --line: #d8dcd0;
-      --paper: #f4f4ed;
-      --green: #257669;
-      --orange: #bb5734;
-    }
-    * {
-      box-sizing: border-box;
-    }
-    body {
-      margin: 0;
-      background: var(--paper);
-      color: var(--ink);
-      font:
-        16px/1.65 "Avenir Next",
-        "Segoe UI",
-        sans-serif;
-    }
-    header {
-      background: #243631;
-      color: #f4f4ed;
-      padding: 18px max(24px, calc((100vw - 1120px) / 2));
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    header strong {
-      font-size: 24px;
-      letter-spacing: -1px;
-    }
-    header span {
-      font-size: 13px;
-      opacity: 0.7;
-    }
-    main {
-      max-width: 1120px;
-      margin: auto;
-      padding: 32px 24px;
-    }
-    h1 {
-      font-size: 36px;
-      letter-spacing: -1.5px;
-      margin: 0 0 20px;
-    }
-    nav {
-      display: flex;
-      gap: 20px;
-      border-bottom: 1px solid var(--line);
-      margin-bottom: 20px;
-    }
-    button,
-    input {
-      font: inherit;
-      color: inherit;
-    }
-    button {
-      cursor: pointer;
-      background: none;
-      border: 0;
-      padding: 10px 0;
-    }
-    nav button[aria-pressed="true"] {
-      border-bottom: 3px solid var(--orange);
-      font-weight: 700;
-    }
-    input {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      background: #fcfcf7;
-      padding: 12px 16px;
-      margin-bottom: 16px;
-    }
-    summary {
-      cursor: pointer;
-      list-style: none;
-    }
-    summary::-webkit-details-marker {
-      display: none;
-    }
-    .spec {
-      border-top: 1px solid var(--line);
-    }
-    .spec > summary {
-      padding: 17px 8px;
-      display: grid;
-      grid-template-columns: 20px 1fr auto;
-      gap: 12px;
-      align-items: start;
-    }
-    .spec > summary:before {
-      content: "›";
-      font-size: 24px;
-      line-height: 1.4;
-    }
-    .spec[open] > summary:before {
-      transform: rotate(90deg);
-    }
-    .spec[open] > summary {
-      background: #e9eddf;
-    }
-    .name {
-      font-size: 18px;
-      font-weight: 650;
-      display: block;
-    }
-    .id {
-      font:
-        12px/1.6 Menlo,
-        monospace;
-      color: var(--muted);
-    }
-    .state {
-      font-size: 13px;
-      color: var(--green);
-      padding-top: 6px;
-      text-align: right;
-    }
-    .content {
-      padding: 12px 32px 32px;
-      background: #fcfcf7;
-    }
-    .prose {
-      max-width: 78ch;
-      overflow-wrap: anywhere;
-    }
-    .prose h1 {
-      font-size: 27px;
-      margin-top: 24px;
-    }
-    .prose h2 {
-      font-size: 22px;
-      margin: 28px 0 10px;
-    }
-    .prose h3 {
-      font-size: 18px;
-      margin: 20px 0 8px;
-    }
-    .prose p {
-      margin: 10px 0;
-    }
-    .prose pre {
-      white-space: pre-wrap;
-      background: #f0f1e9;
-      padding: 16px;
-      font-size: 13px;
-    }
-    .prose code {
-      font-family: Menlo, monospace;
-      font-size: 0.85em;
-    }
-    .prose blockquote {
-      border-left: 3px solid var(--line);
-      margin: 16px 0;
-      padding-left: 16px;
-      color: var(--muted);
-    }
-    .table-wrap {
-      overflow: auto;
-    }
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      font-size: 14px;
-    }
-    td,
-    th {
-      border: 1px solid var(--line);
-      padding: 8px;
-      text-align: left;
-      min-width: 100px;
-    }
-    a {
-      color: var(--green);
-      text-underline-offset: 3px;
-    }
-    .children {
-      margin-top: 28px;
-    }
-    .children > .spec {
-      margin-left: 8px;
-    }
-    .children .content {
-      padding-left: 20px;
-      padding-right: 12px;
-    }
-    .secondary {
-      margin-top: 22px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-    .secondary > summary {
-      font-weight: 600;
-      padding: 8px 0;
-    }
-    .notice {
-      color: var(--muted);
-      font-size: 13px;
-    }
-    footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 20px;
-      font-size: 13px;
-      color: var(--muted);
-    }
-    :focus-visible {
-      outline: 2px solid var(--orange);
-      outline-offset: 4px;
-    }
-    @media (max-width: 600px) {
-      main {
-        padding: 24px 14px;
-      }
-      header {
-        padding: 14px;
-      }
-      .content {
-        padding: 12px 16px 24px;
-      }
-      .spec > summary {
-        grid-template-columns: 14px 1fr;
-        gap: 8px;
-      }
-      .state {
-        grid-column: 2;
-        text-align: left;
-        padding: 0;
-      }
-      nav {
-        gap: 14px;
-        font-size: 14px;
-      }
-      .name {
-        font-size: 17px;
-      }
-    }
-  </style>
-  <header><strong>superflow</strong><span>QG · Specs</span></header>
-  <main>
-    <h1>Specs</h1>
-    <nav aria-label="Visibilidade">
-      <button data-view="open" aria-pressed="true">Em aberto</button
-      ><button data-view="done" aria-pressed="false">Concluídas</button
-      ><button data-view="archived" aria-pressed="false">Arquivadas</button>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Superflow QG</title>
+<style>
+:root{--ink:#223630;--paper:#f6f5ec;--surface:#fbfaf3;--green:#1f3b33;--green-2:#2e5f4f;--orange:#c46e3c;--line:#d5d8ca;--soft:#eaede1;--muted:#687268;--wait:#8a5a26;--danger:#86513d;--display:"Avenir Next","Century Gothic",sans-serif;--body:"Avenir Next","Gill Sans",sans-serif;--mono:"SFMono-Regular",Menlo,monospace}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);font:400 15px/1.5 var(--body)}button,input{font:inherit;color:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible{outline:3px solid var(--orange);outline-offset:3px}.skip{position:fixed;top:-60px;left:12px;background:var(--ink);color:white;padding:10px 14px;z-index:100}.skip:focus{top:10px}
+.shell{min-height:100dvh;display:grid;grid-template-rows:auto 1fr}.mast{background:var(--green);color:#f3f0df;padding:22px clamp(20px,4vw,56px) 0}.brandline{display:flex;align-items:center;justify-content:space-between;gap:18px}.brand{display:flex;align-items:center;gap:13px}.mark{font:900 32px/1 var(--display);color:var(--orange);transform:skewY(-4deg)}.brand strong{font:800 25px/1 var(--display);letter-spacing:-.6px}.brand small{font:600 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:#bfcbbc}.project{text-align:right}.project strong{display:block;font:650 15px var(--display)}.project small{font-size:11px;color:#bfcbbc}.tabs{display:flex;gap:7px;margin-top:24px;overflow:auto;padding-bottom:0}.tab{border:0;background:transparent;color:#c8d2c3;padding:12px 15px;border-radius:6px 6px 0 0;white-space:nowrap}.tab span{font:10px var(--mono);margin-left:6px;opacity:.8}.tab[aria-selected=true]{background:var(--paper);color:var(--ink)}
+.workspace{width:min(1080px,100%);margin:0 auto;padding:38px clamp(18px,4vw,48px) 70px}.intro{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:28px}.intro h1{font:750 clamp(32px,5vw,54px)/1 var(--display);letter-spacing:-1.7px;margin:0}.intro p{margin:12px 0 0;color:var(--muted);font-size:14px}.snapshot{font:9px/1.6 var(--mono);color:var(--muted);text-align:right;max-width:250px}.toolbar{display:flex;gap:12px;align-items:center;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0;margin-bottom:20px}.search{position:relative;flex:1}.search:before{content:"⌕";position:absolute;left:13px;top:7px;font:22px var(--display);color:var(--muted)}.search input{width:100%;border:1px solid var(--line);background:var(--surface);padding:11px 13px 11px 42px;border-radius:6px}.count{font:10px var(--mono);color:var(--muted);white-space:nowrap}
+.list{border-top:1px solid var(--line)}.family{border-bottom:1px solid var(--line)}.spec-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:start;width:100%;border:0;background:transparent;text-align:left;padding:18px 4px}.spec-card:hover{background:#eef0e6}.toggle{width:28px;height:28px;border:0;background:transparent;border-radius:4px;font:18px/1 var(--mono);color:var(--muted);display:grid;place-items:center;transition:transform .18s}.toggle[aria-expanded=true]{transform:rotate(90deg)}.toggle.blank{visibility:hidden}.open-spec{border:0;background:transparent;text-align:left;padding:0;min-width:0}.idline{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:5px}.id{font:10px var(--mono);color:var(--muted)}.mini-label{font:9px var(--mono);color:var(--green-2);background:#e5ecdf;border:1px solid #cfdac8;padding:2px 5px;border-radius:3px}.title{font:650 17px/1.35 var(--display);letter-spacing:-.15px;overflow-wrap:anywhere}.excerpt{display:block;margin-top:7px;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.situation{font-size:11px;white-space:nowrap;padding-top:4px;display:flex;gap:6px;align-items:center}.dot{width:6px;height:6px;border-radius:50%;background:currentColor}.ready{color:var(--green-2)}.waiting{color:var(--wait)}.blocked{color:var(--danger)}.done{color:#667267}.children{margin:0 0 12px 38px;border-left:2px solid #cbd5c5;padding-left:18px}.children[hidden]{display:none}.children .family{border-bottom:1px solid #e1e4d9}.children .spec-card{padding:13px 4px}.children .title{font-size:14px}.children .children{margin-left:24px}.empty{padding:72px 20px;text-align:center;color:var(--muted)}.empty strong{display:block;font:650 24px var(--display);color:var(--ink);margin-bottom:7px}
+.drawer{border:0;border-left:1px solid var(--line);margin:0 0 0 auto;padding:0;width:min(520px,100vw);height:100dvh;max-height:none;background:var(--surface);color:var(--ink);box-shadow:-20px 0 70px #14251f26}.drawer::backdrop{background:#172c2566;backdrop-filter:blur(2px)}.drawer-head{position:sticky;top:0;background:var(--surface);border-bottom:1px solid var(--line);padding:20px 24px 17px;z-index:2}.drawer-top{display:flex;justify-content:space-between;gap:15px;align-items:center}.drawer-id{font:10px var(--mono);color:var(--muted)}.close{border:1px solid var(--line);background:transparent;width:34px;height:34px;border-radius:5px;font-size:20px}.drawer h2{font:720 clamp(27px,4vw,38px)/1.12 var(--display);letter-spacing:-.7px;margin:18px 0 10px;overflow-wrap:anywhere}.drawer-state{display:flex;gap:7px;align-items:center;font-size:12px}.drawer-body{padding:24px 26px 60px}.notice{border-left:3px solid var(--orange);background:#f1ede1;padding:12px 14px;margin-bottom:22px;font-size:12px;color:#5d624f}.dependency{border:1px solid var(--line);background:#f1f3e9;padding:11px 13px;margin:8px 0;border-radius:5px}.dependency strong{font:600 11px var(--mono);display:block}.dependency span{display:block;font-size:12px;color:var(--muted);margin-top:4px}.narrative{font-size:14px;line-height:1.75}.narrative h1,.narrative h2,.narrative h3{font-family:var(--display);line-height:1.25;margin:1.6em 0 .55em}.narrative h1{font-size:25px}.narrative h2{font-size:20px}.narrative h3{font-size:16px}.narrative p{margin:.8em 0}.narrative ul{padding-left:20px}.narrative code{font:12px var(--mono);background:#e9ecdf;padding:2px 4px;border-radius:3px}.narrative pre{font:11px/1.65 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;background:var(--green);color:#edf1e6;padding:15px;border-radius:5px;overflow:auto}.narrative blockquote{margin:1em 0;padding-left:14px;border-left:2px solid var(--orange);color:var(--muted)}.no-body{color:var(--muted);font-size:13px;font-style:italic;padding:25px 0}
+.diagnostics{margin-top:28px;border:1px solid #dfc5b5;background:#f5e9e0;padding:15px}.diagnostics summary{cursor:pointer;font-weight:600}.diagnostics li{font-size:12px;margin:7px 0}.footer{font:9px var(--mono);color:var(--muted);border-top:1px solid var(--line);margin-top:36px;padding-top:16px}
+@media(max-width:680px){.mast{padding-left:16px;padding-right:16px}.project{display:none}.tabs{margin-left:-4px}.tab{padding:11px 10px}.workspace{padding-top:26px}.intro{display:block}.snapshot{text-align:left;margin-top:15px}.toolbar{align-items:stretch;flex-direction:column}.count{align-self:flex-end}.spec-card{grid-template-columns:auto minmax(0,1fr)}.situation{grid-column:2;padding:0}.children{margin-left:18px;padding-left:10px}.drawer{width:100vw;border-left:0}.drawer-body{padding-left:20px;padding-right:20px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+@media print{.mast,.toolbar,.toggle,.close{display:none!important}.workspace{padding:20px}.children[hidden]{display:block}.drawer{position:static;width:auto;height:auto;box-shadow:none}.spec-card{break-inside:avoid}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Pular para as specs</a>
+<div class="shell">
+  <header class="mast">
+    <div class="brandline">
+      <div class="brand"><span class="mark">S</span><strong>superflow</strong><small>QG</small></div>
+      <div class="project"><strong id="project-name">Specs</strong><small>Retrato atual</small></div>
+    </div>
+    <nav class="tabs" aria-label="Situação das specs">
+      <button class="tab" data-view="open" aria-selected="true">Em aberto <span data-count="open">0</span></button>
+      <button class="tab" data-view="ready" aria-selected="false">Pode avançar <span data-count="ready">0</span></button>
+      <button class="tab" data-view="waiting" aria-selected="false">Aguardando <span data-count="waiting">0</span></button>
+      <button class="tab" data-view="blocked" aria-selected="false">Dependências <span data-count="blocked">0</span></button>
+      <button class="tab" data-view="done" aria-selected="false">Concluídas <span data-count="done">0</span></button>
     </nav>
-    <input
-      id="qg-search"
-      type="search"
-      aria-label="Buscar nas specs"
-      placeholder="Buscar por título, ID ou conteúdo…"
-    />
-    <p id="qg-summary" class="notice"></p>
-    <section id="qg-list" aria-label="Specs"></section>
-    <footer>
-      <button id="qg-prev">← Anteriores</button><span id="qg-page-status"></span
-      ><button id="qg-next">Próximas →</button>
-    </footer>
-    <details class="secondary" id="diagnostics">
-      <summary>Sobre esta fotografia</summary>
-      <div id="diagnostic-content"></div>
-    </details>
+  </header>
+  <main class="workspace" id="main">
+    <section class="intro">
+      <div><h1 id="view-title">Em aberto</h1><p id="view-copy">Escolha uma spec. O contexto completo abre ao lado.</p></div>
+      <div class="snapshot" id="snapshot"></div>
+    </section>
+    <div class="toolbar">
+      <label class="search"><span class="skip">Buscar</span><input id="search" type="search" placeholder="Buscar por ID, título ou conteúdo"></label>
+      <span class="count" id="visible-count"></span>
+    </div>
+    <section class="list" id="list" aria-live="polite"></section>
+    <details class="diagnostics" id="diagnostics" hidden><summary>Diagnósticos do corpus</summary><ul id="diagnostic-list"></ul></details>
+    <footer class="footer">Gerado a partir de status.md · somente leitura · sem tasks ou arquivos internos</footer>
   </main>
-  <script type="application/json" id="qg-snapshot">
-    __QG_SNAPSHOT__
-  </script>
-  <script type="application/json" id="qg-links">
-    __QG_LINKS__
-  </script>
-  <script>
-    "use strict";
-    const feed = JSON.parse(document.getElementById("qg-snapshot").textContent),
-      links = JSON.parse(document.getElementById("qg-links").textContent),
-      records = feed.records || [],
-      byId = new Map(records.map((r, i) => [r.id, { ...r, index: i }])),
-      children = new Map();
-    for (const r of byId.values()) {
-      const p =
-        byId.has(r.parent_id) && r.parent_id !== r.id ? r.parent_id : null;
-      if (!children.has(p)) children.set(p, []);
-      children.get(p).push(r);
-    }
-    const el = (tag, text, cls) => {
-        const n = document.createElement(tag);
-        if (text !== undefined) n.textContent = text;
-        if (cls) n.className = cls;
-        return n;
-      },
-      list = document.getElementById("qg-list"),
-      search = document.getElementById("qg-search");
-    let view = "open",
-      page = 0;
-    const expanded = new Set();
-    function inline(n, text, r) {
-      const pattern = /\[([^\]]+)\]\(([^)]+)\)|`([^`]+)`|\*\*([^*]+)\*\*/g;
-      let pos = 0,
-        m;
-      while ((m = pattern.exec(text))) {
-        n.append(document.createTextNode(text.slice(pos, m.index)));
-        if (m[1]) {
-          const target = (links.body_links || [])[r.index]?.[m[2]];
-          if (target) {
-            const a = el("a", m[1]);
-            a.href = target;
-            a.rel = "noopener noreferrer";
-            n.append(a);
-          } else n.append(document.createTextNode(m[1] + " (" + m[2] + ")"));
-        } else n.append(el(m[3] ? "code" : "strong", m[3] || m[4]));
-        pos = pattern.lastIndex;
-      }
-      n.append(document.createTextNode(text.slice(pos)));
-    }
-    function markdown(text, r) {
-      const out = el("div", undefined, "prose"),
-        lines = String(text || "").split("\n");
-      let i = 0;
-      while (i < lines.length) {
-        let s = lines[i];
-        if (!s.trim()) {
-          i++;
-          continue;
-        }
-        if (/^```/.test(s)) {
-          const block = [];
-          i++;
-          while (i < lines.length && !/^```/.test(lines[i]))
-            block.push(lines[i++]);
-          out.append(el("pre", block.join("\n")));
-          i++;
-          continue;
-        }
-        if (
-          i + 1 < lines.length &&
-          s.includes("|") &&
-          /^\s*\|?\s*:?-{3}/.test(lines[i + 1])
-        ) {
-          const wrap = el("div", undefined, "table-wrap"),
-            table = el("table");
-          const row = (s, tag) => {
-            const tr = el("tr");
-            s.trim()
-              .replace(/^\||\|$/g, "")
-              .split("|")
-              .forEach((v) => {
-                const c = el(tag);
-                inline(c, v.trim(), r);
-                tr.append(c);
-              });
-            table.append(tr);
-          };
-          row(s, "th");
-          i += 2;
-          while (i < lines.length && lines[i].includes("|"))
-            row(lines[i++], "td");
-          wrap.append(table);
-          out.append(wrap);
-          continue;
-        }
-        const heading = s.match(/^(#{1,6})\s+(.+)/),
-          bullet = s.match(/^\s*(?:[-*+] |\d+\. )(.+)/);
-        if (heading) {
-          const h = el("h" + heading[1].length);
-          inline(h, heading[2], r);
-          out.append(h);
-          i++;
-          continue;
-        }
-        if (bullet) {
-          const ul = el(/^\s*\d/.test(s) ? "ol" : "ul");
-          while (i < lines.length) {
-            const b = lines[i].match(/^\s*(?:[-*+] |\d+\. )(.+)/);
-            if (!b) break;
-            const li = el("li");
-            inline(li, b[1], r);
-            ul.append(li);
-            i++;
-          }
-          out.append(ul);
-          continue;
-        }
-        const p = el(s.startsWith(">") ? "blockquote" : "p");
-        inline(p, s.replace(/^>\s?/, ""), r);
-        out.append(p);
-        i++;
-      }
-      return out;
-    }
-    const terminal = (r) =>
-      ["done", "cancelled", "skipped"].includes(r.state) ||
-      ["done", "cancelled"].includes(r.phase);
-    const own = (r) =>
-      view === "archived"
-        ? r.archived
-        : view === "done"
-          ? !r.archived && terminal(r)
-          : !r.archived && !terminal(r);
-    function visible(r, seen = new Set()) {
-      if (seen.has(r.id)) return false;
-      seen = new Set(seen).add(r.id);
-      return own(r) || (children.get(r.id) || []).some((c) => visible(c, seen));
-    }
-    function matches(r, seen = new Set()) {
-      if (seen.has(r.id)) return false;
-      seen = new Set(seen).add(r.id);
-      const q = search.value.trim().toLocaleLowerCase();
-      return (
-        !q ||
-        [r.id, r.title, r.body_md, JSON.stringify(r.tasks || [])]
-          .join(" ")
-          .toLocaleLowerCase()
-          .includes(q) ||
-        (children.get(r.id) || []).some((c) => matches(c, seen))
-      );
-    }
-    const labels = {
-      pending: "Pendente",
-      executing: "Em execução",
-      in_progress: "Em execução",
-      blocked: "Aguardando",
-      done: "Concluída",
-      cancelled: "Cancelada",
-      skipped: "Dispensada",
-      plan: "Planejamento",
-      execute: "Execução",
-      qa: "QA",
-      build: "Preparação",
-      prd: "PRD",
-    };
-    function spec(r, seen = new Set()) {
-      if (seen.has(r.id)) return el("p", "Relação circular: " + r.id);
-      seen = new Set(seen).add(r.id);
-      const d = el("details", undefined, "spec");
-      d.id = r.id;
-      const s = el("summary"),
-        title = el("span");
-      title.append(el("span", r.id, "id"), el("span", r.title, "name"));
-      s.append(
-        title,
-        el(
-          "span",
-          (labels[r.state] || labels[r.phase] || r.state || r.phase) +
-            (own(r) ? "" : " · contexto"),
-          "state",
-        ),
-      );
-      d.append(s);
-      let built = false;
-      const populate = () => {
-        if (built) return;
-        built = true;
-        const body = el("div", undefined, "content");
-        body.append(
-          markdown(
-            r.body_md || "Esta spec ainda não tem uma descrição escrita.",
-            r,
-          ),
-        );
-        if ((r.tasks || []).length) {
-          const plan = el("details", undefined, "secondary");
-          plan.append(el("summary", "Plano · " + r.tasks.length + " tarefas"));
-          for (const t of r.tasks)
-            plan.append(
-              el(
-                "p",
-                (t.status === "done" ? "✓ " : "○ ") +
-                  (t.id || "") +
-                  " · " +
-                  (t.behavior || t.title || t.description || t.text || "") +
-                  " — " +
-                  (t.status || ""),
-              ),
-            );
-          body.append(plan);
-        }
-        const evidence = el("details", undefined, "secondary");
-        evidence.append(el("summary", "Referências e andamento"));
-        evidence.append(el("p", "Fase: " + (labels[r.phase] || r.phase)));
-        if (r.waiting_for)
-          evidence.append(
-            el("p", "Aguardando: " + JSON.stringify(r.waiting_for)),
-          );
-        for (const id of r.depends_on || []) {
-          const a = el("a", "Depende de " + id);
-          a.href = "#" + id;
-          evidence.append(a, el("br"));
-        }
-        for (const [i, ref] of (r.evidence || []).entries()) {
-          const href = links.evidence?.[r.index]?.[i];
-          if (href) {
-            const a = el("a", ref);
-            a.href = href;
-            evidence.append(a, el("br"));
-          } else evidence.append(el("p", String(ref)));
-        }
-        body.append(evidence);
-        const nested = (children.get(r.id) || []).filter(
-          (c) => visible(c) && matches(c),
-        );
-        if (nested.length) {
-          const box = el("section", undefined, "children");
-          box.append(el("h3", "Minispecs"));
-          for (const c of nested) box.append(spec(c, seen));
-          body.append(box);
-        }
-        d.append(body);
-      };
-      d.addEventListener("toggle", () => {
-        if (d.open) {
-          expanded.add(r.id);
-          populate();
-        } else expanded.delete(r.id);
-      });
-      if (expanded.has(r.id) || search.value.trim()) {
-        populate();
-        d.open = true;
-      }
-      return d;
-    }
-    function render() {
-      list.replaceChildren();
-      const roots = (children.get(null) || []).filter(
-        (r) => visible(r) && matches(r),
-      );
-      page = Math.min(page, Math.max(0, Math.ceil(roots.length / 50) - 1));
-      for (const r of roots.slice(page * 50, page * 50 + 50))
-        list.append(spec(r));
-      if (!roots.length) list.append(el("p", "Nenhuma spec nesta visão."));
-      document.getElementById("qg-summary").textContent =
-        roots.length + " specs principais · minispecs dentro de cada spec";
-      document.getElementById("qg-page-status").textContent = roots.length
-        ? "Página " + (page + 1) + " de " + Math.ceil(roots.length / 50)
-        : "";
-      document.getElementById("qg-prev").disabled = page === 0;
-      document.getElementById("qg-next").disabled =
-        (page + 1) * 50 >= roots.length;
-      document
-        .querySelectorAll("[data-view]")
-        .forEach((b) =>
-          b.setAttribute("aria-pressed", String(b.dataset.view === view)),
-        );
-    }
-    document.querySelectorAll("[data-view]").forEach(
-      (b) =>
-        (b.onclick = () => {
-          view = b.dataset.view;
-          page = 0;
-          render();
-        }),
-    );
-    search.oninput = () => {
-      page = 0;
-      render();
-    };
-    document.getElementById("qg-prev").onclick = () => {
-      page--;
-      render();
-    };
-    document.getElementById("qg-next").onclick = () => {
-      page++;
-      render();
-    };
-    function locate() {
-      let id;
-      try {
-        id = decodeURIComponent(location.hash.slice(1));
-      } catch {
-        return;
-      }
-      const r = byId.get(id);
-      if (!r) return;
-      search.value = "";
-      view = r.archived ? "archived" : terminal(r) ? "done" : "open";
-      let p = r,
-        seen = new Set();
-      while (p && !seen.has(p.id)) {
-        seen.add(p.id);
-        expanded.add(p.id);
-        if (!byId.has(p.parent_id)) break;
-        p = byId.get(p.parent_id);
-      }
-      const roots = (children.get(null) || []).filter((r) => visible(r));
-      page = Math.max(
-        0,
-        Math.floor(roots.findIndex((x) => x.id === p.id) / 50),
-      );
-      render();
-      document.getElementById(id)?.scrollIntoView?.({ block: "start" });
-    }
-    window.addEventListener("hashchange", locate);
-    document.getElementById("diagnostic-content").textContent = JSON.stringify(
-      { snapshot: feed.snapshot_id, diagnostics: feed.diagnostics },
-      null,
-      2,
-    );
-    render();
-    if (location.hash) locate();
-  </script>
+</div>
+<dialog class="drawer" id="drawer" aria-labelledby="drawer-title">
+  <div class="drawer-head">
+    <div class="drawer-top"><span class="drawer-id" id="drawer-id"></span><button class="close" id="close" aria-label="Fechar">×</button></div>
+    <h2 id="drawer-title"></h2><div class="drawer-state" id="drawer-state"></div>
+  </div>
+  <div class="drawer-body"><div id="drawer-context"></div><article class="narrative" id="drawer-content"></article></div>
+</dialog>
+<script type="application/json" id="qg-snapshot">__QG_SNAPSHOT__</script>
+<script>
+(()=>{"use strict";
+const feed=JSON.parse(document.getElementById("qg-snapshot").textContent),records=Array.isArray(feed.records)?feed.records:[];
+const byId=new Map(records.map(r=>[r.id,r])),children=new Map();records.forEach(r=>{if(r.parent_id){const a=children.get(r.parent_id)||[];a.push(r);children.set(r.parent_id,a)}});
+const roots=records.filter(r=>!r.parent_id||!byId.has(r.parent_id));let view="open",query="";
+const labels={open:["Em aberto","Escolha uma spec. O contexto completo abre ao lado."],ready:["Pode avançar","Pendentes sem espera ou dependência ainda aberta."],waiting:["Aguardando","Pendentes que esperam uma condição concreta."],blocked:["Dependências","Pendentes condicionadas à entrega de outra spec."],done:["Concluídas","Specs que cumpriram o próprio aceite."]};
+function unresolved(r){return (r.depends_on||[]).filter(d=>!byId.has(d.id)||byId.get(d.id).status!=="done")}
+function situation(r){if(r.status==="done")return"done";if(r.waiting_for)return"waiting";if(unresolved(r).length)return"blocked";return"ready"}
+function inView(r){const s=situation(r);return view==="open"?r.status!=="done":s===view}
+function searchable(r){return [r.id,r.title,r.body_md,r.waiting_for,...(r.depends_on||[]).flatMap(d=>[d.id,d.reason])].join(" ").toLocaleLowerCase("pt-BR")}
+function matches(r){const self=inView(r)&&(!query||searchable(r).includes(query));return self||(children.get(r.id)||[]).some(matches)}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function plain(md){return String(md||"").replace(/```[\s\S]*?```/g," ").replace(/[#>*_`\[\]()!-]/g," ").replace(/\s+/g," ").trim()}
+function markdown(md){const safe=esc(md).replace(/```([\s\S]*?)```/g,"<pre><code>$1</code></pre>");return safe.split(/\n{2,}/).map(block=>{const b=block.trim();if(!b)return"";if(/^### /.test(b))return"<h3>"+b.slice(4)+"</h3>";if(/^## /.test(b))return"<h2>"+b.slice(3)+"</h2>";if(/^# /.test(b))return"<h1>"+b.slice(2)+"</h1>";if(b.split("\n").every(x=>/^[-*] /.test(x)))return"<ul>"+b.split("\n").map(x=>"<li>"+x.slice(2)+"</li>").join("")+"</ul>";if(/^&gt; /.test(b))return"<blockquote>"+b.replace(/^&gt; /gm,"")+"</blockquote>";return"<p>"+b.replace(/\n/g,"<br>")+"</p>"}).join("").replace(/`([^`]+)`/g,"<code>$1</code>")}
+function count(){const c={open:0,ready:0,waiting:0,blocked:0,done:0};records.forEach(r=>{const s=situation(r);c[s]++;if(r.status!=="done")c.open++});Object.entries(c).forEach(([k,v])=>document.querySelector(`[data-count="${k}"]`).textContent=v)}
+function card(r,depth=0){const kids=(children.get(r.id)||[]).filter(matches),hasKids=kids.length>0,s=situation(r),excerpt=plain(r.body_md).slice(0,150),stateLabel=s==="ready"?"Pode avançar":s==="waiting"?"Aguardando":s==="blocked"?"Dependência":view==="open"&&hasKids?"Concluída · minispec aberta":"Concluída";const family=document.createElement("article");family.className="family";family.innerHTML=`<div class="spec-card"><button class="toggle ${hasKids?"":"blank"}" aria-label="${hasKids?"Mostrar minispecs":"Sem minispecs"}" aria-expanded="${hasKids&&query?"true":"false"}">›</button><button class="open-spec"><span class="idline"><span class="id">${esc(r.id)}</span>${depth?'<span class="mini-label">minispec</span>':hasKids?'<span class="mini-label">'+kids.length+' minispec'+(kids.length>1?'s':'')+'</span>':''}</span><span class="title">${esc(r.title)}</span>${excerpt?'<span class="excerpt">'+esc(excerpt)+'</span>':''}</button><span class="situation ${s}"><i class="dot"></i>${stateLabel}</span></div>`;
+const toggle=family.querySelector(".toggle");if(hasKids){const box=document.createElement("div");box.className="children";box.hidden=!(query);kids.forEach(k=>box.appendChild(card(k,depth+1)));family.appendChild(box);toggle.onclick=e=>{e.stopPropagation();box.hidden=!box.hidden;toggle.setAttribute("aria-expanded",String(!box.hidden))}}family.querySelector(".open-spec").onclick=()=>openDrawer(r);return family}
+function render(){document.getElementById("view-title").textContent=labels[view][0];document.getElementById("view-copy").textContent=labels[view][1];const list=document.getElementById("list");list.replaceChildren();const shown=roots.filter(matches);shown.forEach(r=>list.appendChild(card(r)));if(!shown.length)list.innerHTML='<div class="empty"><strong>Nenhuma spec nesta visão.</strong><span>Ajuste a busca ou escolha outro recorte.</span></div>';const total=records.filter(r=>inView(r)&&(query?searchable(r).includes(query):true)).length;document.getElementById("visible-count").textContent=total+" spec"+(total===1?"":"s")}
+function openDrawer(r){const s=situation(r);document.getElementById("drawer-id").textContent=r.id;document.getElementById("drawer-title").textContent=r.title;document.getElementById("drawer-state").innerHTML=`<i class="dot ${s}"></i>${s==="ready"?"Pode avançar":s==="waiting"?"Aguardando":s==="blocked"?"Dependência":"Concluída"}`;let context="";if(r.waiting_for)context+=`<div class="notice"><strong>Aguardando</strong><br>${esc(r.waiting_for)}</div>`;const deps=r.depends_on||[];if(deps.length)context+=deps.map(d=>`<div class="dependency"><strong>Depende de ${esc(d.id)}</strong><span>${esc(d.reason)}</span></div>`).join("");document.getElementById("drawer-context").innerHTML=context;document.getElementById("drawer-content").innerHTML=r.body_md.trim()?markdown(r.body_md):'<div class="no-body">Esta spec ainda não possui narrativa no status.</div>';document.getElementById("drawer").showModal();history.replaceState(null,"","#"+encodeURIComponent(r.id))}
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{view=t.dataset.view;document.querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-selected",String(x===t)));render()});document.getElementById("search").oninput=e=>{query=e.target.value.trim().toLocaleLowerCase("pt-BR");render()};document.getElementById("close").onclick=()=>document.getElementById("drawer").close();document.getElementById("drawer").addEventListener("close",()=>history.replaceState(null,"",location.pathname));
+count();document.getElementById("snapshot").textContent=`${records.length} specs · ${feed.source_revision?String(feed.source_revision).slice(0,10):"sem revisão Git"} · ${String(feed.snapshot_id||"").slice(0,10)}`;const ds=Array.isArray(feed.diagnostics)?feed.diagnostics:[];if(ds.length){document.getElementById("diagnostics").hidden=false;document.getElementById("diagnostic-list").innerHTML=ds.map(d=>`<li><strong>${esc(d.code)}</strong> · ${esc(d.path)} · ${esc(d.message)}</li>`).join("")}render();if(location.hash){const id=decodeURIComponent(location.hash.slice(1)),r=byId.get(id);if(r)openDrawer(r)}
+})();
+</script>
+</body>
 </html>

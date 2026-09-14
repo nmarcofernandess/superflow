@@ -3,7 +3,7 @@
 ## Status desta especificação
 
 Este é o contrato técnico atual do plugin. Materiais que descrevem o Superflow
-0.7, seu roteador por budgets, status.json, HANDBOOK, board, campanha, WARLOG
+0.8 ou anteriores, seus campos de fase, status.json, HANDBOOK, board, campanha, WARLOG
 ou skills removidas são históricos e não instruções de operação.
 
 ## Intenção
@@ -32,26 +32,26 @@ Graph, campanhas e WARLOG não pertencem ao escopo deste plugin.
 
 ## Estado e relações
 
-Status.md usa front matter com id, title, phase, state, prd e updated_at.
-Depends_on e absorbed_by são relações explícitas; containment de mãe e
-complementos não bloqueia a conclusão. Arquivo não prova done. Cancelamento não
-satisfaz dependência. A absorção total exige fechamento conferido, não cascata
-automática.
+Status.md usa front matter com `id`, `title`, `status`, `depends_on` opcional e
+`waiting_for` opcional. O corpo Markdown é o retrato completo e pode ser vazio.
+`status` aceita somente `pending` ou `done`; `depends_on` exige `id` e `reason`.
+A hierarquia de mãe e minispecs deriva do path e não bloqueia nem reabre a mãe.
 
-Plan.json contém tasks com comportamento, arquivos, dependências, aceite,
-status e evidência. Não é board, scheduler, log de agentes nem artefato de
-campanha.
+Plan.json contém tasks com exatamente `id`, `task`, `status`, `depends_on` e
+`acceptance`. O status local também aceita somente `pending` ou `done`. Não é
+board, scheduler, log de agentes nem artefato de campanha.
 
 ## Runtime
 
-O runtime Python 3.9 ou superior expõe new, check, feed e qg com raiz explícita
-e modo isolado. New cria somente status.md e PRD.md; check é somente leitura.
-Feed e QG derivam uma fotografia única e não executam proof_cmd ou ship_cmd da
-configuração do consumidor.
+O runtime Python 3.9 ou superior expõe `new`, `check status`, `check ready`,
+`feed` e `qg` com raiz explícita e modo isolado. New cria somente status.md e
+PRD.md; os checks são somente leitura. Feed e QG abrem exclusivamente arquivos
+exatamente chamados status.md e não executam comandos do consumidor.
 
-O parser usa YAML seguro e a validação diferencia erro de status.md de
-documentos candidatos sem cadastro. Migração de corpus é censo explícito; não
-há fallback que converta história em ticket sem decisão.
+O parser usa YAML seguro. `check ready` abre somente PRD.md, status.md, SPEC.md
+e plan.json da spec indicada. A migração incorpora o conteúdo útil e completo
+do handbook no corpo do status, valida a projeção e então apaga a fonte antiga;
+não há fallback.
 
 ## Qualidade
 

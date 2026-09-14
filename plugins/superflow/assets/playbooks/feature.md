@@ -1,23 +1,10 @@
-# Receita: feature
+# Feature
 
-Use para uma entrega autorizada, correção ou mudança de produto.
-
-1. Comece pelo PRD. Uma entrega pequena pode ter PRD conciso, mas promessa,
-   escopo e aceite continuam claros.
-2. Use analyst se uma dúvida material ainda muda o trabalho.
-3. Use build se há uma decisão de arquitetura, contrato, integração, migração,
-   risco ou fronteira que não deve ser escolhida durante a implementação.
-4. Use plan somente se a sequência, dependência ou retomada precisa de tasks.
-5. Ao começar, use status para registrar execute/in_progress e a task em curso
-   quando existir plano. Ao interromper, registre paused ou a espera concreta;
-   não deixe um cadastro sugerir execução que já parou.
-   Execute pelas ferramentas, worktree e regras do projeto. Para comportamento
-   novo ou corrigido, observe uma falha útil antes da correção e a prova verde
-   depois; para trabalho sem teste útil, registre a verificação alternativa.
-6. Use review no desenho quando ele precisa de crítica antes do plano e no diff
-   antes do QA.
-7. Siga fechar para comparar o aceite com as provas, fazer ship quando
-   autorizado pelo projeto e atualizar o estado.
-
-Saída: entrega conferida ou bloqueio real registrado. Fases dispensáveis não
-viram checklist artificial.
+1. Leia PRD e status.
+2. Acione Analyst somente para dúvidas materiais e devolva cada conclusão ao contrato afetado.
+3. Use Build para criar/atualizar SPEC.
+4. Use Plan para criar/atualizar plan.json.
+5. Rode `superflow check ready <spec>` antes da implementação.
+6. Execute tasks pendentes; aceite e QA vivem em cada task.
+7. Revise, use as provas do projeto e faça ship somente quando autorizado.
+8. Atualize o status após mudança relevante ou handoff; marque done apenas com o aceite próprio cumprido.

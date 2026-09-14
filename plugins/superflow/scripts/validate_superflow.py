@@ -36,7 +36,6 @@ CONTRACTS = {
 TEMPLATES = {
     "PRD.md",
     "status.md",
-    "analysis.md",
     "SPEC.md",
     "plan.json",
 }
@@ -104,8 +103,8 @@ def validate_manifest(plugin: Path, errors: List[str]) -> None:
             continue
         if manifest.get("name") != "superflow":
             errors.append("{} deve declarar name superflow".format(path.relative_to(plugin)))
-        if manifest.get("version") != "0.8.0":
-            errors.append("{} deve declarar version 0.8.0".format(path.relative_to(plugin)))
+        if manifest.get("version") != "0.9.0":
+            errors.append("{} deve declarar version 0.9.0".format(path.relative_to(plugin)))
         if manifest.get("skills") != "./skills/":
             errors.append("{} deve apontar skills para ./skills/".format(path.relative_to(plugin)))
 

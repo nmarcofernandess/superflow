@@ -1,7 +1,7 @@
 {
   "name": "@superflow/runtime",
-  "version": "0.8.0",
-  "description": "Portable Python runtime for Superflow spec creation, validation and projections.",
+  "version": "0.9.0",
+  "description": "Portable status-first runtime for Superflow spec creation, validation and QG projection.",
   "private": true,
   "license": "MIT",
   "files": [
@@ -18,7 +18,6 @@
     "plugins/superflow/assets/references/quality-contract.md",
     "plugins/superflow/assets/templates/PRD.md",
     "plugins/superflow/assets/templates/status.md",
-    "plugins/superflow/assets/templates/analysis.md",
     "plugins/superflow/assets/templates/SPEC.md",
     "plugins/superflow/assets/templates/plan.json",
     "plugins/superflow/scripts/superflow.py",

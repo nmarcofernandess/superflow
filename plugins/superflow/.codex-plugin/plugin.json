@@ -1,7 +1,7 @@
 {
   "name": "superflow",
-  "version": "0.8.0",
-  "description": "Organiza PRDs, decisões, planos e status com fases proporcionais.",
+  "version": "0.9.0",
+  "description": "Organiza promessa, retrato vivo e plano sem duplicar a execução do projeto.",
   "author": {
     "name": "Marco Antonio",
     "url": "https://github.com/nmarcofernandess"
@@ -19,8 +19,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Superflow",
-    "shortDescription": "Organize a entrega do PRD ao aceite com fases proporcionais.",
-    "longDescription": "Superflow registra a promessa em um PRD e usa análise, decisão técnica, plano, revisão e status somente quando eles ajudam a concluir a entrega. O runtime Python cria, confere e projeta pacotes sem executar comandos do projeto.",
+    "shortDescription": "Organize a entrega com PRD, status vivo e plano quando necessário.",
+    "longDescription": "Superflow registra a promessa em PRD.md, mantém o retrato completo em status.md e usa análise, decisão técnica, plano e revisão somente quando ajudam. O runtime cria, valida e projeta specs sem executar comandos do projeto.",
     "developerName": "Marco Antonio",
     "category": "Productivity",
     "capabilities": [

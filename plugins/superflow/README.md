@@ -26,8 +26,8 @@ porque há prosa, arquivo arquivado ou mensagem de sucesso.
 - build fecha uma SPEC quando decisões de arquitetura são necessárias.
 - plan escreve plan.json para unidades verificáveis e dependências locais.
 - review confronta desenho ou diff com fontes e efeitos reais.
-- status registra fase, andamento, espera, evidência e relações sem inferir
-  sucesso.
+- status mantém o retrato completo, a espera e as relações entre specs sem
+  inferir sucesso.
 
 ## Receitas
 
@@ -46,19 +46,19 @@ playbooks.
 
 | Recurso | Consulta |
 |---|---|
-| [state contract](assets/references/state-contract.md) | Ao editar status.md, relações, tasks ou evidência. |
+| [state contract](assets/references/state-contract.md) | Ao editar status.md, relações ou plan.json. |
 | [commands contract](assets/references/commands-contract.md) | Ao usar new, check, feed ou qg. |
 | [quality contract](assets/references/quality-contract.md) | Ao planejar, revisar, testar ou fechar comportamento. |
 | [PRD](assets/templates/PRD.md) | Ao criar ou amadurecer PRD. |
 | [status](assets/templates/status.md) | Como exemplo de cadastro manual. New emite status programaticamente. |
-| [analysis](assets/templates/analysis.md) | Quando a investigação precisa persistir. |
 | [SPEC](assets/templates/SPEC.md) | Quando arquitetura precisa ficar explícita. |
 | [plan](assets/templates/plan.json) | Quando a sequência requer tasks. |
 
 ## Uso da CLI
 
     python3 -I <plugin>/scripts/superflow.py --root <repo> new <slug> --title <titulo>
-    python3 -I <plugin>/scripts/superflow.py --root <repo> check
+    python3 -I <plugin>/scripts/superflow.py --root <repo> check status
+    python3 -I <plugin>/scripts/superflow.py --root <repo> check ready <spec>
     python3 -I <plugin>/scripts/superflow.py --root <repo> feed --output <feed.json>
     python3 -I <plugin>/scripts/superflow.py --root <repo> qg --output <qg.html>
 
@@ -67,11 +67,9 @@ estão em assets/references/commands-contract.md.
 
 ## Migração
 
-Documentos anteriores sem status.md entram como diagnóstico
-UNREGISTERED_DOCUMENTS; eles não viram tickets automaticamente. O censo de
-migração do consumidor decide o destino de cada item. Status.md inválido é
-erro; evidência local ausente também é erro. Referências HTTPS são preservadas,
-mas o check estrutural não consulta a rede.
+O QG lê somente arquivos exatamente chamados `status.md`. A migração do
+consumidor incorpora ao corpo do status a narrativa útil e completa do
+HANDBOOK, valida o resultado e só então apaga o HANDBOOK. Não existe fallback.
 
-Status.json, HANDBOOK, logs de implementação/revisão, WARLOG, board, sprint e
-campanha pertencem ao contrato aposentado. Não os crie em novos pacotes.
+Status.json, HANDBOOK e logs paralelos pertencem ao contrato aposentado. Graph,
+campanha e WARLOG permanecem fora deste corte e constam no roadmap.
