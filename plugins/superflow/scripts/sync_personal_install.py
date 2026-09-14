@@ -141,6 +141,8 @@ LEGACY_MANAGED_PATHS = (
     Path("assets/references/technical-blueprint-protocol.md"),
     Path("assets/references/warlog-contract.md"),
     Path("assets/templates/ISSUE_PRD.md"),
+    Path("assets/templates/analysis.md"),
+    Path("assets/templates/technical_blueprint.md"),
     Path("assets/templates/WARLOG.md"),
     Path("assets/templates/implementation_log.json"),
     Path("assets/templates/implementation_plan.json"),

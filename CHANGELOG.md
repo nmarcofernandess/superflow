@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.1 — 2026-09-14
+
+- Corrige o upgrade de instalações antigas removendo os dois templates abolidos
+  `analysis.md` e `technical_blueprint.md` antes de validar o staging.
+
 ## 0.9.0 — 2026-09-13
 
 ### Breaking changes
