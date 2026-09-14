@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.3 — 2026-09-14
+
+- Impede o shell e as abas do QG de ampliarem a página em viewports estreitos.
+
 ## 0.9.2 — 2026-09-14
 
 - Mantém as minispecs visíveis no acordeão quando a busca encontra a spec principal.
