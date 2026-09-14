@@ -68,12 +68,12 @@ separada. Uma spec concluída pode aparecer como contexto de filhos abertos.
 Instale uma release identificada por tag e confira a versão declarada nos
 manifestos antes de usar:
 
-    codex plugin marketplace add nmarcofernandess/superflow --ref v0.9.1
+    codex plugin marketplace add nmarcofernandess/superflow --ref v0.9.2
     codex plugin add superflow@superflow
 
 Em Claude Code:
 
-    claude plugin marketplace add nmarcofernandess/superflow@v0.9.1
+    claude plugin marketplace add nmarcofernandess/superflow@v0.9.2
     claude plugin install superflow@superflow
 
 Para atualizar um marketplace já cadastrado, use `codex plugin marketplace upgrade superflow` seguido de `codex plugin add superflow@superflow`, ou `claude plugin marketplace update superflow` seguido de `claude plugin update superflow@superflow`. Se o marketplace estiver preso a uma tag antiga, altere a referência na configuração do host antes de atualizar.

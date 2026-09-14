@@ -103,8 +103,8 @@ def validate_manifest(plugin: Path, errors: List[str]) -> None:
             continue
         if manifest.get("name") != "superflow":
             errors.append("{} deve declarar name superflow".format(path.relative_to(plugin)))
-        if manifest.get("version") != "0.9.1":
-            errors.append("{} deve declarar version 0.9.1".format(path.relative_to(plugin)))
+        if manifest.get("version") != "0.9.2":
+            errors.append("{} deve declarar version 0.9.2".format(path.relative_to(plugin)))
         if manifest.get("skills") != "./skills/":
             errors.append("{} deve apontar skills para ./skills/".format(path.relative_to(plugin)))
 
