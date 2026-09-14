@@ -1,6 +1,6 @@
 {
   "name": "superflow",
-  "description": "Portable Agent Skills marketplace: Superflow production workflow (phase budget, faceted Analyst/Build, TDD, package validator Ready gates).",
+  "description": "Plugin portátil para registrar promessa, retrato vivo e plano proporcional.",
   "owner": {
     "name": "Marco Antonio",
     "url": "https://github.com/nmarcofernandess"
@@ -9,8 +9,8 @@
     {
       "name": "superflow",
       "source": "./plugins/superflow",
-      "description": "Routes work through the smallest honest phase set with faceted Analyst/Build, Ready gates, TDD, and semantic reconstruction before human-facing prose.",
-      "version": "0.7.0",
+      "description": "Organiza promessa, retrato vivo e plano sem duplicar a execução do projeto.",
+      "version": "0.9.0",
       "author": {
         "name": "Marco Antonio",
         "url": "https://github.com/nmarcofernandess"
@@ -20,16 +20,11 @@
       "category": "productivity",
       "keywords": [
         "agent-skills",
-        "workflow",
         "prd",
-        "phase-budget",
-        "feature-mindset",
-        "tdd",
-        "reuse-guard",
-        "semantic-reconstruction",
-        "causal-explanation",
-        "warlog",
-        "qa"
+        "analysis",
+        "planning",
+        "status",
+        "quality"
       ]
     }
   ]

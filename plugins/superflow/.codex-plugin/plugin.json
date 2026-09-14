@@ -1,42 +1,40 @@
 {
   "name": "superflow",
-  "version": "0.7.0",
-  "description": "Production phase-budget workflow with faceted Analyst/Build mindset, Reuse Guard, package validator Ready gates, TDD contract on code tasks, and semantic explanation before copyediting.",
+  "version": "0.9.0",
+  "description": "Organiza promessa, retrato vivo e plano sem duplicar a execução do projeto.",
   "author": {
-    "name": "Marco Antonio"
+    "name": "Marco Antonio",
+    "url": "https://github.com/nmarcofernandess"
   },
+  "repository": "https://github.com/nmarcofernandess/superflow",
+  "license": "MIT",
+  "keywords": [
+    "agent-skills",
+    "prd",
+    "analysis",
+    "planning",
+    "status",
+    "quality"
+  ],
   "skills": "./skills/",
   "interface": {
     "displayName": "Superflow",
-    "shortDescription": "Route ideas into issue, PRD, plan, or execution with honest Ready gates.",
-    "longDescription": "Superflow is a portable Agent Skills plugin that routes raw ideas, GitHub issues, mature PRDs, analyst notes, technical specs, implementation plans, WARLOGs, execution, and QA through the smallest honest phase set. Analyst and Build use a faceted truth contract with a package validator as the Ready boundary. Explain Clearly reconstructs source meaning and causal chains before PRD, report, or HTML copyediting. Plan/Execute/QA enforce TDD I1–I3 on code tasks. Install from the marketplace Git root; do not copy the plugin into product repos.",
+    "shortDescription": "Organize a entrega com PRD, status vivo e plano quando necessário.",
+    "longDescription": "Superflow registra a promessa em PRD.md, mantém o retrato completo em status.md e usa análise, decisão técnica, plano e revisão somente quando ajudam. O runtime cria, valida e projeta specs sem executar comandos do projeto.",
     "developerName": "Marco Antonio",
     "category": "Productivity",
     "capabilities": [
-      "phase-budget-routing",
-      "github-inbox",
-      "prd-generation",
-      "user-and-technical-stories",
-      "analyst-workflow",
-      "feature-mindset",
-      "reuse-guard",
-      "package-validator-ready-gate",
-      "technical-blueprint",
-      "implementation-plan-json",
-      "tdd-contract",
-      "semantic-reconstruction",
-      "causal-explanation",
-      "status-gps",
-      "warlog-mermaid",
-      "issue-promotion",
-      "mermaid-contracts",
-      "execution-handoff"
+      "prd-first-capture",
+      "conditional-analysis",
+      "technical-decisions",
+      "implementation-planning",
+      "status-validation",
+      "offline-quality-gate"
     ],
     "defaultPrompt": [
-      "Use Superflow to route this request.",
-      "Audit this request with Superflow gaps.",
-      "Promote this issue into a Superflow PRD package.",
-      "Validate this Superflow package before declaring ready."
+      "Use Superflow para registrar este pedido em um PRD.",
+      "Analise o terreno e atualize este PRD quando necessário.",
+      "Crie um plano verificável para esta entrega."
     ]
   }
 }

@@ -1,83 +1,22 @@
 ---
 name: plan
-description: "Write an implementation plan from a Superflow PRD and optional technical blueprint. Use when route is prd_plan_execute or build_plan_execute, when sequencing matters, or when execution should be split into concrete verifiable tasks."
+description: Decompõe uma execução aceita em tasks verificáveis no plan.json, com estado binário e aceite local.
 ---
 
 # Plan
 
-Plan converts the source of truth into ordered executable work. It should be
-smaller than the PRD and more executable than the blueprint. Build decides the
-architecture; Plan creates the task catalog.
+Crie `plan.json` antes da implementação de uma ideia aceita.
 
-## Procedure
+```json
+{"tasks":[{"id":"T01","task":"Resultado operacional","status":"pending","depends_on":[],"acceptance":["Comportamento verificável"]}]}
+```
 
-1. Read `../../assets/references/execution-contract.md`.
-2. Read `../../assets/references/tdd-contract.md` (I1 — plan pre-compiles proof).
-3. Read `../../assets/references/status-schema.md`.
-4. Read local `PRD.md` first. Then read `SPEC.md` (or legacy
-   `technical_blueprint.md`), `analysis.md` / `ANALYSIS-*.md`, or repo-native
-   equivalents when present.
-5. Read `../../assets/templates/implementation_plan.json` before writing a
-   local plan.
-6. Write `implementation_plan.json` as the executable task source. Optionally
-   write `implementation_plan.md` only as a human-readable summary.
-7. Update `status.json`: `phases.plan = "complete"`,
-   `artifacts.plan = "implementation_plan.json"`, and
-   `task_source.path = "implementation_plan.json"`.
-8. Create the human-facing task board: copy
-   `../../assets/task-board/board.html` into the package and write
-   `board-data.js` from the plan tasks (schema in
-   `../../assets/task-board/board-data.example.js`). The board is a projection
-   of the plan for the human; it never replaces `implementation_plan.json`.
-   Skip it only for trivial direct execution with one or two obvious steps.
+Cada task contém exatamente `id`, `task`, `status`, `depends_on` e `acceptance`.
 
-## Required Plan
+- `status`: somente `pending | done`.
+- `depends_on`: IDs de tasks do mesmo plano.
+- `acceptance`: inclui a QA necessária para concluir a unidade.
+- Não use `evidence`, `in_progress`, `skipped`, heartbeat, diário ou scheduler.
+- Marque `done` somente depois de conferir o aceite e as predecessoras.
 
-- Preconditions.
-- Ordered tasks.
-- File targets.
-- Change per task.
-- **TDD pre-compile per code task (I1):** `behavior`, `tdd.red.command`,
-  `tdd.red.expected_failure`, `tdd.green.command`. Prefer real test file and
-  test name when known.
-- Validation per task (`verification` may mirror `tdd.green`).
-- Done criteria mapped back to PRD acceptance criteria (`acceptance_criteria`
-  on each task).
-- Owner classification per task: `main_agent`, `explorer`, `worker`, or
-  `reviewer`. A `reviewer` task runs the `review` skill and writes
-  `review_log.json` — the role is a phase now, not a label
-  (`../../assets/references/review-contract.md`).
-- `status: "pending"` for every task at plan creation. Execution progress goes
-  to `implementation_log.json`, not into the plan.
-
-## TDD rules (summary)
-
-- Code tasks: `tdd.required: true` by default. Iron law is enforced at Execute.
-- Docs/chore-only tasks: `tdd.required: false` with non-empty `skip_reason`.
-- Forbidden: "write tests later", empty RED for production code, TBD
-  verification.
-- Full rules: `../../assets/references/tdd-contract.md`.
-
-## Task Ownership
-
-If implementer agents are used, each one owns one complete plan task or an
-explicitly re-planned complete subtask. Do not split one written task into
-hidden technical slices across workers. Valid reports are `DONE`,
-`DONE_WITH_CONCERNS`, `BLOCKED`, or `NEEDS_CONTEXT`.
-
-## Ready Gate
-
-Plan is not complete if:
-
-- a PRD acceptance criterion has no mapped task or verification;
-- a task has no file target, creation target, or explicit discovery target;
-- a `tdd.required` task is missing RED command, expected failure, or GREEN
-  command;
-- verification is vague or non-runnable when a runnable check exists;
-- architecture choices are still unresolved and should return to Build;
-- task boundaries would cause overlapping write ownership.
-
-## Mermaid
-
-Use Mermaid for dependency order or execution flow when text would hide
-sequencing. Follow `../../assets/references/mermaid-contract.md`.
+Mudou a execução: ajuste o plano. Mudou produto ou arquitetura: devolva a alteração ao PRD ou à SPEC antes de prosseguir.

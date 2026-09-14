@@ -1,0 +1,27 @@
+{
+  "schema_version": "superflow.feed.v2",
+  "generated_at": "2026-09-13T05:03:46.952896+00:00",
+  "snapshot_id": "e30ea1a3fc94ec03eddf7103fb3323ea7fef60cecb260885806133509f5fc566",
+  "source_revision": null,
+  "records": [
+    {
+      "id": "014-importacao",
+      "title": "Importar despesas",
+      "phase": "inbox",
+      "state": "pending",
+      "prd": "gathering",
+      "updated_at": "2026-09-13T12:00:00Z",
+      "path": "specs/014-importacao",
+      "body_md": "",
+      "depends_on": [],
+      "evidence": [],
+      "absorbed_by": null,
+      "waiting_for": null,
+      "archived": false,
+      "tasks": [],
+      "parent_id": null,
+      "blockers": []
+    }
+  ],
+  "diagnostics": []
+}

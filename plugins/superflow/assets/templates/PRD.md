@@ -1,101 +1,18 @@
-# PRD: {title}
+# {{title}}
 
-## TL;DR
+## Problema
 
-<!--
-Write this section last, after rereading the full PRD. Use explain-clearly in
-TL;DR mode to reconstruct the subject, not merely simplify the draft. Make it
-stand alone: familiar situation -> concrete mechanism -> mismatch -> observable
-consequence -> target -> boundary. Close "why?" and "isn't that desired?"
-objections. An ASCII sketch or Mermaid diagram may remove inference work.
--->
-{tldr}
+O que precisa mudar e para quem?
 
-## State
+## Promessa
 
-- Source: {source}
-- Confidence: {confidence}
-- Route: {route}
-- Phase budget: {phase_budget}
-- Execution strategy: {execution_strategy}
-- Created: {created_at}
+Qual resultado completo será entregue?
 
-## Problem
+## Escopo
 
-{problem}
+- Inclui:
+- Não inclui:
 
-## Goal
+## Critérios de aceite
 
-{goal}
-
-## Users / Actors
-
-- {actor}
-
-## Story de Usuario
-
-{user_story}
-
-## Story Tecnica
-
-{technical_story}
-
-## Scope
-
-### In Scope
-
-- {in_scope}
-
-### Out of Scope
-
-- {out_of_scope}
-
-## Expected Behavior
-
-{expected_behavior}
-
-## Current Behavior / Bug
-
-{current_behavior}
-
-## Desired Behavior
-
-{desired_behavior}
-
-## System Pattern / Contract
-
-{system_pattern}
-
-## Acceptance Criteria
-
-- [ ] {acceptance_criteria}
-
-## Definition of Complete
-
-- [ ] {definition_of_complete}
-- [ ] `status.json` reflects the current phase and final verdict.
-- [ ] Human progress is recorded in `progress.md`.
-
-## Technical Context
-
-{technical_context}
-
-## Data / Contracts
-
-{data_contracts}
-
-## UX / States
-
-{ux_states}
-
-## Risks
-
-- {risks}
-
-## Open Questions
-
-- {open_questions}
-
-## Next Phase
-
-{next_phase}
+1. Comportamento observável que prova a promessa.

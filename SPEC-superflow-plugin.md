@@ -1,172 +1,69 @@
-# SPEC: superflow plugin
+# SPEC: plugin Superflow enxuto
 
-> Source repository: `nmarcofernandess/superflow`
-> Installed plugin name: `superflow`
-> Status: marketplace repository for the existing Superflow plugin
-> Central decision: publish Superflow as an independent marketplace repo, not as
-> a vendored plugin inside product repositories.
+## Status desta especificação
 
----
+Este é o contrato técnico atual do plugin. Materiais que descrevem o Superflow
+0.8 ou anteriores, seus campos de fase, status.json, HANDBOOK, board, campanha, WARLOG
+ou skills removidas são históricos e não instruções de operação.
 
-## 1. Intent
+## Intenção
 
-Superflow exists to keep agentic workflow proportional. It classifies maturity,
-risk, and user intent before choosing the phase set. The point is not to force a
-ritual. The point is to avoid both extremes:
+Superflow mantém um fluxo proporcional e uma fonte factual de trabalho. PRD
+descreve a promessa; status.md descreve o estado; plan.json existe somente
+quando a ordem das unidades precisa persistir. Feed e QG projetam essas fontes
+sem se tornar outra fonte de verdade.
 
-```text
-raw idea -> overbuilt analyst/build/plan chain
-raw idea -> direct code with no source of truth
-```
+## Superfícies públicas
 
-The correct default is:
+O pacote exporta exatamente sete skills:
 
-```text
-request -> classify -> route -> durable artifact -> optional build/plan -> execute or stop honestly
-```
+    superflow, prd, analyst, build, plan, review, status
 
-## 2. Decisions
+Ele oferece cinco receitas:
 
-### 2.1 Marketplace root, plugin package inside `plugins/superflow`
+    capture, feature, retomar, fechar, reconciliar
 
-The repository root is a marketplace. The plugin package lives in
-`plugins/superflow`. This mirrors the `code-flow` repository shape and keeps
-consumer repositories clean.
+E três contratos:
 
-### 2.2 GitHub can be inbox, local specs can be source of truth
+    state-contract, commands-contract, quality-contract
 
-Superflow supports both:
+Execute e QA são passos operacionais nas receitas. Rota é um plugin separado.
+Graph, campanhas e WARLOG não pertencem ao escopo deste plugin.
 
-- issue-ready PRD bodies for lightweight capture;
-- local `specs/NNN-slug/` packages when work is mature enough to execute.
+## Estado e relações
 
-### 2.3 Audit is not classification
+Status.md usa front matter com `id`, `title`, `status`, `depends_on` opcional e
+`waiting_for` opcional. O corpo Markdown é o retrato completo e pode ser vazio.
+`status` aceita somente `pending` ou `done`; `depends_on` exige `id` e `reason`.
+A hierarquia de mãe e minispecs deriva do path e não bloqueia nem reabre a mãe.
 
-`superflow_taskgen.py --classify-only` only routes. Audit/readiness/gap
-questions use `superflow_audit.py`, because `gap_count` must come from a gap
-model, not from route classification.
+Plan.json contém tasks com exatamente `id`, `task`, `status`, `depends_on` e
+`acceptance`. O status local também aceita somente `pending` ou `done`. Não é
+board, scheduler, log de agentes nem artefato de campanha.
 
-### 2.4 Mermaid only
+## Runtime
 
-All visual contracts use Mermaid fenced blocks. Legacy diagram tokens are
-forbidden by the validator.
+O runtime Python 3.9 ou superior expõe `new`, `check status`, `check ready`,
+`feed` e `qg` com raiz explícita e modo isolado. New cria somente status.md e
+PRD.md; os checks são somente leitura. Feed e QG abrem exclusivamente arquivos
+exatamente chamados status.md e não executam comandos do consumidor.
 
-### 2.5 Analyst is a heavyweight phase
+O parser usa YAML seguro. `check ready` abre somente PRD.md, status.md, SPEC.md
+e plan.json da spec indicada. A migração incorpora o conteúdo útil e completo
+do handbook no corpo do status, valida a projeção e então apaga a fonte antiga;
+não há fallback.
 
-Analyst is not a compact PRD checklist. For existing-system work, it must merge
-native grill, code recon, implementation mapping, entities/state modeling,
-rules/invariants, Mermaid runtime modeling, and blueprint handoff. If evidence
-or map is missing, the verdict cannot be `ready`.
+## Qualidade
 
-### 2.6 PRD carries user and technical stories
+Analyst e build preservam recon, facetas relevantes e reuso antes de criação,
+sem seis relatórios compulsórios. Alteração de comportamento pede falha
+observada e prova verde útil; documentos e mudanças sem teste útil usam
+verificação alternativa concreta. Review resolve achados com evidência e QA
+confronta os aceites com provas do projeto.
 
-Every PRD, whether in GitHub or local `specs/NNN-slug/PRD.md`, uses the same
-shape. It must include `Story de Usuario`, `Story Tecnica`, current vs desired
-behavior, system pattern/contract, acceptance criteria, and definition of
-complete. Low-confidence ideas stay shallow, but they do not become a separate
-artifact species.
+## Distribuição
 
-### 2.7 Build and Plan are distinct
-
-Build writes `technical_blueprint.md`: architecture, contracts, boundaries,
-risks, validation strategy, rollback, and dependency sequence. Plan writes
-`implementation_plan.json`: executable subtasks, file targets, TDD RED/GREEN
-pre-compile (`tdd-contract.md`), verification, acceptance mapping, owner
-classification, and `pending` task state. `status.json` tracks phase/current
-state and artifact pointers; it does not store detailed tasks.
-
-## 3. Lifecycle
-
-```mermaid
-flowchart TD
-  A["Raw request"] --> B["Classify maturity and risk"]
-  B --> C{"Route"}
-  C --> D["Inbox issue body"]
-  C --> E["Local PRD package"]
-  C --> F["Analyst if product ambiguity"]
-  E --> R{"Risk"}
-  F --> R
-  R -->|"high"| BLD["Build blueprint"]
-  R -->|"medium"| G["Plan JSON"]
-  R -->|"low"| H["Execute"]
-  BLD --> G
-  G --> H
-  H --> I["QA and proof"]
-```
-
-## 4. Repository Shape
-
-```text
-superflow/
-├── .agents/plugins/marketplace.json
-├── .claude-plugin/marketplace.json
-├── plugins/superflow/
-│   ├── .codex-plugin/plugin.json
-│   ├── .claude-plugin/plugin.json
-│   ├── skills/
-│   ├── assets/
-│   └── scripts/
-├── scripts/validate-all.sh
-├── README.md
-├── SPEC-superflow-plugin.md
-└── WARLOG.md
-```
-
-## 5. Exported Skills
-
-| Skill | Responsibility |
-|---|---|
-| `superflow` | Router and phase-budget orchestrator |
-| `capture` | GitHub-ready PRD issue capture |
-| `taskgen` | Local PRD package creation and issue promotion |
-| `analyst` | Product/domain ambiguity before PRD hardening |
-| `build` | Technical blueprint/spec for risky work |
-| `plan` | Executable `implementation_plan.json` from PRD or blueprint (TDD I1) |
-| `warlog` | Mermaid-first long-running work log |
-| `execute` | Implementation under iron-law TDD (I2) with log evidence |
-| `qa` | PRD acceptance matrix + red/green proof (I3) |
-| `audit` | Read-only route/readiness/gap analysis |
-| `explain-clearly` | Standalone semantic reconstruction and causal explanation before copyediting |
-| `writing-clearly-and-concisely` | Sentence-level clarity after meaning is settled |
-| `grill-me` | Standalone grill (not a phase) |
-| `grill-with-docs` | Standalone grill + CONTEXT/ADR (not a phase) |
-| `gauntlet-loop` | Standalone quality-bar loop prompt (not a phase) |
-
-## 6. Validation
-
-Required validation before publishing:
-
-```bash
-scripts/validate-all.sh
-```
-
-The script must run the Superflow validators and smoke tests from the package:
-
-- `validate_superflow.py`;
-- `test_superflow_routes.py`;
-- `test_tdd_contract.py`;
-- `forward_test_superflow.py`.
-
-The validator also protects the Analyst contract: it fails if
-`skills/analyst/SKILL.md` loses the required recon/blueprint markers or if
-`assets/templates/analysis.md` loses the heavy analysis sections.
-
-It also protects the PRD/status/plan contract: generated packages must include
-story sections, definition of complete, `decision/current_phase/task_source` in
-`status.json`, and the `implementation_plan.json` template.
-
-Optional runtime validation:
-
-- `claude plugin validate` when Claude Code is installed;
-- `codex plugin marketplace list` to verify plugin inventory health.
-
-## 7. Done
-
-This repository is ready when:
-
-- marketplace manifests exist for Codex and Claude Code;
-- the plugin package includes Codex and Claude manifests;
-- Superflow validators pass;
-- route and forward tests pass;
-- the repository is public under `nmarcofernandess/superflow`;
-- the remote default branch is `main`.
+Os manifests Codex e Claude descobrem o diretório de skills do pacote. O gate
+de distribuição deve conferir o conjunto nominal das sete pastas, links
+internos, assets necessários e instalação limpa. O canal Node opcional
+distribui somente runtime, assets, vendor e licenças; a CLI continua Python.

@@ -1,165 +1,75 @@
-# Superflow Plugin
+# Superflow plugin
 
-Superflow is a Claude Code / Codex plugin that routes work by maturity, risk,
-and intent instead of forcing every request through analyst -> build -> plan ->
-execute.
+Este pacote oferece uma fonte pequena de trabalho vivo: PRD para promessa,
+status.md para cadastro factual e plan.json quando a sequência precisa ser
+controlada. O projeto continua dono de suas ferramentas, testes, CI, ship e
+evidências.
 
-The spine is:
+## Fluxo
 
-```text
-raw request -> classify -> route -> durable artifact -> optional build/plan -> execute or stop honestly
-```
+    pedido -> PRD
+                 -> analyst para dúvida material
+                 -> build para arquitetura necessária
+                 -> plan para sequência necessária
+                 -> execução -> review -> QA ou proof -> done
 
-This README is the runtime guide. For the marketplace repository shape,
-publication history, and design rationale, read `README.md`,
-`SPEC-superflow-plugin.md`, and `WARLOG.md` in the repository root.
+Nenhuma fase é obrigatória por formato. Uma correção simples pode usar PRD
+conciso, execução direta e uma verificação útil. Uma entrega não vira done só
+porque há prosa, arquivo arquivado ou mensagem de sucesso.
 
-## Shape
+## Skills
 
-```txt
-superflow/
-├── .codex-plugin/plugin.json
-├── .claude-plugin/plugin.json
-├── skills/
-│   ├── superflow/SKILL.md
-│   ├── capture/SKILL.md
-│   ├── taskgen/SKILL.md
-│   ├── analyst/SKILL.md
-│   ├── build/SKILL.md
-│   ├── plan/SKILL.md
-│   ├── warlog/SKILL.md
-│   ├── execute/SKILL.md
-│   ├── qa/SKILL.md
-│   ├── audit/SKILL.md
-│   ├── explain-clearly/SKILL.md
-│   ├── writing-clearly-and-concisely/
-│   │   ├── SKILL.md
-│   │   └── elements-of-style.md
-│   ├── grill-me/SKILL.md
-│   ├── grill-with-docs/
-│   │   ├── SKILL.md
-│   │   ├── CONTEXT-FORMAT.md
-│   │   └── ADR-FORMAT.md
-│   ├── gauntlet-loop/SKILL.md
-│   └── qg/SKILL.md
-├── assets/references/
-├── assets/templates/
-├── assets/examples/
-└── scripts/
-```
+- superflow escolhe a receita adequada.
+- prd escreve a promessa, escopo e aceite verificável.
+- analyst faz recon, examina facetas relevantes e decide reuso, adaptação ou
+  criação com evidência.
+- build fecha uma SPEC quando decisões de arquitetura são necessárias.
+- plan escreve plan.json para unidades verificáveis e dependências locais.
+- review confronta desenho ou diff com fontes e efeitos reais.
+- status mantém o retrato completo, a espera e as relações entre specs sem
+  inferir sucesso.
 
-## Exported skills
+## Receitas
 
-- `superflow:superflow` routes and orchestrates phases.
-- `superflow:capture` captures ideas into GitHub-ready PRD issues.
-- `superflow:taskgen` creates or promotes local PRD packages.
-- `superflow:analyst` handles product/domain/system ambiguity with native grill,
-  faceted recon (Produto/Backend/Frontend/Copy), **Reuse Guard** (anti-fork
-  via `.context` or grep — crystallize-guard slice), Síntese, Recode Log,
-  strings-safadas, and blueprint handoff — see
-  `assets/references/feature-mindset-contract.md` +
-  `assets/references/reuse-guard-protocol.md`.
-- `superflow:build` writes the technical blueprint/spec as a **synthesis** of
-  those facets (not a freeze-waterfall of headings).
-- `superflow:plan` writes executable `implementation_plan.json` task catalogs
-  with TDD RED/GREEN pre-compile (`tdd-contract.md` I1).
-- `superflow:warlog` maintains Mermaid-first WARLOGs.
-- `superflow:execute` implements from durable artifacts under iron-law TDD (I2).
-- `superflow:qa` closes acceptance matrix + RED/GREEN evidence (I3).
-- `superflow:audit` performs read-only route/readiness/gap checks.
-- `superflow:explain-clearly` reconstructs source meaning, object models, and
-  causal chains before rewriting PRDs, specs, reports, or HTML. Standalone —
-  not a phase.
-- `superflow:writing-clearly-and-concisely` keeps human-facing prose direct,
-  specific, concise, and natural.
-- `superflow:grill-me` interviews one question at a time. Standalone — not a
-  phase.
-- `superflow:grill-with-docs` grills against `CONTEXT.md` / ADRs. Standalone.
-- `superflow:gauntlet-loop` writes a paste-ready quality-bar loop prompt.
-  Standalone.
-- `superflow:qg` generates the QG snapshot from `.superflow/status.json`
-  (Mapa: Tasks + Graph; Sprint only when the artifact is an operation). Write
-  the feed with `scripts/superflow_status.py` first. Do not edit the HTML to
-  update state.
+| Receita | Use quando | Saída |
+|---|---|---|
+| [capture](assets/playbooks/capture.md) | uma ideia ou pedido ainda está em gathering | pacote local e próxima preparação explícita |
+| [feature](assets/playbooks/feature.md) | há entrega autorizada | entrega verificada ou bloqueio real |
+| [retomar](assets/playbooks/retomar.md) | é preciso continuar trabalho existente | próxima ação baseada em fontes atuais |
+| [fechar](assets/playbooks/fechar.md) | a entrega pede aceite | done com prova, ou reabertura honesta |
+| [reconciliar](assets/playbooks/reconciliar.md) | cadastro e realidade divergem | fonte e projeção coerentes |
 
-## Validate
+Este README é o índice único das receitas; não há README paralelo na pasta de
+playbooks.
 
-```bash
-python3 scripts/validate_superflow.py .
-python3 scripts/test_superflow_routes.py
-python3 scripts/test_tdd_contract.py
-python3 scripts/test_feature_mindset.py
-python3 scripts/test_qg.py
-python3 scripts/forward_test_superflow.py
-```
+## Referências e templates
 
-Use `--mermaid` on `validate_superflow.py` when you need render-level Mermaid
-proof.
+| Recurso | Consulta |
+|---|---|
+| [state contract](assets/references/state-contract.md) | Ao editar status.md, relações ou plan.json. |
+| [commands contract](assets/references/commands-contract.md) | Ao usar new, check, feed ou qg. |
+| [quality contract](assets/references/quality-contract.md) | Ao planejar, revisar, testar ou fechar comportamento. |
+| [PRD](assets/templates/PRD.md) | Ao criar ou amadurecer PRD. |
+| [status](assets/templates/status.md) | Como exemplo de cadastro manual. New emite status programaticamente. |
+| [SPEC](assets/templates/SPEC.md) | Quando arquitetura precisa ficar explícita. |
+| [plan](assets/templates/plan.json) | Quando a sequência requer tasks. |
 
-The validator intentionally fails if the Analyst contract is reduced to a thin
-section checklist. Existing-code analysis must carry `Evidence Matrix`,
-`Implementation Map`, `Entities And State`, `Blueprint Handoff`, and grill
-verdicts.
+## Uso da CLI
 
-The validator also fails generated packages whose PRD lacks the first-section
-`TL;DR`, `Story de Usuario`, `Story Tecnica`, current/desired behavior, system
-contract, or definition of complete. A `gathering` scaffold may keep the
-explicit TL;DR placeholder; a `ready` PRD must explain the problem as a
-standalone causal chain, not merely replace jargon with vague words.
-`explain-clearly` reconstructs the semantic model, uses a concrete example when
-needed, and runs reasonable-objection and closed-book paraphrase gates. ASCII
-and Mermaid are both allowed when they remove inference work. The script
-validates structure and placeholders; semantic readiness remains a skill/human
-decision.
-`status.json` is the phase GPS; detailed tasks live in
-`implementation_plan.json` (with `tdd.red` / `tdd.green` on code tasks), and
-execution evidence lives in `implementation_log.json` (red+green excerpts).
-Canonical TDD rules: `assets/references/tdd-contract.md`.
+    python3 -I <plugin>/scripts/superflow.py --root <repo> new <slug> --title <titulo>
+    python3 -I <plugin>/scripts/superflow.py --root <repo> check status
+    python3 -I <plugin>/scripts/superflow.py --root <repo> check ready <spec>
+    python3 -I <plugin>/scripts/superflow.py --root <repo> feed --output <feed.json>
+    python3 -I <plugin>/scripts/superflow.py --root <repo> qg --output <qg.html>
 
-## Marketplace Distribution
+Python 3.9 ou superior é necessário. A interface, os efeitos e os exit codes
+estão em assets/references/commands-contract.md.
 
-Superflow is distributed from its own marketplace repository:
-`nmarcofernandess/superflow`.
+## Migração
 
-Product repositories are consumers. They should not vendor `plugins/superflow`,
-create repo-local marketplace entries, or copy/symlink this plugin into their
-trees just to use it. Keep one source of truth: the marketplace repo.
+O QG lê somente arquivos exatamente chamados `status.md`. A migração do
+consumidor incorpora ao corpo do status a narrativa útil e completa do
+HANDBOOK, valida o resultado e só então apaga o HANDBOOK. Não existe fallback.
 
-Install in Codex:
-
-```bash
-codex plugin marketplace add nmarcofernandess/superflow --ref main
-codex plugin add superflow@superflow
-```
-
-Refresh after updates:
-
-```bash
-codex plugin marketplace upgrade superflow
-codex plugin add superflow@superflow
-```
-
-Start a new thread after installing or updating so the runtime reloads the
-available skills list.
-
-## Smoke
-
-```bash
-tmp=$(mktemp -d /tmp/superflow-plugin.XXXXXX)
-python3 scripts/superflow_taskgen.py --root "$tmp" --mode local \
-  "implementar exportacao CSV para admin com teste e sem alterar filtros"
-python3 scripts/superflow_taskgen.py --mode issue \
-  "ideia solta para melhorar onboarding"
-python3 scripts/superflow_github.py create --dry-run --title "Ideia: onboarding" \
-  --label sf:inbox "ideia solta para melhorar onboarding"
-python3 scripts/superflow_github.py link 79 --local-package specs/001-slug --dry-run \
-  --body-file assets/examples/capture-issue.md
-python3 scripts/superflow_taskgen.py --classify-only --json \
-  "implementar exportacao CSV para admin com teste e sem alterar filtros"
-python3 scripts/superflow_audit.py --format markdown \
-  "implementar exportacao CSV para admin com teste e sem alterar filtros"
-python3 scripts/superflow_warlog.py specs/001-slug \
-  --event "Plan complete; execution can start."
-python3 scripts/superflow_status.py . --stamp 2026-09-10
-python3 scripts/superflow_qg.py . --stamp 2026-09-10
-```
+Status.json, HANDBOOK e logs paralelos pertencem ao contrato aposentado. Graph,
+campanha e WARLOG permanecem fora deste corte e constam no roadmap.

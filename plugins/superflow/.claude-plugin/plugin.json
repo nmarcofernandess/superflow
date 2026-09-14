@@ -1,8 +1,8 @@
 {
   "name": "superflow",
   "displayName": "Superflow",
-  "version": "0.7.0",
-  "description": "Production Agent Skills workflow with phase-budget routing, faceted Analyst/Build, package Ready gates, TDD I1–I3, and semantic reconstruction before human-facing prose.",
+  "version": "0.9.0",
+  "description": "Organiza promessa, retrato vivo e plano sem duplicar a execução do projeto.",
   "author": {
     "name": "Marco Antonio",
     "url": "https://github.com/nmarcofernandess"
@@ -11,17 +11,11 @@
   "license": "MIT",
   "keywords": [
     "agent-skills",
-    "workflow",
     "prd",
-    "phase-budget",
-    "feature-mindset",
-    "tdd",
-    "reuse-guard",
-    "implementation-plan-json",
-    "semantic-reconstruction",
-    "causal-explanation",
-    "warlog",
-    "qa"
+    "analysis",
+    "planning",
+    "status",
+    "quality"
   ],
   "skills": "./skills/"
 }

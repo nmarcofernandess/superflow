@@ -1,0 +1,13 @@
+{
+  "tasks": [
+    {
+      "id": "T01",
+      "task": "Resultado operacional desta unidade",
+      "status": "pending",
+      "depends_on": [],
+      "acceptance": [
+        "Comportamento ou verificação necessária para concluir"
+      ]
+    }
+  ]
+}
