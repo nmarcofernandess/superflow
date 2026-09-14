@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.2 — 2026-09-14
+
+- Mantém as minispecs visíveis no acordeão quando a busca encontra a spec principal.
+
 ## 0.9.1 — 2026-09-14
 
 - Corrige o upgrade de instalações antigas removendo os dois templates abolidos

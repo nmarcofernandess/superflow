@@ -57,6 +57,7 @@ class QGTests(unittest.TestCase):
             'data-view="blocked"', 'data-view="done"', 'id="drawer"',
             'box.className="children"', 'class="open-spec"', 'id="search"',
             'return self||(children.get(r.id)||[]).some(matches)',
+            'filter(ownHit?familyInView:matches)',
             "Nenhuma spec nesta visão.",
         ):
             self.assertIn(required, page)
