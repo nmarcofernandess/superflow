@@ -47,8 +47,8 @@ def read_json(relative_path: str) -> Dict:
 
 def test_release_metadata() -> None:
     package = read_json("package.json")
-    if package.get("name") != PACKAGE_NAME or package.get("version") != "0.9.0":
-        raise AssertionError("package.json não declara @superflow/runtime 0.9.0")
+    if package.get("name") != PACKAGE_NAME or package.get("version") != "0.9.1":
+        raise AssertionError("package.json não declara @superflow/runtime 0.9.1")
     if package.get("private") is not True:
         raise AssertionError("package.json deve permanecer privado")
     forbidden_package_fields = {"dependencies", "devDependencies", "optionalDependencies", "peerDependencies", "bin"}
@@ -64,8 +64,8 @@ def test_release_metadata() -> None:
         "plugins/superflow/.claude-plugin/plugin.json",
     ):
         manifest = read_json(relative_path)
-        if manifest.get("name") != "superflow" or manifest.get("version") != "0.9.0":
-            raise AssertionError("{} não está na versão 0.9.0".format(relative_path))
+        if manifest.get("name") != "superflow" or manifest.get("version") != "0.9.1":
+            raise AssertionError("{} não está na versão 0.9.1".format(relative_path))
         if manifest.get("skills") != "./skills/":
             raise AssertionError("{} não aponta para skills".format(relative_path))
 
@@ -79,8 +79,8 @@ def test_release_metadata() -> None:
         if not isinstance(entries, list) or len(entries) != 1:
             raise AssertionError("marketplace deve conter exatamente Superflow")
         entry = entries[0]
-        if entry.get("name") != "superflow" or entry.get("version") != "0.9.0":
-            raise AssertionError("marketplace não está na versão 0.9.0")
+        if entry.get("name") != "superflow" or entry.get("version") != "0.9.1":
+            raise AssertionError("marketplace não está na versão 0.9.1")
         if entry.get("source") != source:
             raise AssertionError("marketplace aponta para source inesperada")
 
@@ -181,7 +181,7 @@ def test_packed_runtime(workspace: Path) -> None:
 
     project = make_fixture_project(workspace)
     version = run([sys.executable, "-I", str(runtime), "--version"], cwd=consumer).strip()
-    if version != "0.9.0":
+    if version != "0.9.1":
         raise AssertionError("--version do runtime instalado retornou {!r}".format(version))
     run(
         [
