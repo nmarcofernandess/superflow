@@ -1,25 +1,45 @@
 ---
 name: status
-description: Cria e mantém o retrato humano completo e o frontmatter mínimo que alimentam exclusivamente o QG.
+description: Cria e mantém o resumo durável, o retrato humano completo e as relações que alimentam o QG.
 ---
 
 # Status
 
-`status.md` é a única fonte do QG e precisa permitir compreender e retomar a spec sem abrir outro documento.
+`status.md` permite compreender e retomar a spec. Leia o [contrato de estado](../../assets/references/state-contract.md) ao criar ou atualizar o pacote.
 
 ## Frontmatter
 
-Obrigatórios: `id`, `title`, `status`. `status` aceita somente `pending | done`.
+Obrigatórios: `id`, `title`, `summary`, `status`. `status` aceita `pending | done`. `relations` é a lista opcional de objetos `id` e `reason`.
 
-Opcionais:
+Escreva `summary` para alguém que não lembra do assunto: qual entrega esta spec representa e para quem ela serve. Prefira uma ou duas frases, aproximadamente 120–240 caracteres, explicando jargões necessários. A extensão é sugestão editorial. O tema permanece mesmo depois da conclusão; o andamento pertence ao corpo.
 
-- `depends_on`: lista de objetos `id` e `reason` para dependência real de outra spec;
-- `waiting_for`: condição circunstancial concreta, removida quando satisfeita.
+## Receita para o corpo
 
-Não use fases, estados intermediários, `children`, `evidence`, task, arquivo ou porcentagem.
+Use este Markdown como ponto de partida quando não houver orientação específica. Adapte as seções ao conteúdo disponível e preserve a narrativa útil completa.
 
-## Corpo
+```markdown
+## Intenção
 
-Markdown livre. Registre apenas o que ajuda compreensão e retomada: intenção, estado real, história relevante, próximo trabalho e limites, com os títulos que fizerem sentido. Corpo vazio é válido; não crie headings vazios nem copie PRD como fallback.
+Explique a entrega e por que ela importa, com contexto suficiente para retomar.
 
-Na migração, incorpore aqui a narrativa útil e completa do handbook. Depois de conferir fidelidade e renderização, delete o handbook. Ele não permanece como arquivo, link ou segunda fonte.
+## Estado real
+
+Descreva o que existe e o que foi conferido, distinguindo entrega de intenção.
+
+## Rastro
+
+Registre decisões e evidências que explicam como chegamos aqui.
+
+## Próximo trabalho
+
+Explique a próxima direção, a autorização necessária ou a condição ainda vigente.
+Se apenas uma parte espera, diga o que pode continuar.
+
+## Limites
+
+Registre restrições de escopo e condições de exceções temporárias relevantes.
+```
+
+Uma spec com cadastro e resumo já pode ser apresentada; o corpo cresce conforme houver contexto útil. Relações guardam memória e não determinam bloqueios. Se existir plano ativo, ele guarda o cursor das tasks; o corpo orienta a retomada sem duplicá-lo.
+
+Atualize o status quando mudar direção, autorização, espera relevante, relação, divisão de escopo ou handoff. Concluir uma task comum altera somente o plano aplicável. Exceções temporárias da fronteira do pacote cabem em `Próximo trabalho` ou `Limites`, com condição de encerramento.

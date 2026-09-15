@@ -25,7 +25,7 @@ class CommandTests(unittest.TestCase):
         )
 
     def test_new_creates_only_prd_and_status(self):
-        result = self.run_cli("new", "alpha", "--title", "Alpha")
+        result = self.run_cli("new", "alpha", "--title", "Alpha", "--summary", "Importar despesas de uma planilha")
         self.assertEqual(result.returncode, 0, result.stderr)
         names = sorted(path.name for path in (self.root / "specs/alpha").iterdir())
         self.assertEqual(names, ["PRD.md", "status.md"])
@@ -33,10 +33,18 @@ class CommandTests(unittest.TestCase):
         self.assertIn("status: pending", status)
         self.assertNotIn("phase:", status)
 
+    def test_new_requires_human_summary_before_writing(self):
+        result = self.run_cli("new", "alpha", "--title", "Alpha")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse((self.root / "specs/alpha").exists())
+        result = self.run_cli("new", "alpha", "--title", "Alpha", "--summary", "  ")
+        self.assertEqual(result.returncode, 1)
+        self.assertFalse((self.root / "specs/alpha").exists())
+
     def test_feed_and_qg_never_copy_private_sources(self):
-        self.run_cli("new", "alpha", "--title", "Alpha")
+        self.run_cli("new", "alpha", "--title", "Alpha", "--summary", "Importar despesas de uma planilha")
         directory = self.root / "specs/alpha"
-        for name in ("PRD.md", "SPEC.md", "plan.json", "progress.md", "HANDBOOK.md"):
+        for name in ("PRD.md", "SPEC.md", "plan.json", "progress.md", "private-notes.md"):
             (directory / name).write_text("SECRET_" + name, encoding="utf-8")
         feed = self.run_cli("feed")
         qg = self.run_cli("qg")
@@ -45,17 +53,17 @@ class CommandTests(unittest.TestCase):
         self.assertNotIn("SECRET_", (self.root / ".superflow/feed.json").read_text())
         self.assertNotIn("SECRET_", (self.root / ".superflow/qg.html").read_text())
 
-    def test_check_ready_uses_explicit_four_file_boundary(self):
-        self.run_cli("new", "alpha", "--title", "Alpha")
-        self.assertEqual(self.run_cli("check", "ready", "alpha").returncode, 1)
+    def test_check_spec_accepts_optional_artifacts(self):
+        self.run_cli("new", "alpha", "--title", "Alpha", "--summary", "Importar despesas de uma planilha")
+        self.assertEqual(self.run_cli("check", "spec", "alpha").returncode, 0)
         directory = self.root / "specs/alpha"
         (directory / "SPEC.md").write_text("# Arquitetura", encoding="utf-8")
         (directory / "plan.json").write_text(json.dumps({"tasks": []}), encoding="utf-8")
-        self.assertEqual(self.run_cli("check", "ready", "alpha").returncode, 0)
+        self.assertEqual(self.run_cli("check", "spec", "alpha").returncode, 0)
         self.assertEqual(self.run_cli("check", "status").returncode, 0)
 
     def test_invalid_status_produces_diagnostic_and_nonzero(self):
-        self.run_cli("new", "alpha", "--title", "Alpha")
+        self.run_cli("new", "alpha", "--title", "Alpha", "--summary", "Importar despesas de uma planilha")
         (self.root / "specs/alpha/status.md").write_text("---\nid: [bad\n---\n")
         result = self.run_cli("feed")
         self.assertEqual(result.returncode, 1)
@@ -63,7 +71,7 @@ class CommandTests(unittest.TestCase):
         self.assertEqual(data["diagnostics"][0]["code"], "INVALID_STATUS")
 
     def test_output_cannot_overwrite_canonical_file(self):
-        self.run_cli("new", "alpha", "--title", "Alpha")
+        self.run_cli("new", "alpha", "--title", "Alpha", "--summary", "Importar despesas de uma planilha")
         target = self.root / "specs/alpha/PRD.md"
         before = target.read_text()
         result = self.run_cli("feed", "--output", str(target))

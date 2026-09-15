@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.10.0
+
+- Require a human summary in status and new; project specs through feed v4.
+- Preserve neutral relations with inverse navigation; keep task dependencies local to plans.
+- Validate optional SPEC and plan independently with check spec.
+- Show expanded minispec families, status dots and full narratives in the QG.
+- Align skills and playbooks around conditional artifacts and canonical product ownership.
+- Remove the personal installer and retired historical artifacts.
+
+Breaking: existing status files need summary; replace spec dependencies with semantic relations and move active conditions into the narrative. The CLI no longer accepts check ready, proof_cmd or ship_cmd.
+
 ## 0.9.3 — 2026-09-14
 
 - Impede o shell e as abas do QG de ampliarem a página em viewports estreitos.

@@ -18,8 +18,8 @@ class QGTests(unittest.TestCase):
             "title": "Spec " + identifier,
             "status": "pending",
             "path": "specs/" + identifier,
-            "depends_on": [],
-            "waiting_for": None,
+            "summary": "Uma descrição permanente da entrega.",
+            "relations": [],
             "body_md": "",
             "parent_id": None,
         }
@@ -28,7 +28,7 @@ class QGTests(unittest.TestCase):
 
     def feed(self, records, diagnostics=None):
         return {
-            "schema_version": "superflow.feed.v3",
+            "schema_version": "superflow.feed.v4",
             "generated_at": "2026-09-13T12:00:00Z",
             "snapshot_id": "fixture",
             "source_revision": None,
@@ -53,18 +53,25 @@ class QGTests(unittest.TestCase):
     def test_html_has_minimal_views_hierarchy_and_drawer(self):
         page = render(self.feed([]))
         for required in (
-            'data-view="open"', 'data-view="ready"', 'data-view="waiting"',
-            'data-view="blocked"', 'data-view="done"', 'id="drawer"',
-            'box.className="children"', 'class="open-spec"', 'id="search"',
+            'data-view="open"', 'data-view="done"', 'id="drawer"',
+            'box.className="children"', 'class="spec-card"', 'id="search"',
             'return self||(children.get(r.id)||[]).some(matches)',
             'filter(ownHit?familyInView:matches)',
             "Nenhuma spec nesta visão.",
         ):
             self.assertIn(required, page)
 
+    def test_summary_and_relations_survive_projection(self):
+        records = [self.record("one", summary="Tema sem estado de execução.",
+                               relations=[{"id": "two", "reason": "Contexto compartilhado"}]),
+                   self.record("two", status="done")]
+        actual = self.embedded(render(self.feed(records)))["records"]
+        self.assertEqual(actual, records)
+        self.assertEqual(actual[1]["relations"], [])
+
     def test_hostile_content_stays_inside_inert_json(self):
         hostile = '</script><img src=x onerror="alert(1)">'
-        page = render(self.feed([self.record("bad", title=hostile, body_md=hostile)]))
+        page = render(self.feed([self.record("bad", title=hostile, summary=hostile, relations=[{"id": "other", "reason": hostile}], body_md=hostile)]))
         self.assertNotIn(hostile, page)
         self.assertIn("\\u003c/script\\u003e", page)
 

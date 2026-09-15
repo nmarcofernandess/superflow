@@ -2,7 +2,7 @@
 
 ## Integração
 
-Onde esta mudança entra no sistema existente?
+Onde esta mudança entra no sistema existente? Quais são os locais canônicos dos componentes permanentes? Se houver artefato temporário na spec, qual seu uso e condição de remoção ou promoção?
 
 ## Contratos
 
@@ -14,4 +14,4 @@ Quais escolhas foram feitas e por quê?
 
 ## Verificação
 
-Quais gates protegem as regras estruturais e quais aceites dependem de julgamento?
+Como conferir os comportamentos e riscos relevantes, usando os mecanismos do projeto e julgamento quando necessário?

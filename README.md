@@ -23,13 +23,17 @@ provas. Ele usa fontes do repositório e suas ferramentas nativas.
 | build | Fecha arquitetura e reuso em SPEC quando há decisão técnica material. |
 | plan | Cria plan.json quando sequência e dependências justificam. |
 | review | Examina desenho ou diff com evidência e rechecagem. |
-| status | Mantém o retrato completo, a espera e as relações entre specs. |
+| status | Mantém o retrato completo, a orientação de continuidade e as relações entre specs. |
 
 As cinco receitas são capture, feature, retomar, fechar e reconciliar. Execute
 e QA permanecem etapas do fluxo, operadas pelas regras e ferramentas do projeto,
 sem skills separadas.
 
 ## Estado e arquivos
+
+Toda spec tem PRD e status; arquitetura e plano são condicionais e independentes.
+O plano com task pendente é o cursor da execução; `Próximo trabalho` no status
+orienta a continuidade. `relations` preserva vínculos sem decidir bloqueios.
 
 Um pacote pode conter:
 
@@ -40,60 +44,60 @@ Um pacote pode conter:
       plan.json
 
 Somente status.md e PRD.md surgem no comando new. Os demais são condicionais.
-Os [contratos](plugins/superflow/assets/references/) de estado, comandos e
-qualidade acompanham o pacote.
+Os [contratos](plugins/superflow/assets/references/) de estado e comandos acompanham o pacote.
 
 ## Comandos
 
 O runtime é Python 3.9 ou superior e usa modo isolado:
 
-    python3 -I <plugin>/scripts/superflow.py --root <repo> new <slug> --title <titulo>
+    python3 -I <plugin>/scripts/superflow.py --root <repo> new <slug> --title <titulo> --summary <resumo>
     python3 -I <plugin>/scripts/superflow.py --root <repo> check status
-    python3 -I <plugin>/scripts/superflow.py --root <repo> check ready <spec>
+    python3 -I <plugin>/scripts/superflow.py --root <repo> check spec <spec>
     python3 -I <plugin>/scripts/superflow.py --root <repo> feed --output <feed.json>
     python3 -I <plugin>/scripts/superflow.py --root <repo> qg --output <qg.html>
 
-New cria o cadastro inicial; check é somente leitura; feed e QG são projeções
+New exige um resumo humano do tema e cria o cadastro inicial; check é somente leitura; feed e QG são projeções
 geradas a partir da mesma fotografia. Eles nunca executam proof, ship ou outro
 comando configurado pelo repositório.
 
-O QG abre em **Em aberto**, com specs em acordeões e minispecs aninhadas. O card
-mostra o necessário para escolher; o drawer mostra a narrativa completa do
+O QG abre em **Em aberto**, com minispecs aninhadas sempre visíveis. O card
+mostra o título e o resumo durável para escolher; o card inteiro abre o drawer com a narrativa completa do
 `status.md`. Não há tarefas, arquivos, progresso ou graph no QG. A busca cobre
 o conteúdo completo e abre a cadeia até a minispec. **Concluídas** é uma visão
 separada. Uma spec concluída pode aparecer como contexto de filhos abertos.
 
 ## Instalação
 
+O pacote publicado é uma release completa. Personalizações pertencem ao projeto
+consumidor, fora do diretório instalado.
+
 Instale uma release identificada por tag e confira a versão declarada nos
 manifestos antes de usar:
 
-    codex plugin marketplace add nmarcofernandess/superflow --ref v0.9.3
+    codex plugin marketplace add nmarcofernandess/superflow --ref v0.10.0
     codex plugin add superflow@superflow
 
 Em Claude Code:
 
-    claude plugin marketplace add nmarcofernandess/superflow@v0.9.3
+    claude plugin marketplace add nmarcofernandess/superflow@v0.10.0
     claude plugin install superflow@superflow
 
 Para atualizar um marketplace já cadastrado, use `codex plugin marketplace upgrade superflow` seguido de `codex plugin add superflow@superflow`, ou `claude plugin marketplace update superflow` seguido de `claude plugin update superflow@superflow`. Se o marketplace estiver preso a uma tag antiga, altere a referência na configuração do host antes de atualizar.
 
 Após atualizar, abra uma nova task para recarregar o inventário de skills.
 
-## Migração de versões anteriores
+## Materiais da spec
 
-O contrato anterior de status.json, HANDBOOK, implementation_plan,
-implementation_log e review_log não é mais superfície ativa. Um repositório
-consumidor não é migrado automaticamente: o censo decide o destino de cada
-documento, incorpora a narrativa completa do HANDBOOK em status.md, valida e
-só então remove a fonte antiga.
-
-Arquivos históricos continuam sendo história do consumidor. Não os copie para o
-plugin novo e não use fallback silencioso para fazê-los parecer estado atual.
+A spec reúne registros e materiais autocontidos da entrega. Código, testes,
+configuração e outros artefatos permanentes recebem um local canônico no
+projeto. Scripts temporários são removidos ao fechar ou promovidos com seus
+consumidores. HTMLs e receipts históricos podem permanecer na spec.
+Ferramentas de gestão de specs podem ler seus artefatos declarados.
+A explicação completa vive no contrato de estado.
 
 ## Desenvolvimento
 
-A fonte do plugin é plugins/superflow. O gate do repositório valida o conjunto
+A fonte do plugin é plugins/superflow. A validação local existente confere o conjunto
 exato de sete diretórios de skills, referências internas e conteúdo do pacote.
-Leia o [README do plugin](plugins/superflow/README.md) para uso e migração; leia
+Leia o [README do plugin](plugins/superflow/README.md) para uso; leia
 a [SPEC atual](SPEC-superflow-plugin.md) para as decisões técnicas.
