@@ -113,6 +113,8 @@ def build_parser():
     for name in ("feed", "qg"):
         command = commands.add_parser(name)
         command.add_argument("--output", type=Path)
+        if name == "qg":
+            command.add_argument("--embed", action="store_true", help="Gerar fragmento HTML isolado com Shadow DOM.")
     return parser
 
 
@@ -133,9 +135,9 @@ def main(argv=None):
             atomic_write(output, json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n", root, sources)
             print("Gerado: " + str(output))
         elif args.command == "qg":
-            from superflow_qg import render
+            from superflow_qg import render, render_embed
             output = args.output or root / ".superflow/qg.html"
-            atomic_write(output, render(snapshot), root, sources)
+            atomic_write(output, render_embed(snapshot) if args.embed else render(snapshot), root, sources)
             print("Gerado: " + str(output))
         else:
             ensure_unchanged(root, sources)

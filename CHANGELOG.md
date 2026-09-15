@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.10.1
+
+- QG embutível com `qg --embed`: mesmo layout e dados do standalone, isolados por Shadow DOM, preservando a navegação do HTML hospedeiro.
+
 ## 0.10.0
 
 - Require a human summary in status and new; project specs through feed v4.

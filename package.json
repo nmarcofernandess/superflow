@@ -1,6 +1,6 @@
 {
   "name": "@superflow/runtime",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "Portable status-first runtime for Superflow spec creation, validation and QG projection.",
   "private": true,
   "license": "MIT",

@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from superflow_qg import render
+from superflow_qg import render, render_embed
 
 
 class QGTests(unittest.TestCase):
@@ -82,6 +82,14 @@ class QGTests(unittest.TestCase):
         page = render(self.feed(records))
         self.assertEqual(len(self.embedded(page)["records"]), 1000)
         self.assertIn("mini-label", page)
+
+    def test_embed_is_isolated_and_preserves_host_navigation(self):
+        fragment = render_embed(self.feed([self.record("one", body_md="</script><img>")]))
+        self.assertIn('attachShadow({mode:"open"})', fragment)
+        self.assertIn('})(shadow,false);', fragment)
+        self.assertNotIn('<iframe', fragment)
+        self.assertNotIn('</script><img>', fragment)
+        self.assertEqual(fragment.count('</script>'), 1)
 
     def test_renderer_has_no_filesystem_or_network_behavior(self):
         source = Path(__file__).with_name("superflow_qg.py").read_text(encoding="utf-8")
