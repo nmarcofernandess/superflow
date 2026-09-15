@@ -9,7 +9,7 @@ sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from superflow_model import (
     ContentError, SourceError, build_snapshot, ensure_unchanged, has_errors,
-    parse_status, read_sources, validate_plan, validate_ready,
+    parse_status, read_sources, validate_plan, validate_spec,
 )
 
 
@@ -24,7 +24,7 @@ class ModelTests(unittest.TestCase):
     def spec(self, name="one", body="", **fields):
         directory = self.root / "specs" / name
         directory.mkdir(parents=True, exist_ok=True)
-        data = {"id": name.replace("/", "-"), "title": name, "status": "pending"}
+        data = {"id": name.replace("/", "-"), "title": name, "summary": "Descrição permanente da entrega", "status": "pending"}
         data.update(fields)
         (directory / "status.md").write_text(
             "---\n" + json.dumps(data) + "\n---\n" + body, encoding="utf-8"
@@ -52,24 +52,32 @@ class ModelTests(unittest.TestCase):
             with self.subTest(text=text), self.assertRaises(ContentError):
                 parse_status("---\n" + text + "\n---\n")
 
-    def test_dependency_requires_id_and_reason(self):
-        self.spec(depends_on=["other"])
-        self.assertTrue(has_errors(self.snapshot()))
-        self.spec(depends_on=[{"id": "other", "reason": "Contrato necessário"}])
+    def test_relations_require_id_reason_and_existing_target(self):
+        for relations in (["other"], [{"id": "other", "reason": ""}],
+                          [{"id": "one", "reason": "Self"}],
+                          [{"id": "missing", "reason": "Context"}]):
+            self.spec(relations=relations)
+            self.assertTrue(has_errors(self.snapshot()))
+        self.spec(relations=[{"id": "other", "reason": "Contrato relacionado"}])
         self.spec("other")
         self.assertFalse(has_errors(self.snapshot()))
 
-    def test_waiting_is_not_dependency(self):
-        self.spec(waiting_for="Marco responder")
-        record = self.snapshot()["records"][0]
-        self.assertEqual(record["waiting_for"], "Marco responder")
-        self.assertEqual(record["depends_on"], [])
+    def test_relations_allow_cycles_and_done_to_pending(self):
+        self.spec(status="done", relations=[{"id": "other", "reason": "Contexto"}])
+        self.spec("other", relations=[{"id": "one", "reason": "História"}])
+        snapshot = self.snapshot()
+        self.assertFalse(has_errors(snapshot))
+        self.assertEqual(snapshot["schema_version"], "superflow.feed.v4")
+        self.assertNotIn("blockers", snapshot["records"][0])
 
-    def test_done_cannot_wait_or_depend_on_pending(self):
-        self.spec(status="done", waiting_for="Resposta")
-        self.assertTrue(has_errors(self.snapshot()))
-        self.spec(status="done", depends_on=[{"id": "other", "reason": "Precisa"}])
+    def test_summary_is_required_and_nonempty(self):
+        for value in (None, "", "  ", []):
+            self.spec(summary=value)
+            self.assertTrue(has_errors(self.snapshot()))
+
+    def test_duplicate_relations_rejected(self):
         self.spec("other")
+        self.spec(relations=[{"id": "other", "reason": "A"}, {"id": "other", "reason": "B"}])
         self.assertTrue(has_errors(self.snapshot()))
 
     def test_done_parent_with_pending_minispec(self):
@@ -82,7 +90,7 @@ class ModelTests(unittest.TestCase):
 
     def test_projection_reads_only_status(self):
         directory = self.spec()
-        for name in ("PRD.md", "SPEC.md", "plan.json", "progress.md", "HANDBOOK.md"):
+        for name in ("PRD.md", "SPEC.md", "plan.json", "progress.md", "private-notes.md"):
             (directory / name).write_text("SECRET_" + name, encoding="utf-8")
         sources = read_sources(self.root)
         self.assertEqual(
@@ -109,14 +117,57 @@ class ModelTests(unittest.TestCase):
             with self.assertRaises(ContentError):
                 validate_plan({"tasks": [invalid]})
 
-    def test_ready_boundary_requires_four_files(self):
+    def test_spec_validates_conditional_artifacts_independently(self):
         directory = self.spec()
+        with self.assertRaisesRegex(ContentError, "PRD.md"):
+            validate_spec(self.root, "one")
         (directory / "PRD.md").write_text("# Promessa", encoding="utf-8")
-        with self.assertRaisesRegex(ContentError, "SPEC.md"):
-            validate_ready(self.root, "one")
-        (directory / "SPEC.md").write_text("# Arquitetura", encoding="utf-8")
+        self.assertEqual(validate_spec(self.root, "one"), directory.resolve())
         (directory / "plan.json").write_text(json.dumps({"tasks": []}), encoding="utf-8")
-        self.assertEqual(validate_ready(self.root, "one"), directory.resolve())
+        self.assertEqual(validate_spec(self.root, "one"), directory.resolve())
+        (directory / "plan.json").write_text("invalid", encoding="utf-8")
+        with self.assertRaises(ContentError):
+            validate_spec(self.root, "one")
+        (directory / "plan.json").unlink()
+        (directory / "SPEC.md").write_text("# Arquitetura", encoding="utf-8")
+        self.assertEqual(validate_spec(self.root, "one"), directory.resolve())
+        (directory / "SPEC.md").write_text("", encoding="utf-8")
+        with self.assertRaises(ContentError):
+            validate_spec(self.root, "one")
+
+    def test_spec_checks_relation_targets(self):
+        directory = self.spec(relations=[{"id": "missing", "reason": "Contexto"}])
+        (directory / "PRD.md").write_text("# Promessa", encoding="utf-8")
+        with self.assertRaisesRegex(ContentError, "Destino"):
+            validate_spec(self.root, "one")
+
+    def test_spec_rejects_ambiguous_relation_target(self):
+        directory = self.spec(relations=[{"id": "other", "reason": "Contexto"}])
+        (directory / "PRD.md").write_text("# Promessa", encoding="utf-8")
+        self.spec("first", id="other")
+        self.spec("second", id="other")
+        with self.assertRaisesRegex(ContentError, "ambíguo"):
+            validate_spec(self.root, "one")
+
+    def test_source_removal_and_path_rename_update_snapshot(self):
+        directory = self.spec()
+        self.spec("other", relations=[{"id": "one", "reason": "Contexto"}])
+        directory.rename(directory.with_name("renamed"))
+        snapshot = self.snapshot()
+        self.assertFalse(has_errors(snapshot))
+        record = next(r for r in snapshot["records"] if r["id"] == "one")
+        self.assertEqual(record["path"], "specs/renamed")
+        (directory.with_name("renamed") / "status.md").unlink()
+        snapshot = self.snapshot()
+        self.assertEqual(len(snapshot["records"]), 1)
+        self.assertEqual(snapshot["diagnostics"][0]["code"], "INVALID_RELATION")
+
+    def test_task_cycles_still_rejected(self):
+        tasks = [{"id": name, "task": name, "status": "pending",
+                  "depends_on": [other], "acceptance": ["Works"]}
+                 for name, other in (("a", "b"), ("b", "a"))]
+        with self.assertRaisesRegex(ContentError, "Ciclo"):
+            validate_plan({"tasks": tasks})
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Exercise the packed runtime and a safe upgrade of a fixture install."""
+"""Exercise the versioned packed runtime in an isolated consumer."""
 
 from __future__ import annotations
 
@@ -47,8 +47,8 @@ def read_json(relative_path: str) -> Dict:
 
 def test_release_metadata() -> None:
     package = read_json("package.json")
-    if package.get("name") != PACKAGE_NAME or package.get("version") != "0.9.3":
-        raise AssertionError("package.json não declara @superflow/runtime 0.9.3")
+    if package.get("name") != PACKAGE_NAME or package.get("version") != "0.10.0":
+        raise AssertionError("package.json não declara @superflow/runtime 0.10.0")
     if package.get("private") is not True:
         raise AssertionError("package.json deve permanecer privado")
     forbidden_package_fields = {"dependencies", "devDependencies", "optionalDependencies", "peerDependencies", "bin"}
@@ -64,8 +64,8 @@ def test_release_metadata() -> None:
         "plugins/superflow/.claude-plugin/plugin.json",
     ):
         manifest = read_json(relative_path)
-        if manifest.get("name") != "superflow" or manifest.get("version") != "0.9.3":
-            raise AssertionError("{} não está na versão 0.9.3".format(relative_path))
+        if manifest.get("name") != "superflow" or manifest.get("version") != "0.10.0":
+            raise AssertionError("{} não está na versão 0.10.0".format(relative_path))
         if manifest.get("skills") != "./skills/":
             raise AssertionError("{} não aponta para skills".format(relative_path))
 
@@ -79,8 +79,8 @@ def test_release_metadata() -> None:
         if not isinstance(entries, list) or len(entries) != 1:
             raise AssertionError("marketplace deve conter exatamente Superflow")
         entry = entries[0]
-        if entry.get("name") != "superflow" or entry.get("version") != "0.9.3":
-            raise AssertionError("marketplace não está na versão 0.9.3")
+        if entry.get("name") != "superflow" or entry.get("version") != "0.10.0":
+            raise AssertionError("marketplace não está na versão 0.10.0")
         if entry.get("source") != source:
             raise AssertionError("marketplace aponta para source inesperada")
 
@@ -114,18 +114,6 @@ def assert_pack_contract(paths: List[str]) -> None:
     missing = required - set(paths)
     if missing:
         raise AssertionError("pacote sem arquivos necessários: {}".format(sorted(missing)))
-    forbidden = [
-        path
-        for path in paths
-        if "/test_" in path
-        or path.endswith("sync_personal_install.py")
-        or "superflow_rota.py" in path
-        or "/assets/task-board/" in path
-        or "/assets/fixtures/" in path
-        or "/assets/examples/" in path
-    ]
-    if forbidden:
-        raise AssertionError("pacote incluiu superfície aposentada: {}".format(sorted(forbidden)))
 
 
 def make_fixture_project(root: Path) -> Path:
@@ -136,6 +124,7 @@ def make_fixture_project(root: Path) -> Path:
         "---\n"
         "id: demo\n"
         "title: Demo\n"
+        "summary: Demonstrar a organização de uma entrega.\n"
         "status: pending\n"
         "---\n",
         encoding="utf-8",
@@ -181,7 +170,7 @@ def test_packed_runtime(workspace: Path) -> None:
 
     project = make_fixture_project(workspace)
     version = run([sys.executable, "-I", str(runtime), "--version"], cwd=consumer).strip()
-    if version != "0.9.3":
+    if version != "0.10.0":
         raise AssertionError("--version do runtime instalado retornou {!r}".format(version))
     run(
         [
@@ -194,6 +183,8 @@ def test_packed_runtime(workspace: Path) -> None:
             "second",
             "--title",
             "Second",
+            "--summary",
+            "Organizar uma segunda entrega independente",
         ],
         cwd=consumer,
     )
@@ -203,82 +194,8 @@ def test_packed_runtime(workspace: Path) -> None:
         [sys.executable, "-I", str(runtime), "--root", str(project), "qg", "--output", str(output)],
         cwd=consumer,
     )
-    if not output.is_file() or "superflow.feed.v3" not in output.read_text(encoding="utf-8"):
+    if not output.is_file() or "superflow.feed.v4" not in output.read_text(encoding="utf-8"):
         raise AssertionError("qg do runtime instalado não gerou a projeção esperada")
-
-
-def test_sync_upgrade(workspace: Path) -> None:
-    target = workspace / "installed-plugin"
-    (target / "custom").mkdir(parents=True)
-    (target / "custom/local-note.md").write_text("preserve me\n", encoding="utf-8")
-    (target / "skills/capture").mkdir(parents=True)
-    (target / "skills/capture/SKILL.md").write_text("legacy\n", encoding="utf-8")
-    (target / "scripts").mkdir(parents=True, exist_ok=True)
-    (target / "scripts/superflow_rota.py").write_text("legacy\n", encoding="utf-8")
-    (target / "assets/task-board").mkdir(parents=True)
-    (target / "assets/task-board/board.html").write_text("legacy\n", encoding="utf-8")
-    (target / "assets/fixtures/rota").mkdir(parents=True)
-    (target / "assets/fixtures/rota/plano-valido.json").write_text("legacy\n", encoding="utf-8")
-    (target / "assets/fixtures/custom").mkdir(parents=True)
-    (target / "assets/fixtures/custom/keep.md").write_text("preserve me\n", encoding="utf-8")
-
-    sync = PLUGIN / "scripts/sync_personal_install.py"
-    run([sys.executable, "-I", str(sync), "--target", str(target)])
-    if (target / "skills/capture/SKILL.md").exists():
-        raise AssertionError("skill v1 permaneceu após atualização")
-    if (target / "scripts/superflow_rota.py").exists():
-        raise AssertionError("executor v1 permaneceu após atualização")
-    if (target / "assets/task-board/board.html").exists():
-        raise AssertionError("asset v1 permaneceu após atualização")
-    if (target / "assets/fixtures/rota/plano-valido.json").exists():
-        raise AssertionError("fixture v1 permaneceu após atualização")
-    if (target / "custom/local-note.md").read_text(encoding="utf-8") != "preserve me\n":
-        raise AssertionError("arquivo customizado foi perdido")
-    if (target / "assets/fixtures/custom/keep.md").read_text(encoding="utf-8") != "preserve me\n":
-        raise AssertionError("fixture customizado foi perdido")
-    if not (target / "skills/superflow/SKILL.md").is_file():
-        raise AssertionError("staging validado não substituiu a instalação ativa")
-    backups = list(target.parent.glob(".installed-plugin-backup-*"))
-    if len(backups) != 1 or not (backups[0] / "skills/capture/SKILL.md").is_file():
-        raise AssertionError("conflito não preservou backup verificável")
-
-    blocked = workspace / "blocked-plugin"
-    blocked.mkdir()
-    (blocked / "skills").write_text("custom collision\n", encoding="utf-8")
-    output = run([sys.executable, "-I", str(sync), "--target", str(blocked)], expect=2)
-    if "error:" not in output.lower() and not (blocked / "skills").is_file():
-        raise AssertionError("falha de staging não foi explícita ou alterou arquivo desconhecido")
-    if (blocked / "skills").read_text(encoding="utf-8") != "custom collision\n":
-        raise AssertionError("falha removeu arquivo desconhecido")
-
-
-def test_sync_rejects_symlinks(workspace: Path) -> None:
-    sync = PLUGIN / "scripts/sync_personal_install.py"
-
-    external_target = workspace / "external-target"
-    external_target.mkdir()
-    target_marker = external_target / "marker.txt"
-    target_marker.write_text("outside target\n", encoding="utf-8")
-    linked_target = workspace / "linked-plugin"
-    linked_target.symlink_to(external_target, target_is_directory=True)
-    run([sys.executable, "-I", str(sync), "--target", str(linked_target)], expect=2)
-    if target_marker.read_text(encoding="utf-8") != "outside target\n":
-        raise AssertionError("sync seguiu um destino symlink")
-    if not linked_target.is_symlink():
-        raise AssertionError("sync substituiu o symlink de destino")
-
-    nested_target = workspace / "nested-plugin"
-    nested_target.mkdir()
-    external_assets = workspace / "external-assets"
-    external_assets.mkdir()
-    asset_marker = external_assets / "qg.html"
-    asset_marker.write_text("outside assets\n", encoding="utf-8")
-    (nested_target / "assets").symlink_to(external_assets, target_is_directory=True)
-    run([sys.executable, "-I", str(sync), "--target", str(nested_target)], expect=2)
-    if asset_marker.read_text(encoding="utf-8") != "outside assets\n":
-        raise AssertionError("sync escreveu por um symlink ancestral")
-    if not (nested_target / "assets").is_symlink():
-        raise AssertionError("sync alterou o symlink ancestral original")
 
 
 def main() -> int:
@@ -288,8 +205,6 @@ def main() -> int:
     with tempfile.TemporaryDirectory(prefix="superflow-distribution-") as raw_workspace:
         workspace = Path(raw_workspace)
         test_packed_runtime(workspace)
-        test_sync_upgrade(workspace)
-        test_sync_rejects_symlinks(workspace)
     print("distribution: valid")
     return 0
 

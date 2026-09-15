@@ -14,9 +14,9 @@ import yaml
 
 CONFIG_PATH = ".superflow/config.json"
 PROJECTION_SOURCE_NAMES = {"status.md"}
-READY_SOURCE_NAMES = {"status.md", "PRD.md", "SPEC.md", "plan.json"}
-SOURCE_NAMES = PROJECTION_SOURCE_NAMES | READY_SOURCE_NAMES
-STATUS_FIELDS = {"id", "title", "status", "depends_on", "waiting_for"}
+SPEC_SOURCE_NAMES = {"status.md", "PRD.md", "SPEC.md", "plan.json"}
+SOURCE_NAMES = PROJECTION_SOURCE_NAMES | SPEC_SOURCE_NAMES
+STATUS_FIELDS = {"id", "title", "summary", "status", "relations"}
 TASK_FIELDS = {"id", "task", "status", "depends_on", "acceptance"}
 
 
@@ -130,7 +130,7 @@ def resolve_specs_root(root):
             config = parse_json(config_file.read_text(encoding="utf-8"))
         except (OSError, UnicodeError, ContentError) as exc:
             raise SourceError("Configuração inválida: " + str(exc)) from exc
-        if not isinstance(config, dict) or set(config) - {"specs_root", "proof_cmd", "ship_cmd"}:
+        if not isinstance(config, dict) or set(config) - {"specs_root"}:
             raise SourceError("Configuração possui campos desconhecidos ou não é objeto.")
         for key, value in config.items():
             text_value(value, key)
@@ -193,33 +193,23 @@ def validate_status(data, body, path):
     status = text_value(data.get("status"), "status")
     if status not in {"pending", "done"}:
         raise ContentError("status deve ser pending ou done.")
-    dependencies = data.get("depends_on", [])
-    if not isinstance(dependencies, list):
-        raise ContentError("depends_on deve ser uma lista de objetos id/reason.")
-    normalized_dependencies = []
-    seen = set()
-    for item in dependencies:
+    summary = text_value(data.get("summary"), "summary")
+    relations = data.get("relations", [])
+    if not isinstance(relations, list):
+        raise ContentError("relations deve ser uma lista de objetos id/reason.")
+    normalized, seen = [], set()
+    for item in relations:
         if not isinstance(item, dict) or set(item) != {"id", "reason"}:
-            raise ContentError("Cada depends_on deve conter exatamente id e reason.")
-        target = text_value(item["id"], "depends_on.id")
-        reason = text_value(item["reason"], "depends_on.reason")
-        if target in seen:
-            raise ContentError("depends_on contém destino repetido: " + target)
+            raise ContentError("Cada relação deve conter exatamente id e reason.")
+        target = text_value(item["id"], "relations.id")
+        reason = text_value(item["reason"], "relations.reason")
+        if target == identifier or target in seen:
+            raise ContentError("Relação própria ou repetida: " + target)
         seen.add(target)
-        normalized_dependencies.append({"id": target, "reason": reason})
-    waiting = data.get("waiting_for")
-    if waiting is not None:
-        waiting = text_value(waiting, "waiting_for")
-    if status == "done" and waiting:
-        raise ContentError("Spec done não pode manter waiting_for.")
+        normalized.append({"id": target, "reason": reason})
     return {
-        "id": identifier,
-        "title": title,
-        "status": status,
-        "path": Path(path).parent.as_posix(),
-        "depends_on": normalized_dependencies,
-        "waiting_for": waiting,
-        "body_md": body,
+        "id": identifier, "title": title, "summary": summary, "status": status,
+        "path": Path(path).parent.as_posix(), "relations": normalized, "body_md": body,
     }
 
 
@@ -282,8 +272,8 @@ def validate_plan(value):
     return tasks
 
 
-def validate_ready(root, spec_reference):
-    """Read only the four files explicitly allowed for an accepted execution."""
+def validate_spec(root, spec_reference):
+    """Validate required sources and any conditional artifacts that exist."""
     root, specs, _ = resolve_specs_root(root)
     reference = Path(spec_reference)
     target = reference.resolve() if reference.is_absolute() else (specs / reference).resolve()
@@ -294,10 +284,12 @@ def validate_ready(root, spec_reference):
     if not target.is_dir() or target.is_symlink():
         raise SourceError("Spec inexistente ou inválida: " + str(target))
     contents = {}
-    for name in sorted(READY_SOURCE_NAMES):
+    for name in sorted(SPEC_SOURCE_NAMES):
         path = target / name
+        if not path.exists() and not path.is_symlink() and name in {"SPEC.md", "plan.json"}:
+            continue
         if not path.is_file() or path.is_symlink():
-            raise ContentError("Execução aceita exige " + name + ".")
+            raise ContentError("Arquivo obrigatório ausente ou inválido: " + name + ".")
         try:
             contents[name] = path.read_text(encoding="utf-8")
         except (OSError, UnicodeError) as exc:
@@ -305,8 +297,18 @@ def validate_ready(root, spec_reference):
         if not contents[name].strip():
             raise ContentError(name + " não pode estar vazio.")
     status, body = parse_status(contents["status.md"])
-    validate_status(status, body, str(target / "status.md"))
-    validate_plan(parse_json(contents["plan.json"]))
+    record = validate_status(status, body, str(target / "status.md"))
+    snapshot, _ = build_snapshot(root)
+    by_id = {item["id"]: item for item in snapshot["records"]}
+    if sum(item["id"] == record["id"] for item in snapshot["records"]) > 1:
+        raise ContentError("ID repetido: " + record["id"])
+    for relation in record["relations"]:
+        if relation["id"] not in by_id:
+            raise ContentError("Destino da relação ausente: " + relation["id"])
+        if sum(item["id"] == relation["id"] for item in snapshot["records"]) > 1:
+            raise ContentError("Destino da relação ambíguo: " + relation["id"])
+    if "plan.json" in contents:
+        validate_plan(parse_json(contents["plan.json"]))
     return target
 
 
@@ -334,27 +336,12 @@ def build_snapshot(root, sources=None):
         while parent.as_posix() not in by_path and parent != parent.parent:
             parent = parent.parent
         record["parent_id"] = by_path[parent.as_posix()]["id"] if parent.as_posix() in by_path else None
-        record["blockers"] = []
-        if record["waiting_for"]:
-            record["blockers"].append({"kind": "waiting", "reason": record["waiting_for"]})
-        for dependency in record["depends_on"]:
-            target = by_id.get(dependency["id"])
-            if target is None or target is record:
+        for relation in record["relations"]:
+            if relation["id"] not in by_id:
                 diagnostics.append(diagnostic(
-                    record["path"], "INVALID_DEPENDENCY",
-                    "Dependência ausente ou própria: " + dependency["id"],
+                    record["path"], "INVALID_RELATION",
+                    "Destino da relação ausente: " + relation["id"],
                 ))
-                record["blockers"].append({"kind": "dependency", **dependency})
-            elif target["status"] != "done":
-                record["blockers"].append({"kind": "dependency", **dependency})
-                if record["status"] == "done":
-                    diagnostics.append(diagnostic(
-                        record["path"], "UNFINISHED_DEPENDENCY",
-                        "Spec done depende de entrega pendente: " + dependency["id"],
-                    ))
-    graph = {record["id"]: [item["id"] for item in record["depends_on"]] for record in records}
-    for cycle in find_cycles(graph):
-        diagnostics.append(diagnostic("", "DEPENDENCY_CYCLE", " → ".join(cycle)))
 
     result = subprocess.run(
         ["git", "-C", str(root), "rev-parse", "HEAD"],
@@ -362,7 +349,7 @@ def build_snapshot(root, sources=None):
     )
     revision = result.stdout.strip() if result.returncode == 0 else None
     snapshot = {
-        "schema_version": "superflow.feed.v3",
+        "schema_version": "superflow.feed.v4",
         "generated_at": utc_now(),
         "snapshot_id": fingerprint(sources),
         "source_revision": revision,

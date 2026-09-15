@@ -1,23 +1,14 @@
 ---
 name: build
-description: Consolida a arquitetura e os contratos técnicos de uma ideia aceita em SPEC.md antes da implementação.
+description: Consolida decisões técnicas materiais e reuso em SPEC.md quando a entrega precisa de arquitetura explícita.
 ---
 
 # Build
 
-Build transforma um PRD aceito numa arquitetura executável. Não é fase persistida.
+Build transforma um PRD aceito numa arquitetura verificável. Use quando há decisões técnicas que precisam persistir; uma execução simples pode seguir sem SPEC.
 
-## Resultado obrigatório
+Leia código, padrões e interfaces reais. Investigue as facetas relevantes e procure reuso antes de propor nova estrutura. Escreva ou atualize `SPEC.md` com integração, contratos de dados, fronteiras de leitura/escrita, decisões, riscos materiais e verificações proporcionais.
 
-Escreva ou atualize `SPEC.md` com:
+Declare o local canônico dos componentes permanentes fora de `specs/**`. Se houver artefato temporário, identifique seu uso e destino conforme a [fronteira do pacote](../../assets/references/state-contract.md#fronteira-do-pacote-da-spec).
 
-- integração e componentes afetados;
-- contratos de dados e interfaces;
-- fronteiras de leitura e escrita;
-- decisões técnicas e reuso;
-- riscos materiais;
-- gates que protegem regras estruturais.
-
-Leia o código e os padrões reais antes de desenhar. Se a arquitetura mudar produto, atualize o PRD. Não copie estado operacional ou checklist viva para a SPEC.
-
-Nenhuma implementação de uma ideia aceita começa sem PRD, status, SPEC e plano válidos.
+Se a arquitetura mudar produto, reconcilie o PRD. O plano é uma decisão independente: só é necessário quando a sequência precisa ser coordenada. O retrato operacional permanece em status.

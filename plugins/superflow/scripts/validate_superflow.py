@@ -31,7 +31,6 @@ PLAYBOOKS = {
 CONTRACTS = {
     "state-contract.md",
     "commands-contract.md",
-    "quality-contract.md",
 }
 TEMPLATES = {
     "PRD.md",
@@ -44,7 +43,6 @@ RUNTIME_FILES = {
     "scripts/superflow_model.py",
     "scripts/superflow_qg.py",
     "scripts/validate_superflow.py",
-    "scripts/sync_personal_install.py",
     "scripts/vendor/PyYAML-LICENSE",
     "scripts/vendor/PyYAML-SOURCE.json",
     "scripts/vendor/yaml/__init__.py",
@@ -103,8 +101,8 @@ def validate_manifest(plugin: Path, errors: List[str]) -> None:
             continue
         if manifest.get("name") != "superflow":
             errors.append("{} deve declarar name superflow".format(path.relative_to(plugin)))
-        if manifest.get("version") != "0.9.3":
-            errors.append("{} deve declarar version 0.9.3".format(path.relative_to(plugin)))
+        if manifest.get("version") != "0.10.0":
+            errors.append("{} deve declarar version 0.10.0".format(path.relative_to(plugin)))
         if manifest.get("skills") != "./skills/":
             errors.append("{} deve apontar skills para ./skills/".format(path.relative_to(plugin)))
 

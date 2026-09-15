@@ -1,6 +1,6 @@
 {
   "name": "@superflow/runtime",
-  "version": "0.9.3",
+  "version": "0.10.0",
   "description": "Portable status-first runtime for Superflow spec creation, validation and QG projection.",
   "private": true,
   "license": "MIT",
@@ -15,7 +15,6 @@
     "plugins/superflow/assets/playbooks/reconciliar.md",
     "plugins/superflow/assets/references/state-contract.md",
     "plugins/superflow/assets/references/commands-contract.md",
-    "plugins/superflow/assets/references/quality-contract.md",
     "plugins/superflow/assets/templates/PRD.md",
     "plugins/superflow/assets/templates/status.md",
     "plugins/superflow/assets/templates/SPEC.md",

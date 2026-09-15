@@ -15,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from superflow_model import (
     CONFIG_PATH, SOURCE_NAMES, ContentError, SourceError, build_snapshot,
     ensure_unchanged, has_errors, parse_json, read_sources, resolve_specs_root,
-    validate_ready, yaml,
+    validate_spec, yaml,
 )
 
 PLUGIN = Path(__file__).resolve().parents[1]
@@ -46,13 +46,15 @@ def atomic_write(path, text, root, sources):
             temporary.unlink()
 
 
-def create_spec(root, slug, title):
+def create_spec(root, slug, title, summary):
     if not re.fullmatch(r"[a-z0-9][a-z0-9._/-]*", slug) or any(
         part in {"", ".", ".."} or part.startswith(".") for part in slug.split("/")
     ):
         raise ContentError("Slug deve conter nomes relativos simples, sem . ou ..")
     if not title.strip():
         raise ContentError("Título não pode ser vazio.")
+    if not summary.strip():
+        raise ContentError("Resumo não pode ser vazio.")
     root, specs, _ = resolve_specs_root(root)
     snapshot, sources = build_snapshot(root)
     if has_errors(snapshot):
@@ -66,7 +68,7 @@ def create_spec(root, slug, title):
         raise ContentError("Destino fora de specs_root.") from exc
     if target.exists():
         raise ContentError("Destino já existe: " + str(target))
-    status = {"id": slug, "title": title.strip(), "status": "pending"}
+    status = {"id": slug, "title": title.strip(), "summary": summary.strip(), "status": "pending"}
     prd_template = (PLUGIN / "assets/templates/PRD.md").read_text(encoding="utf-8")
     target.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix=".superflow-new-", dir=target.parent) as temp:
@@ -100,12 +102,13 @@ def build_parser():
     new = commands.add_parser("new", help="Criar PRD e status iniciais.")
     new.add_argument("slug")
     new.add_argument("--title", required=True)
+    new.add_argument("--summary", required=True)
 
     check = commands.add_parser("check", help="Validar um limite explícito.")
     checks = check.add_subparsers(dest="check_scope", required=True)
     checks.add_parser("status", help="Validar somente a coleção de status.")
-    ready = checks.add_parser("ready", help="Validar os quatro arquivos de uma execução aceita.")
-    ready.add_argument("spec")
+    spec = checks.add_parser("spec", help="Validar fontes obrigatórias e artefatos condicionais existentes.")
+    spec.add_argument("spec")
 
     for name in ("feed", "qg"):
         command = commands.add_parser(name)
@@ -118,10 +121,10 @@ def main(argv=None):
     root = args.root.expanduser().resolve()
     try:
         if args.command == "new":
-            print("Criado: " + str(create_spec(root, args.slug, args.title)))
+            print("Criado: " + str(create_spec(root, args.slug, args.title, args.summary)))
             return 0
-        if args.command == "check" and args.check_scope == "ready":
-            print("Pronta para execução: " + str(validate_ready(root, args.spec)))
+        if args.command == "check" and args.check_scope == "spec":
+            print("Spec válida: " + str(validate_spec(root, args.spec)))
             return 0
 
         snapshot, sources = build_snapshot(root)
