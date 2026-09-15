@@ -8,7 +8,7 @@ from pathlib import Path
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from superflow_model import (
-    ContentError, SourceError, build_snapshot, ensure_unchanged, has_errors,
+    ContentError, SourceError, build_snapshot, ensure_unchanged,
     parse_status, read_sources, validate_plan, validate_spec,
 )
 
@@ -34,18 +34,22 @@ class ModelTests(unittest.TestCase):
     def snapshot(self):
         return build_snapshot(self.root)[0]
 
+    def assert_has_diagnostics(self, snapshot):
+        self.assertTrue(snapshot["diagnostics"])
+        self.assertTrue(all(item["severity"] == "warning" for item in snapshot["diagnostics"]))
+
     def test_minimum_and_free_body(self):
         self.spec(body="# Qualquer título\n\nTexto real.")
         snapshot = self.snapshot()
-        self.assertFalse(has_errors(snapshot))
+        self.assertFalse(snapshot["diagnostics"])
         self.assertIn("Qualquer título", snapshot["records"][0]["body_md"])
 
     def test_only_binary_status_and_known_fields(self):
         for value in ("in_progress", "paused", "cancelled", "execute", "qa"):
             self.spec(status=value)
-            self.assertTrue(has_errors(self.snapshot()), value)
+            self.assert_has_diagnostics(self.snapshot())
         self.spec(state="pending")
-        self.assertTrue(has_errors(self.snapshot()))
+        self.assert_has_diagnostics(self.snapshot())
 
     def test_yaml_extensions_and_duplicate_keys_are_rejected(self):
         for text in ("id: a\nid: b", "id: &x a\ntitle: *x", "id: !!str a"):
@@ -57,34 +61,34 @@ class ModelTests(unittest.TestCase):
                           [{"id": "one", "reason": "Self"}],
                           [{"id": "missing", "reason": "Context"}]):
             self.spec(relations=relations)
-            self.assertTrue(has_errors(self.snapshot()))
+            self.assert_has_diagnostics(self.snapshot())
         self.spec(relations=[{"id": "other", "reason": "Contrato relacionado"}])
         self.spec("other")
-        self.assertFalse(has_errors(self.snapshot()))
+        self.assertFalse(self.snapshot()["diagnostics"])
 
     def test_relations_allow_cycles_and_done_to_pending(self):
         self.spec(status="done", relations=[{"id": "other", "reason": "Contexto"}])
         self.spec("other", relations=[{"id": "one", "reason": "História"}])
         snapshot = self.snapshot()
-        self.assertFalse(has_errors(snapshot))
+        self.assertFalse(snapshot["diagnostics"])
         self.assertEqual(snapshot["schema_version"], "superflow.feed.v4")
         self.assertNotIn("blockers", snapshot["records"][0])
 
     def test_summary_is_required_and_nonempty(self):
         for value in (None, "", "  ", []):
             self.spec(summary=value)
-            self.assertTrue(has_errors(self.snapshot()))
+            self.assert_has_diagnostics(self.snapshot())
 
     def test_duplicate_relations_rejected(self):
         self.spec("other")
         self.spec(relations=[{"id": "other", "reason": "A"}, {"id": "other", "reason": "B"}])
-        self.assertTrue(has_errors(self.snapshot()))
+        self.assert_has_diagnostics(self.snapshot())
 
     def test_done_parent_with_pending_minispec(self):
         self.spec("base", status="done")
         self.spec("base/minispecs/extra")
         snapshot = self.snapshot()
-        self.assertFalse(has_errors(snapshot))
+        self.assertFalse(snapshot["diagnostics"])
         child = next(r for r in snapshot["records"] if r["id"] != "base")
         self.assertEqual(child["parent_id"], "base")
 
@@ -149,12 +153,19 @@ class ModelTests(unittest.TestCase):
         with self.assertRaisesRegex(ContentError, "ambíguo"):
             validate_spec(self.root, "one")
 
+    def test_spec_counts_known_id_from_editorially_invalid_status(self):
+        directory = self.spec()
+        (directory / "PRD.md").write_text("# Promessa", encoding="utf-8")
+        self.spec("other", id="one", summary=None)
+        with self.assertRaisesRegex(ContentError, "ID repetido"):
+            validate_spec(self.root, "one")
+
     def test_source_removal_and_path_rename_update_snapshot(self):
         directory = self.spec()
         self.spec("other", relations=[{"id": "one", "reason": "Contexto"}])
         directory.rename(directory.with_name("renamed"))
         snapshot = self.snapshot()
-        self.assertFalse(has_errors(snapshot))
+        self.assertFalse(snapshot["diagnostics"])
         record = next(r for r in snapshot["records"] if r["id"] == "one")
         self.assertEqual(record["path"], "specs/renamed")
         (directory.with_name("renamed") / "status.md").unlink()

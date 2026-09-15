@@ -8,11 +8,11 @@ python3 -I <plugin>/scripts/superflow.py --root <repo> feed --output <feed.json>
 python3 -I <plugin>/scripts/superflow.py --root <repo> qg --output <qg.html>
 ```
 
-`new` exige um resumo humano e cria apenas PRD e status. `check status`, feed e QG leem somente status. `check spec` valida PRD e status obrigatórios e SPEC/plano quando presentes na spec-alvo. A integridade dos destinos de `relations` é conferida pelos status da coleção. Validar os arquivos não decide prontidão, autorização nem necessidade de artefatos condicionais.
+`new` exige um resumo humano e cria apenas PRD e status. Um diagnóstico em outra spec não impede a criação; o comando ainda recusa entrada inválida, ID conhecido ou destino físico já ocupado. `check status`, feed e QG leem somente status. `check spec` confere PRD e status obrigatórios e SPEC/plano quando presentes na spec-alvo. A integridade dos destinos de `relations` é conferida pelos status da coleção. Inspecionar os arquivos não decide prontidão, autorização nem necessidade de artefatos condicionais.
 
 O snapshot `superflow.feed.v4` inclui `summary` e `relations`. As relações preservam contexto; o QG deriva os vínculos inversos sem controlar execução.
 
-Os comandos nunca executam proof, teste, CI ou ship. Exit codes: 0 válido, 1 conteúdo inválido e 2 falha operacional. Feed/QG escrevem por arquivo temporário e não substituem saída anterior numa falha operacional.
+Os comandos nunca executam proof, teste, CI ou ship. `check`, feed e QG relatam conteúdo incompleto ou inválido como `warning` e terminam com exit 0; esses diagnósticos não afirmam validade nem bloqueiam a operação do projeto. Exit 1 indica que `new` recusou a entrada ou uma colisão antes de escrever. Exit 2 indica falha operacional. Feed/QG escrevem por arquivo temporário e não substituem saída anterior numa falha operacional.
 
 ## QG em outro HTML
 

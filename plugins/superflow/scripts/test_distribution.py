@@ -47,8 +47,8 @@ def read_json(relative_path: str) -> Dict:
 
 def test_release_metadata() -> None:
     package = read_json("package.json")
-    if package.get("name") != PACKAGE_NAME or package.get("version") != "0.10.1":
-        raise AssertionError("package.json não declara @superflow/runtime 0.10.1")
+    if package.get("name") != PACKAGE_NAME or package.get("version") != "0.10.2":
+        raise AssertionError("package.json não declara @superflow/runtime 0.10.2")
     if package.get("private") is not True:
         raise AssertionError("package.json deve permanecer privado")
     forbidden_package_fields = {"dependencies", "devDependencies", "optionalDependencies", "peerDependencies", "bin"}
@@ -64,8 +64,8 @@ def test_release_metadata() -> None:
         "plugins/superflow/.claude-plugin/plugin.json",
     ):
         manifest = read_json(relative_path)
-        if manifest.get("name") != "superflow" or manifest.get("version") != "0.10.1":
-            raise AssertionError("{} não está na versão 0.10.1".format(relative_path))
+        if manifest.get("name") != "superflow" or manifest.get("version") != "0.10.2":
+            raise AssertionError("{} não está na versão 0.10.2".format(relative_path))
         if manifest.get("skills") != "./skills/":
             raise AssertionError("{} não aponta para skills".format(relative_path))
 
@@ -79,8 +79,8 @@ def test_release_metadata() -> None:
         if not isinstance(entries, list) or len(entries) != 1:
             raise AssertionError("marketplace deve conter exatamente Superflow")
         entry = entries[0]
-        if entry.get("name") != "superflow" or entry.get("version") != "0.10.1":
-            raise AssertionError("marketplace não está na versão 0.10.1")
+        if entry.get("name") != "superflow" or entry.get("version") != "0.10.2":
+            raise AssertionError("marketplace não está na versão 0.10.2")
         if entry.get("source") != source:
             raise AssertionError("marketplace aponta para source inesperada")
 
@@ -170,7 +170,7 @@ def test_packed_runtime(workspace: Path) -> None:
 
     project = make_fixture_project(workspace)
     version = run([sys.executable, "-I", str(runtime), "--version"], cwd=consumer).strip()
-    if version != "0.10.1":
+    if version != "0.10.2":
         raise AssertionError("--version do runtime instalado retornou {!r}".format(version))
     run(
         [
@@ -196,6 +196,31 @@ def test_packed_runtime(workspace: Path) -> None:
     )
     if not output.is_file() or "superflow.feed.v4" not in output.read_text(encoding="utf-8"):
         raise AssertionError("qg do runtime instalado não gerou a projeção esperada")
+
+    status = project / "specs/demo/status.md"
+    status.write_text("---\nid: [inválido\n---\n", encoding="utf-8")
+    advisory = run(
+        [sys.executable, "-I", str(runtime), "--root", str(project), "check", "status"],
+        cwd=consumer,
+    )
+    if "diagnóstico" not in advisory:
+        raise AssertionError("check status não relatou o conteúdo inválido")
+    spec_advisory = run(
+        [sys.executable, "-I", str(runtime), "--root", str(project), "check", "spec", "demo"],
+        cwd=consumer,
+    )
+    if "Spec com diagnóstico" not in spec_advisory or "sem diagnósticos" in spec_advisory:
+        raise AssertionError("check spec afirmou validade para conteúdo inválido")
+    run(
+        [sys.executable, "-I", str(runtime), "--root", str(project), "feed"],
+        cwd=consumer,
+    )
+    run(
+        [sys.executable, "-I", str(runtime), "--root", str(project), "qg", "--output", str(output)],
+        cwd=consumer,
+    )
+    if "INVALID_STATUS" not in output.read_text(encoding="utf-8"):
+        raise AssertionError("qg não preservou o diagnóstico editorial")
 
 
 def main() -> int:

@@ -1,6 +1,6 @@
 {
   "name": "superflow",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "description": "Organiza promessa, retrato vivo e plano sem duplicar a execução do projeto.",
   "author": {
     "name": "Marco Antonio",
@@ -20,7 +20,7 @@
   "interface": {
     "displayName": "Superflow",
     "shortDescription": "Organize a entrega com PRD, status vivo e plano quando necessário.",
-    "longDescription": "Superflow registra a promessa em PRD.md, mantém o retrato completo em status.md e usa análise, decisão técnica, plano e revisão somente quando ajudam. O runtime cria, valida e projeta specs sem executar comandos do projeto.",
+    "longDescription": "Superflow registra a promessa em PRD.md, mantém o retrato completo em status.md e usa análise, decisão técnica, plano e revisão somente quando ajudam. O runtime cria, inspeciona e projeta specs sem executar comandos do projeto.",
     "developerName": "Marco Antonio",
     "category": "Productivity",
     "capabilities": [
@@ -29,7 +29,7 @@
       "technical-decisions",
       "implementation-planning",
       "status-validation",
-      "offline-quality-gate"
+      "offline-spec-diagnostics"
     ],
     "defaultPrompt": [
       "Use Superflow para registrar este pedido em um PRD.",
