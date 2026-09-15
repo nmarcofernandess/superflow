@@ -74,12 +74,12 @@ consumidor, fora do diretório instalado.
 Instale uma release identificada por tag e confira a versão declarada nos
 manifestos antes de usar:
 
-    codex plugin marketplace add nmarcofernandess/superflow --ref v0.10.0
+    codex plugin marketplace add nmarcofernandess/superflow --ref v0.10.1
     codex plugin add superflow@superflow
 
 Em Claude Code:
 
-    claude plugin marketplace add nmarcofernandess/superflow@v0.10.0
+    claude plugin marketplace add nmarcofernandess/superflow@v0.10.1
     claude plugin install superflow@superflow
 
 Para atualizar um marketplace já cadastrado, use `codex plugin marketplace upgrade superflow` seguido de `codex plugin add superflow@superflow`, ou `claude plugin marketplace update superflow` seguido de `claude plugin update superflow@superflow`. Se o marketplace estiver preso a uma tag antiga, altere a referência na configuração do host antes de atualizar.
@@ -101,3 +101,7 @@ A fonte do plugin é plugins/superflow. A validação local existente confere o 
 exato de sete diretórios de skills, referências internas e conteúdo do pacote.
 Leia o [README do plugin](plugins/superflow/README.md) para uso; leia
 a [SPEC atual](SPEC-superflow-plugin.md) para as decisões técnicas.
+
+### Incorporar a lista de specs
+
+`qg --embed --output fragmento.html` gera um fragmento autocontido para inserir em outro HTML. Usa o mesmo renderer do standalone com CSS e IDs isolados por Shadow DOM. Regere e substitua o fragmento quando as fontes mudarem; a navegação do hospedeiro permanece independente. Detalhes em `plugins/superflow/assets/references/commands-contract.md`.
