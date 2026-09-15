@@ -47,8 +47,8 @@ def read_json(relative_path: str) -> Dict:
 
 def test_release_metadata() -> None:
     package = read_json("package.json")
-    if package.get("name") != PACKAGE_NAME or package.get("version") != "0.10.2":
-        raise AssertionError("package.json não declara @superflow/runtime 0.10.2")
+    if package.get("name") != PACKAGE_NAME or package.get("version") != "0.10.3":
+        raise AssertionError("package.json não declara @superflow/runtime 0.10.3")
     if package.get("private") is not True:
         raise AssertionError("package.json deve permanecer privado")
     forbidden_package_fields = {"dependencies", "devDependencies", "optionalDependencies", "peerDependencies", "bin"}
@@ -62,25 +62,31 @@ def test_release_metadata() -> None:
     for relative_path in (
         "plugins/superflow/.codex-plugin/plugin.json",
         "plugins/superflow/.claude-plugin/plugin.json",
+        "plugins/superflow/.cursor-plugin/plugin.json",
     ):
         manifest = read_json(relative_path)
-        if manifest.get("name") != "superflow" or manifest.get("version") != "0.10.2":
-            raise AssertionError("{} não está na versão 0.10.2".format(relative_path))
+        if manifest.get("name") != "superflow" or manifest.get("version") != "0.10.3":
+            raise AssertionError("{} não está na versão 0.10.3".format(relative_path))
         if manifest.get("skills") != "./skills/":
             raise AssertionError("{} não aponta para skills".format(relative_path))
 
     codex_marketplace = read_json(".agents/plugins/marketplace.json")
     claude_marketplace = read_json(".claude-plugin/marketplace.json")
+    cursor_marketplace = read_json(".cursor-plugin/marketplace.json")
+    owner = cursor_marketplace.get("owner")
+    if not isinstance(owner, dict) or not owner.get("name"):
+        raise AssertionError("marketplace Cursor deve declarar owner.name")
     for marketplace, source in (
         (codex_marketplace, {"source": "local", "path": "./plugins/superflow"}),
         (claude_marketplace, "./plugins/superflow"),
+        (cursor_marketplace, "./plugins/superflow"),
     ):
         entries = marketplace.get("plugins")
         if not isinstance(entries, list) or len(entries) != 1:
             raise AssertionError("marketplace deve conter exatamente Superflow")
         entry = entries[0]
-        if entry.get("name") != "superflow" or entry.get("version") != "0.10.2":
-            raise AssertionError("marketplace não está na versão 0.10.2")
+        if entry.get("name") != "superflow" or entry.get("version") != "0.10.3":
+            raise AssertionError("marketplace não está na versão 0.10.3")
         if entry.get("source") != source:
             raise AssertionError("marketplace aponta para source inesperada")
 
@@ -170,7 +176,7 @@ def test_packed_runtime(workspace: Path) -> None:
 
     project = make_fixture_project(workspace)
     version = run([sys.executable, "-I", str(runtime), "--version"], cwd=consumer).strip()
-    if version != "0.10.2":
+    if version != "0.10.3":
         raise AssertionError("--version do runtime instalado retornou {!r}".format(version))
     run(
         [

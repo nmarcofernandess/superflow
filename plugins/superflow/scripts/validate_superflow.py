@@ -92,7 +92,8 @@ def validate_json(path: Path, errors: List[str]) -> Optional[dict]:
 def validate_manifest(plugin: Path, errors: List[str]) -> None:
     codex_path = plugin / ".codex-plugin/plugin.json"
     claude_path = plugin / ".claude-plugin/plugin.json"
-    for path in (codex_path, claude_path):
+    cursor_path = plugin / ".cursor-plugin/plugin.json"
+    for path in (codex_path, claude_path, cursor_path):
         if not path.is_file():
             errors.append("Manifesto ausente: {}".format(path.relative_to(plugin)))
             continue
@@ -101,8 +102,8 @@ def validate_manifest(plugin: Path, errors: List[str]) -> None:
             continue
         if manifest.get("name") != "superflow":
             errors.append("{} deve declarar name superflow".format(path.relative_to(plugin)))
-        if manifest.get("version") != "0.10.2":
-            errors.append("{} deve declarar version 0.10.2".format(path.relative_to(plugin)))
+        if manifest.get("version") != "0.10.3":
+            errors.append("{} deve declarar version 0.10.3".format(path.relative_to(plugin)))
         if manifest.get("skills") != "./skills/":
             errors.append("{} deve apontar skills para ./skills/".format(path.relative_to(plugin)))
 

@@ -37,4 +37,4 @@ A fronteira do pacote é explicada em `state-contract.md`: materiais da spec sã
 
 ## Distribuição
 
-Os manifests Codex e Claude descobrem as skills do pacote. As releases são pacotes completos e versionados; customizações do consumidor ficam fora do diretório instalado. A validação local existente confere conteúdo, referências e comportamento. O canal Node opcional distribui runtime, assets, vendor e licenças; a CLI continua Python.
+Os manifests Codex, Claude e Cursor descobrem as skills do pacote. As releases são pacotes completos e versionados; customizações do consumidor ficam fora do diretório instalado. A validação local existente confere conteúdo, referências e comportamento. O canal Node opcional distribui runtime, assets, vendor e licenças; a CLI continua Python.

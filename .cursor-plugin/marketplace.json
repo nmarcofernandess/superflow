@@ -5,6 +5,9 @@
     "name": "Marco Antonio",
     "url": "https://github.com/nmarcofernandess"
   },
+  "metadata": {
+    "description": "Plugin portátil para registrar promessa, retrato vivo e plano proporcional."
+  },
   "plugins": [
     {
       "name": "superflow",

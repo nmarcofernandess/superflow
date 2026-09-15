@@ -6,7 +6,7 @@
   "plugins": [
     {
       "name": "superflow",
-      "version": "0.10.2",
+      "version": "0.10.3",
       "description": "Organiza promessa, retrato vivo e plano sem duplicar a execução do projeto.",
       "source": {
         "source": "local",

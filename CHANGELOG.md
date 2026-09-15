@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.10.3
+
+- Discover the same seven skills in Cursor through `.cursor-plugin` marketplace and plugin manifests.
+
 ## 0.10.2
 
 - Report spec and status diagnostics as advisory output while preserving operational failure signaling.

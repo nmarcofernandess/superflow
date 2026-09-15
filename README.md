@@ -75,15 +75,23 @@ consumidor, fora do diretório instalado.
 Instale uma release identificada por tag e confira a versão declarada nos
 manifestos antes de usar:
 
-    codex plugin marketplace add nmarcofernandess/superflow --ref v0.10.2
+    codex plugin marketplace add nmarcofernandess/superflow --ref v0.10.3
     codex plugin add superflow@superflow
 
 Em Claude Code:
 
-    claude plugin marketplace add nmarcofernandess/superflow@v0.10.2
+    claude plugin marketplace add nmarcofernandess/superflow@v0.10.3
     claude plugin install superflow@superflow
 
-Para atualizar um marketplace já cadastrado, use `codex plugin marketplace upgrade superflow` seguido de `codex plugin add superflow@superflow`, ou `claude plugin marketplace update superflow` seguido de `claude plugin update superflow@superflow`. Se o marketplace estiver preso a uma tag antiga, altere a referência na configuração do host antes de atualizar.
+No Cursor, o marketplace do repositório já declara o plugin. Importe o GitHub e instale `superflow`:
+
+    agent plugin marketplace add https://github.com/nmarcofernandess/superflow --git-ref v0.10.3
+
+Depois, no Agent, abra `/plugin`, escolha Superflow no Marketplace e instale no escopo user. Para teste local, copie o pacote para o diretório que o Cursor lê sem marketplace:
+
+    cp -R plugins/superflow ~/.cursor/plugins/local/superflow
+
+Para atualizar um marketplace já cadastrado, use `codex plugin marketplace upgrade superflow` seguido de `codex plugin add superflow@superflow`, ou `claude plugin marketplace update superflow` seguido de `claude plugin update superflow@superflow`, ou `agent plugin marketplace update` e reinstale Superflow em `/plugin`. Se o marketplace estiver preso a uma tag antiga, altere a referência na configuração do host antes de atualizar.
 
 Após atualizar, abra uma nova task para recarregar o inventário de skills.
 
