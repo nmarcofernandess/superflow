@@ -14,11 +14,16 @@ sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from superflow_model import (
     CONFIG_PATH, SOURCE_NAMES, ContentError, SourceError, build_snapshot,
-    ensure_unchanged, has_errors, parse_json, read_sources, resolve_specs_root,
+    ensure_unchanged, parse_json, read_sources, resolve_specs_root, status_id_counts,
     validate_spec, yaml,
 )
 
 PLUGIN = Path(__file__).resolve().parents[1]
+
+
+def emit_diagnostics(items):
+    for item in items:
+        print("{severity}: {path}: {code}: {message}".format(**item), file=sys.stderr)
 
 
 def atomic_write(path, text, root, sources):
@@ -57,9 +62,7 @@ def create_spec(root, slug, title, summary):
         raise ContentError("Resumo não pode ser vazio.")
     root, specs, _ = resolve_specs_root(root)
     snapshot, sources = build_snapshot(root)
-    if has_errors(snapshot):
-        raise ContentError("Corrija os status inválidos antes de criar outro ID.")
-    if any(record["id"] == slug for record in snapshot["records"]):
+    if slug in status_id_counts(sources):
         raise ContentError("ID já cadastrado: " + slug)
     target = (specs / slug).resolve()
     try:
@@ -88,7 +91,7 @@ def create_spec(root, slug, title, summary):
         except OSError:
             target.rmdir()
             raise
-    return target
+    return target, snapshot["diagnostics"]
 
 
 def build_parser():
@@ -123,10 +126,26 @@ def main(argv=None):
     root = args.root.expanduser().resolve()
     try:
         if args.command == "new":
-            print("Criado: " + str(create_spec(root, args.slug, args.title, args.summary)))
+            target, diagnostics = create_spec(root, args.slug, args.title, args.summary)
+            emit_diagnostics(diagnostics)
+            print("Criado: " + str(target))
+            if diagnostics:
+                print("{} diagnóstico{} existente{}".format(
+                    len(diagnostics), "" if len(diagnostics) == 1 else "s",
+                    "" if len(diagnostics) == 1 else "s",
+                ))
             return 0
         if args.command == "check" and args.check_scope == "spec":
-            print("Spec válida: " + str(validate_spec(root, args.spec)))
+            try:
+                target = validate_spec(root, args.spec)
+            except ContentError as exc:
+                print(
+                    "warning: {}: INVALID_SPEC: {}".format(args.spec, exc),
+                    file=sys.stderr,
+                )
+                print("Spec com diagnóstico: " + str(args.spec))
+                return 0
+            print("Spec sem diagnósticos: " + str(target))
             return 0
 
         snapshot, sources = build_snapshot(root)
@@ -141,12 +160,11 @@ def main(argv=None):
             print("Gerado: " + str(output))
         else:
             ensure_unchanged(root, sources)
-        for item in snapshot["diagnostics"]:
-            print("{severity}: {path}: {code}: {message}".format(**item), file=sys.stderr)
+        emit_diagnostics(snapshot["diagnostics"])
         print("{} specs; {} diagnósticos; snapshot {}".format(
             len(snapshot["records"]), len(snapshot["diagnostics"]), snapshot["snapshot_id"][:12]
         ))
-        return 1 if has_errors(snapshot) else 0
+        return 0
     except ContentError as exc:
         print("error: " + str(exc), file=sys.stderr)
         return 1

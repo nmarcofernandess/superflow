@@ -17,7 +17,7 @@ Use para registrar, preparar, retomar, reconciliar ou fechar uma entrega.
 
 - Ideia nova: `PRD.md` e `status.md`, com resumo humano do tema.
 - SPEC e plano são independentes e condicionais: arquitetura material pede Build; sequência coordenada pede Plan.
-- `superflow check spec <spec>` valida o pacote existente; autorização e próximo trabalho dependem do contexto.
+- `superflow check spec <spec>` relata diagnósticos do pacote existente; autorização e próximo trabalho dependem do contexto.
 - Estado global e de task usam `pending | done`. Analyst, Build, Plan, Execute, Review e QA são capacidades ou ações.
 - Relações preservam memória; condições e direção ficam em `Próximo trabalho`. Plano com task pendente é o único cursor de tasks.
 - Atualize PRD quando mudar produto; SPEC quando mudar arquitetura; plano quando mudar execução; status quando mudar direção, autorização, espera relevante, relação, divisão de escopo ou handoff.

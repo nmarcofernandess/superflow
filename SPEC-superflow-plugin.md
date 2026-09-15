@@ -25,7 +25,7 @@ Plan.json contém tasks com exatamente `id`, `task`, `status`, `depends_on` e `a
 
 ## Runtime
 
-Python 3.9 ou superior, em modo isolado, expõe `new`, `check status`, `check spec`, `feed` e `qg`, com raiz explícita. New exige resumo humano e cria somente PRD e status. Check spec valida os dois obrigatórios e SPEC/plano quando presentes, sem inferir prontidão. Os status da coleção permitem conferir os destinos das relações.
+Python 3.9 ou superior, em modo isolado, expõe `new`, `check status`, `check spec`, `feed` e `qg`, com raiz explícita. New exige resumo humano e cria somente PRD e status, preservando proteção contra IDs e destinos já ocupados. Check spec relata diagnósticos nos dois obrigatórios e em SPEC/plano quando presentes, sem inferir prontidão ou controlar CI/ship. Os status da coleção permitem conferir os destinos das relações.
 
 Feed e QG leem exclusivamente status.md. O snapshot `superflow.feed.v4` contém resumo e relações. O parser YAML é seguro, e PyYAML acompanha o pacote. A gravação de feed/QG é atômica; a serialização do conteúdo preserva a fronteira entre dados e código do HTML.
 

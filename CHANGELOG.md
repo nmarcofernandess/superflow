@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.10.2
+
+- Report spec and status diagnostics as advisory output while preserving operational failure signaling.
+- Allow independent spec creation with ID and destination collision protection.
+
 ## 0.10.1
 
 - QG embutível com `qg --embed`: mesmo layout e dados do standalone, isolados por Shadow DOM, preservando a navegação do HTML hospedeiro.

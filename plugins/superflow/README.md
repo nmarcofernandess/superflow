@@ -68,6 +68,7 @@ playbooks.
 
 Python 3.9 ou superior é necessário. A interface, os efeitos e os exit codes
 estão em assets/references/commands-contract.md.
+Diagnósticos editoriais permanecem visíveis e não controlam CI ou ship do projeto.
 
 ## Materiais da spec
 

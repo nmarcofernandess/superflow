@@ -113,7 +113,7 @@ def utc_now():
     return datetime.now(timezone.utc).isoformat()
 
 
-def diagnostic(path, code, message, severity="error"):
+def diagnostic(path, code, message, severity="warning"):
     return {"path": path, "code": code, "message": message, "severity": severity}
 
 
@@ -133,7 +133,10 @@ def resolve_specs_root(root):
         if not isinstance(config, dict) or set(config) - {"specs_root"}:
             raise SourceError("Configuração possui campos desconhecidos ou não é objeto.")
         for key, value in config.items():
-            text_value(value, key)
+            try:
+                text_value(value, key)
+            except ContentError as exc:
+                raise SourceError("Configuração inválida: " + str(exc)) from exc
     relative = config.get("specs_root", "specs")
     if Path(relative).is_absolute():
         raise SourceError("specs_root deve ser relativo ao repositório.")
@@ -170,6 +173,23 @@ def read_sources(root):
     except (OSError, UnicodeError) as exc:
         raise SourceError("Não foi possível ler os status: " + str(exc)) from exc
     return sources
+
+
+def status_id_counts(sources):
+    """Count usable IDs without requiring every editorial field to be valid."""
+    counts = {}
+    for path, raw in sources.items():
+        if not path.endswith("/status.md"):
+            continue
+        try:
+            data, _ = parse_status(raw.decode("utf-8"))
+        except (ContentError, UnicodeError):
+            continue
+        identifier = data.get("id") if isinstance(data, dict) else None
+        if isinstance(identifier, str) and identifier.strip() and "\x00" not in identifier:
+            identifier = identifier.strip()
+            counts[identifier] = counts.get(identifier, 0) + 1
+    return counts
 
 
 def fingerprint(sources):
@@ -298,15 +318,16 @@ def validate_spec(root, spec_reference):
             raise ContentError(name + " não pode estar vazio.")
     status, body = parse_status(contents["status.md"])
     record = validate_status(status, body, str(target / "status.md"))
-    snapshot, _ = build_snapshot(root)
+    snapshot, sources = build_snapshot(root)
+    id_counts = status_id_counts(sources)
     by_id = {item["id"]: item for item in snapshot["records"]}
-    if sum(item["id"] == record["id"] for item in snapshot["records"]) > 1:
+    if id_counts.get(record["id"], 0) > 1:
         raise ContentError("ID repetido: " + record["id"])
     for relation in record["relations"]:
+        if id_counts.get(relation["id"], 0) > 1:
+            raise ContentError("Destino da relação ambíguo: " + relation["id"])
         if relation["id"] not in by_id:
             raise ContentError("Destino da relação ausente: " + relation["id"])
-        if sum(item["id"] == relation["id"] for item in snapshot["records"]) > 1:
-            raise ContentError("Destino da relação ambíguo: " + relation["id"])
     if "plan.json" in contents:
         validate_plan(parse_json(contents["plan.json"]))
     return target
@@ -357,7 +378,3 @@ def build_snapshot(root, sources=None):
         "diagnostics": diagnostics,
     }
     return snapshot, sources
-
-
-def has_errors(snapshot):
-    return any(item["severity"] == "error" for item in snapshot["diagnostics"])
