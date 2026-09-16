@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.12.1
+
+- Report missing HTML publication destinations without blocking existing outputs or changing configuration.
+- Report updated and missing destination counts, including when only feed/runtime were published.
+
 ## 0.12.0
 
 - Portable snapshots and runtime in every generated QG, with optional HTTP refresh.

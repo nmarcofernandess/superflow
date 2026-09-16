@@ -163,6 +163,7 @@ def main(argv=None):
             feed_path = (args.output if args.command == "feed" else None) or root / ".superflow/feed.json"
             outputs = [(feed_path, json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n"),
                        (feed_path.parent / "qg.js", component_script())]
+            missing_outputs = []
             if args.command == "qg":
                 if args.refresh is not None:
                     config = parse_json(sources[CONFIG_PATH].decode("utf-8")) if CONFIG_PATH in sources else {}
@@ -172,7 +173,13 @@ def main(argv=None):
                     for path in destinations:
                         path = Path(path).expanduser()
                         path = (root / path).resolve() if not path.is_absolute() else path.resolve()
-                        outputs.append((path, refresh_html(path.read_bytes().decode("utf-8"), snapshot, args.source)))
+                        try:
+                            raw = path.read_bytes()
+                        except FileNotFoundError:
+                            missing_outputs.append(path)
+                            print("warning: {}: OUTPUT_NOT_FOUND: HTML não encontrado; destino mantido na configuração, se declarado.".format(path), file=sys.stderr)
+                            continue
+                        outputs.append((path, refresh_html(raw.decode("utf-8"), snapshot, args.source)))
                 else:
                     output = args.output or root / ".superflow/qg.html"
                     renderer = render_embed if args.embed else render
@@ -186,6 +193,10 @@ def main(argv=None):
             for path, content in outputs:
                 atomic_write(path, content, root, sources)
                 print("Gerado: " + str(path))
+            if args.command == "qg" and args.refresh is not None:
+                print("HTMLs atualizados: {}; destinos não encontrados: {}.".format(
+                    len(outputs) - 2, len(missing_outputs),
+                ))
         else:
             ensure_unchanged(root, sources)
         emit_diagnostics(snapshot["diagnostics"])
