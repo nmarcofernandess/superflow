@@ -118,7 +118,7 @@ def build_parser():
         command.add_argument("--output", type=Path)
         if name == "qg":
             command.add_argument("--online", metavar="FEED_URL", help="Gerar HTML que consulta um feed HTTP(S).")
-            command.add_argument("--refresh", type=Path, nargs="+", metavar="HTML", help="Atualizar componentes de HTMLs existentes como exports offline.")
+            command.add_argument("--refresh", type=Path, nargs="*", metavar="HTML", help="Atualizar fotografias portáteis nos HTMLs indicados ou em qg_outputs.")
             command.add_argument("--source", help="Selecionar os componentes pelo src exato durante --refresh.")
             command.add_argument("--embed", action="store_true", help="Gerar fragmento HTML isolado com Shadow DOM.")
     return parser
@@ -129,9 +129,9 @@ def main(argv=None):
     args = parser.parse_args(argv)
     root = args.root.expanduser().resolve()
     if args.command == "qg":
-        if args.refresh and (args.output or args.embed or args.online):
+        if args.refresh is not None and (args.output or args.embed or args.online):
             parser.error("--refresh não combina com --output, --embed ou --online.")
-        if args.source is not None and not args.refresh:
+        if args.source is not None and args.refresh is None:
             parser.error("--source seleciona componentes para --refresh.")
     try:
         if args.command == "new":
@@ -164,9 +164,14 @@ def main(argv=None):
             outputs = [(feed_path, json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n"),
                        (feed_path.parent / "qg.js", component_script())]
             if args.command == "qg":
-                if args.refresh:
-                    for path in args.refresh:
-                        path = path.expanduser().resolve()
+                if args.refresh is not None:
+                    config = parse_json(sources[CONFIG_PATH].decode("utf-8")) if CONFIG_PATH in sources else {}
+                    destinations = args.refresh or config.get("qg_outputs", [])
+                    if not destinations:
+                        raise SourceError("Informe HTMLs em --refresh ou configure qg_outputs.")
+                    for path in destinations:
+                        path = Path(path).expanduser()
+                        path = (root / path).resolve() if not path.is_absolute() else path.resolve()
                         outputs.append((path, refresh_html(path.read_bytes().decode("utf-8"), snapshot, args.source)))
                 else:
                     output = args.output or root / ".superflow/qg.html"

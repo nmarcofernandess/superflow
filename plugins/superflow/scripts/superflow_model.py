@@ -130,13 +130,18 @@ def resolve_specs_root(root):
             config = parse_json(config_file.read_text(encoding="utf-8"))
         except (OSError, UnicodeError, ContentError) as exc:
             raise SourceError("Configuração inválida: " + str(exc)) from exc
-        if not isinstance(config, dict) or set(config) - {"specs_root"}:
+        if not isinstance(config, dict) or set(config) - {"specs_root", "qg_outputs"}:
             raise SourceError("Configuração possui campos desconhecidos ou não é objeto.")
-        for key, value in config.items():
+        if "specs_root" in config:
             try:
-                text_value(value, key)
+                text_value(config["specs_root"], "specs_root")
             except ContentError as exc:
                 raise SourceError("Configuração inválida: " + str(exc)) from exc
+        destinations = config.get("qg_outputs", [])
+        if not isinstance(destinations, list) or any(
+            not isinstance(item, str) or not item.strip() or "\x00" in item for item in destinations
+        ):
+            raise SourceError("qg_outputs deve ser uma lista de caminhos HTML não vazios.")
     relative = config.get("specs_root", "specs")
     if Path(relative).is_absolute():
         raise SourceError("specs_root deve ser relativo ao repositório.")

@@ -41,7 +41,7 @@
     </div>
     <section class="list" id="list" aria-live="polite"></section>
     <details class="diagnostics" id="diagnostics" hidden><summary>Diagnósticos do corpus</summary><ul id="diagnostic-list"></ul></details>
-    <footer class="footer">Gerado a partir de status.md</footer>
+    <footer class="footer"><span id="feed-status" role="status">Retrato incorporado</span></footer>
   </main>
 </div>
 <dialog class="drawer" id="drawer" aria-labelledby="drawer-title">
@@ -53,10 +53,11 @@
 </dialog>
 <script type="application/json" id="qg-snapshot">__QG_SNAPSHOT__</script>
 <script>
-((root,feed,ids,syncHash)=>{"use strict";
+((root,feed,ids,syncHash,previous)=>{"use strict";
+previous=previous||{};
 const records=feed.records.filter(r=>ids===null||ids.includes(r.id));
 const byId=new Map(records.map(r=>[r.id,r])),children=new Map();records.forEach(r=>{if(r.parent_id){const a=children.get(r.parent_id)||[];a.push(r);children.set(r.parent_id,a)}});
-const roots=records.filter(r=>!r.parent_id||!byId.has(r.parent_id));let view="open",query="";
+const roots=records.filter(r=>!r.parent_id||!byId.has(r.parent_id));let view=previous.view||"open",query=(previous.query||"").trim().toLocaleLowerCase("pt-BR");
 const labels={open:["Em aberto","Escolha uma spec. O contexto completo abre ao lado."],done:["Concluídas","Specs que cumpriram o próprio aceite."]};
 function situation(r){return r.status==="done"?"done":"pending"}
 function inView(r){return view==="open"?r.status!=="done":r.status==="done"}
@@ -94,7 +95,7 @@ function card(r,depth=0){
 }
 function render(){root.getElementById("view-title").textContent=labels[view][0];root.getElementById("view-copy").textContent=labels[view][1];const list=root.getElementById("list");list.replaceChildren();const shown=roots.filter(matches);shown.forEach(r=>list.appendChild(card(r)));if(!shown.length)list.innerHTML='<div class="empty"><strong>Nenhuma spec nesta visão.</strong><span>Ajuste a busca ou escolha outro recorte.</span></div>';const total=records.filter(r=>inView(r)&&(query?searchable(r).includes(query):true)).length;root.getElementById("visible-count").textContent=total+" spec"+(total===1?"":"s")}
 function openDrawer(r){
- const s=situation(r),drawer=root.getElementById("drawer");
+ const s=situation(r),drawer=root.getElementById("drawer");drawer.dataset.specId=r.id;
  root.getElementById("drawer-id").textContent=r.id;root.getElementById("drawer-title").textContent=r.title;
  root.getElementById("drawer-state").innerHTML=`<i class="dot ${s}"></i>${s==="pending"?"Em aberto":"Concluída"}`;
  const context=root.getElementById("drawer-context");context.replaceChildren();
@@ -106,6 +107,10 @@ function openDrawer(r){
 }
 root.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{view=t.dataset.view;root.querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-selected",String(x===t)));render()});root.getElementById("search").oninput=e=>{query=e.target.value.trim().toLocaleLowerCase("pt-BR");render()};root.getElementById("close").onclick=()=>root.getElementById("drawer").close();root.getElementById("drawer").addEventListener("close",()=>{if(syncHash)history.replaceState(null,"",location.pathname+location.search)});
 count();root.getElementById("snapshot").textContent=`${records.length} specs · ${feed.source_revision?String(feed.source_revision).slice(0,10):"sem revisão Git"} · ${String(feed.snapshot_id||"").slice(0,10)}`;root.getElementById("snapshot").title=`Gerado em ${feed.generated_at} · snapshot ${feed.snapshot_id}`;const ds=Array.isArray(feed.diagnostics)?feed.diagnostics:[];if(ds.length){root.getElementById("diagnostics").hidden=false;root.getElementById("diagnostic-list").innerHTML=ds.map(d=>`<li><strong>${esc(d.code)}</strong> · ${esc(d.path)} · ${esc(d.message)}</li>`).join("")}render();if(syncHash&&location.hash){let id;try{id=decodeURIComponent(location.hash.slice(1))}catch{id=""}const r=byId.get(id);if(r)openDrawer(r)}
+root.getElementById("search").value=previous.query||"";
+root.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",String(t.dataset.view===view)));
+if(previous.drawer && byId.has(previous.drawer)){openDrawer(byId.get(previous.drawer));root.getElementById("drawer").scrollTop=previous.scroll||0}
+return {state:()=>({view,query:root.getElementById("search").value,drawer:root.getElementById("drawer").open?root.getElementById("drawer").dataset.specId:null,scroll:root.getElementById("drawer").scrollTop})};
 })();
 </script>
 </body>

@@ -10,7 +10,7 @@
       "name": "superflow",
       "source": "./plugins/superflow",
       "description": "Organiza promessa, retrato vivo e plano sem duplicar a execução do projeto.",
-      "version": "0.11.0",
+      "version": "0.12.0",
       "author": {
         "name": "Marco Antonio",
         "url": "https://github.com/nmarcofernandess"

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.12.0
+
+- Portable snapshots and runtime in every generated QG, with optional HTTP refresh.
+- Retain the latest valid view on network failure and preserve search/drawer state during updates.
+- Optional refresh intervals and project-configured HTML publication destinations.
+
 ## 0.11.0
 
 - Shared QG component with an HTTP feed and per-host ID selection.

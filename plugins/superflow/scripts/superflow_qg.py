@@ -6,7 +6,6 @@ import json
 import re
 from html.parser import HTMLParser
 from pathlib import Path
-from urllib.parse import urljoin
 
 from superflow_model import SourceError
 
@@ -38,9 +37,7 @@ def snapshot_element(feed):
     return '<script type="application/json" data-superflow-snapshot>' + script_safe_dumps(feed) + '</script>'
 
 
-def runtime_element(source=None):
-    if source is not None:
-        return '<script data-superflow-runtime defer src="' + html.escape(urljoin(source, "qg.js"), quote=True) + '"></script>'
+def runtime_element():
     return '<script data-superflow-runtime>\n' + component_script() + '\n</script>'
 
 
@@ -48,11 +45,8 @@ def render_embed(feed, source=None, sync_hash=False):
     attributes = ' sync-hash' if sync_hash else ''
     if source is not None:
         attributes += ' src="' + html.escape(source, quote=True) + '"'
-        content = ''
-    else:
-        attributes += ' offline'
-        content = snapshot_element(feed)
-    return '<superflow-qg' + attributes + '>' + content + '</superflow-qg>\n' + runtime_element(source) + '\n'
+    return ('<superflow-qg' + attributes + '>' + snapshot_element(feed)
+            + '</superflow-qg>\n' + runtime_element() + '\n')
 
 
 def render(feed, root=None, source=None):
@@ -101,14 +95,14 @@ class Slots(HTMLParser):
 
 
 def refresh_html(text, feed, source=None):
-    """Freeze matching components to one snapshot, retaining their local scopes."""
+    """Update portable snapshots, retaining source, scope and refresh settings."""
     slots = Slots(text)
     edits = []
     for start, end, attrs in slots.components:
-        if dict(attrs).get('src') != source:
+        if source is not None and dict(attrs).get('src') != source:
             continue
-        attrs = [(key, value) for key, value in attrs if key not in {'offline', 'data-snapshot-id'}]
-        opening = '<superflow-qg offline' + ''.join(
+        attrs = [(key, value) for key, value in attrs if key != 'data-snapshot-id']
+        opening = '<superflow-qg' + ''.join(
             ' ' + key + ('="' + html.escape(value, quote=True) + '"' if value is not None else '')
             for key, value in attrs
         ) + '>'
