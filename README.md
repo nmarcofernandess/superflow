@@ -75,17 +75,17 @@ consumidor, fora do diretório instalado.
 Instale uma release identificada por tag e confira a versão declarada nos
 manifestos antes de usar:
 
-    codex plugin marketplace add nmarcofernandess/superflow --ref v0.12.2
+    codex plugin marketplace add nmarcofernandess/superflow --ref v0.12.3
     codex plugin add superflow@superflow
 
 Em Claude Code:
 
-    claude plugin marketplace add nmarcofernandess/superflow@v0.12.2
+    claude plugin marketplace add nmarcofernandess/superflow@v0.12.3
     claude plugin install superflow@superflow
 
 No Cursor, o marketplace do repositório já declara o plugin. Importe o GitHub e instale `superflow`:
 
-    agent plugin marketplace add https://github.com/nmarcofernandess/superflow --git-ref v0.12.2
+    agent plugin marketplace add https://github.com/nmarcofernandess/superflow --git-ref v0.12.3
 
 Depois, no Agent, abra `/plugin`, escolha Superflow no Marketplace e instale no escopo user. Para teste local, copie o pacote para o diretório que o Cursor lê sem marketplace:
 
@@ -127,4 +127,14 @@ O contrato de comandos explica HTTP/CORS, publicação e limites. Arquivo local 
 
 ### Verificação do componente
 
-A suíte Python roda com `bash scripts/validate-all.sh`. Com Playwright disponível no ambiente (ou via `NODE_PATH`), execute `node plugins/superflow/scripts/test_qg_browser.cjs` e `node plugins/superflow/scripts/test_qg_portable.cjs`. O segundo cobre arquivo local real, HTTP com e sem CORS, queda do host, polling e preservação do último retrato válido. `SUPERFLOW_CHROME=1` usa a instalação local do Google Chrome; por padrão usa Chromium. Os ensaios são temporários e não instalam dependências nos consumidores.
+Para desenvolver e validar uma release neste repositório:
+
+```bash
+npm ci
+npm run test:setup
+npm test
+```
+
+`npm test` executa a suíte Python, a validação da distribuição e os dois testes de integração no Chromium. Playwright é uma dependência de desenvolvimento deste repositório; não é exigido para usar o plugin. A instalação do navegador é uma preparação separada e não ocorre a cada validação.
+
+Os testes verificam comportamento, isolamento e ausência de overflow em diferentes larguras, sem comparar screenshots ou fixar fontes, cores e espaçamentos. O ensaio portátil cobre arquivo local real, HTTP com e sem CORS, queda do host, polling e preservação do último retrato válido. Os ensaios e servidores são temporários. `SUPERFLOW_CHROME=1 node plugins/superflow/scripts/test_qg_portable.cjs` permite repetir o ensaio portátil no Google Chrome local; a validação padrão usa Chromium.

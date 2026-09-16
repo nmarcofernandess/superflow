@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.12.3
+
+- Include Chromium integration tests in local release validation, with repository-owned Playwright development setup.
+
 ## 0.12.2
 
 - Clarify default local output paths and consumer-defined public feed URLs, with consistent feed/runtime examples.

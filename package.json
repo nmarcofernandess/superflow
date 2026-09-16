@@ -1,6 +1,6 @@
 {
   "name": "@superflow/runtime",
-  "version": "0.12.2",
+  "version": "0.12.3",
   "description": "Portable status-first runtime for Superflow spec creation, diagnostics and QG projection.",
   "private": true,
   "license": "MIT",
@@ -25,5 +25,12 @@
     "plugins/superflow/scripts/validate_superflow.py",
     "plugins/superflow/scripts/vendor/",
     "plugins/superflow/assets/qg-component.js"
-  ]
+  ],
+  "devDependencies": {
+    "playwright": "1.63.0"
+  },
+  "scripts": {
+    "test": "bash scripts/validate-all.sh",
+    "test:setup": "playwright install chromium"
+  }
 }

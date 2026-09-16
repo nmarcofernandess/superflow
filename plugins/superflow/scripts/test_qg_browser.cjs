@@ -1,4 +1,4 @@
-// Run with Playwright available on NODE_PATH; no dependency is installed in the consumer.
+// Playwright is a development dependency of the Superflow repository.
 const {chromium} = require('playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
