@@ -117,13 +117,22 @@ def build_parser():
         command = commands.add_parser(name)
         command.add_argument("--output", type=Path)
         if name == "qg":
+            command.add_argument("--online", metavar="FEED_URL", help="Gerar HTML que consulta um feed HTTP(S).")
+            command.add_argument("--refresh", type=Path, nargs="+", metavar="HTML", help="Atualizar componentes de HTMLs existentes como exports offline.")
+            command.add_argument("--source", help="Selecionar os componentes pelo src exato durante --refresh.")
             command.add_argument("--embed", action="store_true", help="Gerar fragmento HTML isolado com Shadow DOM.")
     return parser
 
 
 def main(argv=None):
-    args = build_parser().parse_args(argv)
+    parser = build_parser()
+    args = parser.parse_args(argv)
     root = args.root.expanduser().resolve()
+    if args.command == "qg":
+        if args.refresh and (args.output or args.embed or args.online):
+            parser.error("--refresh não combina com --output, --embed ou --online.")
+        if args.source is not None and not args.refresh:
+            parser.error("--source seleciona componentes para --refresh.")
     try:
         if args.command == "new":
             target, diagnostics = create_spec(root, args.slug, args.title, args.summary)
@@ -149,15 +158,29 @@ def main(argv=None):
             return 0
 
         snapshot, sources = build_snapshot(root)
-        if args.command == "feed":
-            output = args.output or root / ".superflow/feed.json"
-            atomic_write(output, json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n", root, sources)
-            print("Gerado: " + str(output))
-        elif args.command == "qg":
-            from superflow_qg import render, render_embed
-            output = args.output or root / ".superflow/qg.html"
-            atomic_write(output, render_embed(snapshot) if args.embed else render(snapshot), root, sources)
-            print("Gerado: " + str(output))
+        if args.command in {"feed", "qg"}:
+            from superflow_qg import component_script, refresh_html, render, render_embed
+            feed_path = (args.output if args.command == "feed" else None) or root / ".superflow/feed.json"
+            outputs = [(feed_path, json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n"),
+                       (feed_path.parent / "qg.js", component_script())]
+            if args.command == "qg":
+                if args.refresh:
+                    for path in args.refresh:
+                        path = path.expanduser().resolve()
+                        outputs.append((path, refresh_html(path.read_bytes().decode("utf-8"), snapshot, args.source)))
+                else:
+                    output = args.output or root / ".superflow/qg.html"
+                    renderer = render_embed if args.embed else render
+                    outputs.append((output, renderer(snapshot, source=args.online)))
+            paths = [path.expanduser().resolve() for path, _ in outputs]
+            if len(paths) != len(set(paths)):
+                raise SourceError("Destinos de saída precisam ser distintos.")
+            for path in paths:
+                if path.name in SOURCE_NAMES or path == root / CONFIG_PATH or path in {root / key for key in sources}:
+                    raise SourceError("Saída não pode sobrescrever uma fonte.")
+            for path, content in outputs:
+                atomic_write(path, content, root, sources)
+                print("Gerado: " + str(path))
         else:
             ensure_unchanged(root, sources)
         emit_diagnostics(snapshot["diagnostics"])

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.11.0
+
+- Shared QG component with an HTTP feed and per-host ID selection.
+- Feed publishes data and runtime; offline exports reuse the same component.
+- Refresh multiple HTML components while preserving host content and scopes.
+
 ## 0.10.3
 
 - Discover the same seven skills in Cursor through `.cursor-plugin` marketplace and plugin manifests.

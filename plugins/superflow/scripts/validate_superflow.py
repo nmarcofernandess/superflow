@@ -47,6 +47,7 @@ RUNTIME_FILES = {
     "scripts/vendor/PyYAML-SOURCE.json",
     "scripts/vendor/yaml/__init__.py",
     "assets/qg.html",
+        "assets/qg-component.js",
 }
 MARKDOWN_LINK = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
 
@@ -102,8 +103,8 @@ def validate_manifest(plugin: Path, errors: List[str]) -> None:
             continue
         if manifest.get("name") != "superflow":
             errors.append("{} deve declarar name superflow".format(path.relative_to(plugin)))
-        if manifest.get("version") != "0.10.3":
-            errors.append("{} deve declarar version 0.10.3".format(path.relative_to(plugin)))
+        if manifest.get("version") != "0.11.0":
+            errors.append("{} deve declarar version 0.11.0".format(path.relative_to(plugin)))
         if manifest.get("skills") != "./skills/":
             errors.append("{} deve apontar skills para ./skills/".format(path.relative_to(plugin)))
 

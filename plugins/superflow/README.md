@@ -78,3 +78,20 @@ projeto. Scripts temporários são removidos ao fechar ou promovidos com seus
 consumidores. HTMLs e receipts históricos podem permanecer na spec.
 Ferramentas de gestão de specs podem ler seus artefatos declarados.
 A explicação completa vive no contrato de estado.
+
+## Incorporar a lista de specs
+
+`feed` publica `.superflow/feed.json` e `.superflow/qg.js`. Sirva essa pasta por HTTP e incorpore o mesmo componente onde quiser:
+
+```html
+<script data-superflow-runtime defer src="https://exemplo.org/specs/qg.js"></script>
+<superflow-qg src="https://exemplo.org/specs/feed.json" ids='["importacao", "categorias"]'></superflow-qg>
+```
+
+Omita `ids` para mostrar todas as specs. IDs ausentes deixam de aparecer. Atualizar o feed e recarregar os HTMLs atualiza todos os painéis online; CSS e IDs são isolados por Shadow DOM.
+
+`qg --output painel.html` gera uma fotografia offline e atualiza o feed no mesmo comando. `qg --online <URL-do-feed> --output painel.html` gera uma página online. Ambos aceitam `--embed` para produzir um fragmento.
+
+`qg --refresh painel-a.html painel-b.html --source <URL-do-feed>` exporta o mesmo snapshot nos componentes dos HTMLs indicados, preservando o restante dos hosts e seus filtros. Sem `--source`, seleciona componentes sem `src`. Não há atualização automática de arquivos offline.
+
+O contrato completo de autoria, HTTP/CORS, escopo, publicação e exportação está em `assets/references/commands-contract.md` dentro do plugin.

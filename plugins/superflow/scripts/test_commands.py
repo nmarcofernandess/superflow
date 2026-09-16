@@ -24,6 +24,38 @@ class CommandTests(unittest.TestCase):
             text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         )
 
+    def test_qg_publishes_one_feed_and_refreshes_hosts_without_reformatting(self):
+        self.run_cli("new", "alpha", "--title", "Alpha", "--summary", "Importar despesas")
+        first, second = self.root / "first.html", self.root / "second.html"
+        self.assertEqual(self.run_cli("qg", "--output", str(first)).returncode, 0)
+        self.assertTrue((self.root / ".superflow/qg.js").is_file())
+        prefix = '<!-- Host \u2028 -->\r\n<header>Preservar</header>\r\n'
+        content = first.read_text().replace('<body>', '<body>' + prefix)
+        first.write_bytes(content.encode("utf-8"))
+        second.write_bytes(content.encode("utf-8"))
+        status = self.root / "specs/alpha/status.md"
+        status.write_text(status.read_text().replace("title: Alpha", "title: Atualizado"))
+        result = self.run_cli("qg", "--refresh", str(first), str(second))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        feed = json.loads((self.root / ".superflow/feed.json").read_text())
+        for output in (first, second):
+            raw = output.read_bytes()
+            self.assertIn(prefix.encode("utf-8"), raw)
+            self.assertIn(feed["snapshot_id"].encode(), raw)
+            self.assertIn(b'Atualizado', raw)
+
+    def test_refresh_prepares_all_destinations_before_writing(self):
+        self.run_cli("new", "alpha", "--title", "Alpha", "--summary", "Importar despesas")
+        first, invalid = self.root / "first.html", self.root / "invalid.html"
+        self.run_cli("qg", "--output", str(first))
+        before = first.read_bytes()
+        feed = (self.root / ".superflow/feed.json").read_bytes()
+        invalid.write_text("<h1>Host sem componente</h1>")
+        result = self.run_cli("qg", "--refresh", str(first), str(invalid))
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(first.read_bytes(), before)
+        self.assertEqual((self.root / ".superflow/feed.json").read_bytes(), feed)
+
     def test_new_creates_only_prd_and_status(self):
         result = self.run_cli("new", "alpha", "--title", "Alpha", "--summary", "Importar despesas de uma planilha")
         self.assertEqual(result.returncode, 0, result.stderr)

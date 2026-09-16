@@ -75,17 +75,17 @@ consumidor, fora do diretório instalado.
 Instale uma release identificada por tag e confira a versão declarada nos
 manifestos antes de usar:
 
-    codex plugin marketplace add nmarcofernandess/superflow --ref v0.10.3
+    codex plugin marketplace add nmarcofernandess/superflow --ref v0.11.0
     codex plugin add superflow@superflow
 
 Em Claude Code:
 
-    claude plugin marketplace add nmarcofernandess/superflow@v0.10.3
+    claude plugin marketplace add nmarcofernandess/superflow@v0.11.0
     claude plugin install superflow@superflow
 
 No Cursor, o marketplace do repositório já declara o plugin. Importe o GitHub e instale `superflow`:
 
-    agent plugin marketplace add https://github.com/nmarcofernandess/superflow --git-ref v0.10.3
+    agent plugin marketplace add https://github.com/nmarcofernandess/superflow --git-ref v0.11.0
 
 Depois, no Agent, abra `/plugin`, escolha Superflow no Marketplace e instale no escopo user. Para teste local, copie o pacote para o diretório que o Cursor lê sem marketplace:
 
@@ -113,4 +113,21 @@ a [SPEC atual](SPEC-superflow-plugin.md) para as decisões técnicas.
 
 ### Incorporar a lista de specs
 
-`qg --embed --output fragmento.html` gera um fragmento autocontido para inserir em outro HTML. Usa o mesmo renderer do standalone com CSS e IDs isolados por Shadow DOM. Regere e substitua o fragmento quando as fontes mudarem; a navegação do hospedeiro permanece independente. Detalhes em `plugins/superflow/assets/references/commands-contract.md`.
+`feed` publica `.superflow/feed.json` e `.superflow/qg.js`. Sirva essa pasta por HTTP e incorpore o mesmo componente onde quiser:
+
+```html
+<script data-superflow-runtime defer src="https://exemplo.org/specs/qg.js"></script>
+<superflow-qg src="https://exemplo.org/specs/feed.json" ids='["importacao", "categorias"]'></superflow-qg>
+```
+
+Omita `ids` para mostrar todas as specs. IDs ausentes deixam de aparecer. Atualizar o feed e recarregar os HTMLs atualiza todos os painéis online; CSS e IDs são isolados por Shadow DOM.
+
+`qg --output painel.html` gera uma fotografia offline e atualiza o feed no mesmo comando. `qg --online <URL-do-feed> --output painel.html` gera uma página online. Ambos aceitam `--embed` para produzir um fragmento.
+
+`qg --refresh painel-a.html painel-b.html --source <URL-do-feed>` exporta o mesmo snapshot nos componentes dos HTMLs indicados, preservando o restante dos hosts e seus filtros. Sem `--source`, seleciona componentes sem `src`. Não há atualização automática de arquivos offline.
+
+O contrato completo de autoria, HTTP/CORS, escopo, publicação e exportação está em `assets/references/commands-contract.md` dentro do plugin.
+
+### Verificação do componente
+
+A suíte Python roda com `bash scripts/validate-all.sh`. Para conferir o componente num navegador, disponibilize Playwright no ambiente de desenvolvimento e execute `node plugins/superflow/scripts/test_qg_browser.cjs` (ou configure `NODE_PATH` para uma instalação existente). O ensaio usa um projeto temporário, servidor HTTP local e Chromium; cobre atualização online, escopo, exportação offline, isolamento e falhas de leitura. Não instala dependências nos projetos consumidores.

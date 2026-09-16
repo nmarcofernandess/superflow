@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from superflow_qg import render, render_embed
+from superflow_qg import render, render_embed, component_script, refresh_html
 
 
 class QGTests(unittest.TestCase):
@@ -37,9 +37,27 @@ class QGTests(unittest.TestCase):
         }
 
     def embedded(self, page):
-        match = re.search(r'<script type="application/json" id="qg-snapshot">(.*?)</script>', page, re.S)
+        match = re.search(r'<script type="application/json" data-superflow-snapshot>(.*?)</script>', page, re.S)
         self.assertIsNotNone(match)
         return json.loads(match.group(1))
+
+    def test_refresh_preserves_host_scopes_and_other_sources(self):
+        feed = self.feed([self.record("one")])
+        host = '<header>Host</header>' + render_embed(feed, source="https://example.org/feed.json")
+        host = host.replace('<superflow-qg src=', "<superflow-qg ids='[\"one\", \"missing\"]' src=")
+        host += '<superflow-qg src="/other/feed.json"></superflow-qg><footer>End</footer>'
+        updated = refresh_html(host, feed, "https://example.org/feed.json")
+        self.assertTrue(updated.startswith('<header>Host</header>'))
+        self.assertTrue(updated.endswith('<superflow-qg src="/other/feed.json"></superflow-qg><footer>End</footer>'))
+        self.assertIn('ids="[&quot;one&quot;, &quot;missing&quot;]"', updated)
+        self.assertEqual(self.embedded(updated), feed)
+        self.assertEqual(refresh_html(updated, feed, "https://example.org/feed.json"), updated)
+
+    def test_online_page_references_shared_bundle_and_has_no_snapshot(self):
+        page = render(None, source="https://example.org/specs/feed.json")
+        self.assertIn('src="https://example.org/specs/qg.js"', page)
+        self.assertIn('src="https://example.org/specs/feed.json"', page)
+        self.assertNotIn('data-superflow-snapshot', page)
 
     def test_renderer_preserves_snapshot_without_private_surfaces(self):
         source = self.feed([self.record("one", body_md="# Retrato\nCompleto")])
@@ -51,7 +69,7 @@ class QGTests(unittest.TestCase):
             self.assertNotIn(forbidden, page)
 
     def test_html_has_minimal_views_hierarchy_and_drawer(self):
-        page = render(self.feed([]))
+        page = (Path(__file__).parents[1] / "assets/qg.html").read_text()
         for required in (
             'data-view="open"', 'data-view="done"', 'id="drawer"',
             'box.className="children"', 'class="spec-card"', 'id="search"',
@@ -85,13 +103,14 @@ class QGTests(unittest.TestCase):
 
     def test_embed_is_isolated_and_preserves_host_navigation(self):
         fragment = render_embed(self.feed([self.record("one", body_md="</script><img>")]))
-        self.assertIn('attachShadow({mode:"open"})', fragment)
-        self.assertIn('})(shadow,false);', fragment)
+        self.assertIn('attachShadow({mode: "open"})', fragment)
+        self.assertIn('<superflow-qg offline>', fragment)
+        self.assertNotIn('sync-hash', fragment.split('</superflow-qg>')[0])
         self.assertNotIn('<iframe', fragment)
         self.assertNotIn('</script><img>', fragment)
-        self.assertEqual(fragment.count('</script>'), 1)
+        self.assertEqual(fragment.count('</script>'), 2)
 
-    def test_renderer_has_no_filesystem_or_network_behavior(self):
+    def test_template_renders_data_while_component_owns_feed_loading(self):
         source = Path(__file__).with_name("superflow_qg.py").read_text(encoding="utf-8")
         template = Path(__file__).parents[1] / "assets/qg.html"
         html = template.read_text(encoding="utf-8")
@@ -99,6 +118,7 @@ class QGTests(unittest.TestCase):
             self.assertNotIn(forbidden, source)
         for forbidden in ("fetch(", "XMLHttpRequest", "fonts.googleapis.com", "localStorage", "sessionStorage"):
             self.assertNotIn(forbidden, html)
+        self.assertIn("fetch(url", component_script())
 
 
 if __name__ == "__main__":

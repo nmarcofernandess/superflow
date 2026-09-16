@@ -27,7 +27,7 @@ Plan.json contém tasks com exatamente `id`, `task`, `status`, `depends_on` e `a
 
 Python 3.9 ou superior, em modo isolado, expõe `new`, `check status`, `check spec`, `feed` e `qg`, com raiz explícita. New exige resumo humano e cria somente PRD e status, preservando proteção contra IDs e destinos já ocupados. Check spec relata diagnósticos nos dois obrigatórios e em SPEC/plano quando presentes, sem inferir prontidão ou controlar CI/ship. Os status da coleção permitem conferir os destinos das relações.
 
-Feed e QG leem exclusivamente status.md. O snapshot `superflow.feed.v4` contém resumo e relações. O parser YAML é seguro, e PyYAML acompanha o pacote. A gravação de feed/QG é atômica; a serialização do conteúdo preserva a fronteira entre dados e código do HTML.
+Feed e QG leem exclusivamente status.md. O snapshot `superflow.feed.v4` contém resumo e relações. O parser YAML é seguro, e PyYAML acompanha o pacote. A gravação de feed/QG é atômica por arquivo; a serialização do conteúdo preserva a fronteira entre dados e código do HTML.
 
 ## Autoria e verificação
 
@@ -38,3 +38,9 @@ A fronteira do pacote é explicada em `state-contract.md`: materiais da spec sã
 ## Distribuição
 
 Os manifests Codex, Claude e Cursor descobrem as skills do pacote. As releases são pacotes completos e versionados; customizações do consumidor ficam fora do diretório instalado. A validação local existente confere conteúdo, referências e comportamento. O canal Node opcional distribui runtime, assets, vendor e licenças; a CLI continua Python.
+
+## Projeção compartilhada
+
+Status é a autoridade; feed é o consolidado derivado. Feed publica também qg.js, um Web Component gerado do template visual único. O HTML declara fonte e, opcionalmente, uma lista exata de IDs. Online busca o feed por HTTP ao carregar; offline incorpora a mesma fotografia e runtime. IDs removidos saem do recorte sem erro.
+
+QG publica o feed junto de suas saídas. A exportação `--refresh` atualiza componentes marcados em hosts indicados, sem adaptadores específicos ou registro de destinos. O escopo permanece no HTML. A geração conserva a checagem de fontes e a escrita atômica por arquivo; o lote não promete transação. A documentação de comandos define publicação, CORS e limites.
