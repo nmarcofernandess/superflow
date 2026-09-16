@@ -53,11 +53,13 @@ class QGTests(unittest.TestCase):
         self.assertEqual(self.embedded(updated), feed)
         self.assertEqual(refresh_html(updated, feed, "https://example.org/feed.json"), updated)
 
-    def test_online_page_references_shared_bundle_and_has_no_snapshot(self):
-        page = render(None, source="https://example.org/specs/feed.json")
-        self.assertIn('src="https://example.org/specs/qg.js"', page)
+    def test_online_page_is_portable_and_contains_snapshot_and_runtime(self):
+        feed = self.feed([self.record("one")])
+        page = render(feed, source="https://example.org/specs/feed.json")
         self.assertIn('src="https://example.org/specs/feed.json"', page)
-        self.assertNotIn('data-superflow-snapshot', page)
+        self.assertNotIn('src="https://example.org/specs/qg.js"', page)
+        self.assertEqual(self.embedded(page), feed)
+        self.assertIn('customElements.define', page)
 
     def test_renderer_preserves_snapshot_without_private_surfaces(self):
         source = self.feed([self.record("one", body_md="# Retrato\nCompleto")])
@@ -104,7 +106,7 @@ class QGTests(unittest.TestCase):
     def test_embed_is_isolated_and_preserves_host_navigation(self):
         fragment = render_embed(self.feed([self.record("one", body_md="</script><img>")]))
         self.assertIn('attachShadow({mode: "open"})', fragment)
-        self.assertIn('<superflow-qg offline>', fragment)
+        self.assertIn('<superflow-qg>', fragment)
         self.assertNotIn('sync-hash', fragment.split('</superflow-qg>')[0])
         self.assertNotIn('<iframe', fragment)
         self.assertNotIn('</script><img>', fragment)

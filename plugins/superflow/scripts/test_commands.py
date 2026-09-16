@@ -56,6 +56,21 @@ class CommandTests(unittest.TestCase):
         self.assertEqual(first.read_bytes(), before)
         self.assertEqual((self.root / ".superflow/feed.json").read_bytes(), feed)
 
+    def test_refresh_uses_configured_outputs_relative_to_project(self):
+        self.run_cli("new", "alpha", "--title", "Alpha", "--summary", "Importar despesas")
+        first = self.root / "panels/one.html"
+        second = self.root / "two.html"
+        for destination in (first, second):
+            self.assertEqual(self.run_cli("qg", "--online", "http://localhost:8000/feed.json", "--output", str(destination)).returncode, 0)
+        (self.root / ".superflow/config.json").write_text(json.dumps({"specs_root":"specs", "qg_outputs":["panels/one.html", str(second)]}))
+        self.assertEqual(self.run_cli("qg", "--refresh").returncode, 0)
+        feed = json.loads((self.root / ".superflow/feed.json").read_text())
+        for destination in (first, second):
+            text = destination.read_text()
+            self.assertIn(feed["snapshot_id"], text)
+            self.assertIn('src="http://localhost:8000/feed.json"', text)
+            self.assertNotIn('<superflow-qg offline', text)
+
     def test_new_creates_only_prd_and_status(self):
         result = self.run_cli("new", "alpha", "--title", "Alpha", "--summary", "Importar despesas de uma planilha")
         self.assertEqual(result.returncode, 0, result.stderr)

@@ -14,56 +14,74 @@ Os comandos nunca executam proof, teste, CI ou ship. `check`, feed e QG relatam 
 
 ## Fonte e publicação
 
-`specs/**/status.md` é a fonte editável. `.superflow/config.json` configura `specs_root`; não contém destinos ou hooks. Sem config, o diretório padrão é `specs`. O plugin não instala scripts nem configura CI no consumidor.
+`specs/**/status.md` é a fonte editável. `.superflow/config.json` configura a raiz e pode listar destinos HTML:
 
-`feed` publica `.superflow/feed.json` e `.superflow/qg.js`: dados derivados e componente compartilhado. `feed --output <pasta/feed.json>` muda a saída; `qg.js` acompanha o feed na mesma pasta. `qg` também atualiza esse par na localização padrão e usa o mesmo snapshot para suas saídas offline. Não é preciso rodar feed antes de qg.
+```json
+{
+  "specs_root": "specs",
+  "qg_outputs": ["painel.html", "docs/entregas.html", "/caminho/absoluto/painel.html"]
+}
+```
+
+Sem config, a raiz padrão é `specs`. Caminhos de destinos relativos são resolvidos a partir da raiz do projeto, não do diretório do terminal; caminhos absolutos também são permitidos. O plugin não instala scripts, hooks, CI ou servidor no consumidor.
+
+`feed` publica `.superflow/feed.json` e `.superflow/qg.js`: consolidado derivado e componente. `feed --output <pasta/feed.json>` muda a saída; `qg.js` acompanha o feed na mesma pasta. `qg` também atualiza esse par na localização padrão e usa o mesmo snapshot para suas saídas. Não é preciso rodar feed antes de qg.
 
 O envelope `superflow.feed.v4` contém `records`, `diagnostics`, `generated_at`, `source_revision` e `snapshot_id`. O hash cobre caminhos e bytes dos status e da configuração, inclusive alterações não commitadas. O SHA informa o HEAD, não prova árvore limpa. Remoções e renomeações entram como estão nas fontes; não há inferência de identidade.
 
 Escolha a raiz que representa o conteúdo a publicar. Para um painel compartilhado, prefira a branch integrada e atualizada do projeto; uma lane é adequada para ensaio identificado. O plugin não escolhe branch, faz pull nem exige um nome de branch.
 
-Versionar feed e componente é decisão do consumidor: faz sentido para publicar um site estático ou preservar uma fotografia. Eles são recriáveis e não devem ser editados à mão. Não há atualização automática ao editar status ou abrir o HTML.
+Versionar feed, componente e HTMLs é decisão do consumidor: faz sentido para publicar um site estático ou preservar uma fotografia. São recriáveis e não devem ser editados à mão. Não há observação automática dos status: o script precisa publicar o feed.
 
-## Online: um feed, vários HTMLs
+## Painel portátil com atualização opcional
 
-Sirva a pasta do feed por HTTP(S). O componente busca os dados a cada carregamento, sem cache da requisição ou armazenamento local. Após mudar status, rode `feed` uma vez e recarregue os painéis. O mesmo componente funciona em uma tab, section ou qualquer contêiner HTML:
+**Este painel funciona sem servidor com o retrato incorporado. Para acompanhar atualizações publicadas, configure uma URL HTTP do feed. Para atualizar a fotografia portátil, execute o comando de atualização.**
 
-```html
-<script data-superflow-runtime defer src="https://exemplo.org/specs/qg.js"></script>
-<superflow-qg src="https://exemplo.org/specs/feed.json"></superflow-qg>
-<superflow-qg src="https://exemplo.org/specs/feed.json"
-              ids='["importacao", "categorias"]'></superflow-qg>
-```
-
-Sem `ids`, mostra o corpus inteiro. Com `ids`, mostra apenas os IDs listados, sem adicionar pais, filhos ou relacionados implicitamente. `ids='[]'` mostra zero specs. IDs ausentes simplesmente não aparecem; a seleção não é um contrato de existência. Relações fora do recorte não abrem outro registro. A hierarquia permanece entre os registros incluídos.
-
-O host escolhe posição e dimensões; o componente mantém o layout oficial e isola CSS/IDs com Shadow DOM. Cada instância tem busca e drawer próprios. A URL do host não muda; o standalone usa `sync-hash` para links diretos.
-
-Para gerar uma página ou fragmento online:
+`qg --output <qg.html>` gera uma página autocontida. `qg --embed --output <fragmento.html>` gera o mesmo componente para inserir num host. Todos os HTMLs gerados incorporam snapshot e runtime, inclusive quando têm uma fonte HTTP opcional:
 
 ```text
 superflow.py --root <repo> qg --online https://exemplo.org/specs/feed.json --output <painel.html>
 superflow.py --root <repo> qg --online https://exemplo.org/specs/feed.json --embed --output <fragmento.html>
 ```
 
-Nesses exemplos, `superflow.py` representa o comando Python completo. O HTML carrega `qg.js` da mesma pasta da URL do feed. URLs relativas também funcionam quando resolvem para HTTP(S). A publicação dos arquivos no servidor pertence ao projeto; o comando não faz upload.
+Nesses exemplos, `superflow.py` representa o comando Python completo. A publicação no servidor pertence ao projeto; o comando não faz upload. A URL de `--online` será o `src` do componente, mas não é consultada durante a geração: a fotografia incorporada vem de `--root`.
 
-Use a mesma origem HTTP para host e feed ou configure CORS no servidor do feed. `file://` não fornece leitura HTTP de um arquivo local; abrir um HTML local com feed HTTP também depende da permissão CORS do servidor. Para distribuir sem servidor, use offline. O componente mostra falha de leitura explicitamente, sem recorrer a uma cópia antiga. Não há servidor, watcher, daemon, hook ou gate instalado pelo plugin.
+O componente começa exibindo a fotografia incorporada. Se `src` estiver configurado, tenta uma leitura HTTP(S). Sucesso apresenta o feed novo; falha preserva o último retrato válido exibido, que pode ser mais recente que o incorporado. Modo, data de geração e falha ficam explícitos no rodapé. Não há retorno ao retrato incorporado após uma leitura HTTP válida na mesma instância.
 
-## Offline: uma fotografia em vários destinos
+A leitura HTTP não grava o HTML nem cria cache persistente. A próxima abertura começa novamente na fotografia incorporada. Se a página foi aberta por HTTP e o host sair do ar, F5 pode impedir a própria página de carregar: fallback protege uma página já carregada ou um arquivo local portátil, não um servidor indisponível.
 
-`qg --output <qg.html>` gera uma página autocontida. `qg --embed --output <fragmento.html>` gera o mesmo componente para inserir num host. Ambos contêm dados e runtime, sem dependência de rede. Não substitua um HTML personalizado usando `--output`: essa opção cria uma página completa ou fragmento novo.
+Para abrir um HTML por duplo clique e buscar um feed HTTP, o servidor precisa permitir CORS para essa origem. Sem CORS, o navegador bloqueia a atualização e a fotografia permanece disponível. Arquivos JSON `file://` não são fontes online suportadas. Use um servidor configurado adequadamente, sem desativar a segurança do navegador. Não há servidor automático no plugin.
 
-Para congelar ou atualizar componentes de HTMLs existentes, use a marcação acima e indique os destinos:
+## Componente e escopo no HTML
 
-```text
-superflow.py --root <repo> qg --refresh <painel-a.html> <painel-b.html> --source https://exemplo.org/specs/feed.json
+Insira o fragmento gerado em uma tab, section ou contêiner do host. Ele contém os seguintes pontos padronizados, preenchidos pelo gerador:
+
+```html
+<superflow-qg src="https://exemplo.org/specs/feed.json"
+              ids='["importacao", "categorias"]'
+              refresh-seconds="60">
+  <script type="application/json" data-superflow-snapshot>…snapshot gerado…</script>
+</superflow-qg>
+<script data-superflow-runtime>…runtime incorporado pelo gerador…</script>
 ```
 
-`--source` seleciona por igualdade exata do atributo `src`, não baixa essa URL. Os dados vêm da raiz `--root`. Componentes que apontam para outra fonte permanecem intactos. Sem `--source`, atualiza componentes sem `src`, como os gerados pelo modo offline padrão.
+Omita `src` para usar somente a fotografia. Omita `ids` para o corpus inteiro; `ids='[]'` mostra zero specs. A lista seleciona IDs exatos, sem adicionar pais, filhos ou relacionados implicitamente. IDs ausentes simplesmente não aparecem. Relações fora do recorte não abrem outro registro. A hierarquia permanece entre os registros incluídos.
 
-O comando lê um snapshot, atualiza feed/componente e incorpora a mesma fotografia nos destinos indicados. Mantém `src` e `ids`, adiciona `offline` e substitui somente o conteúdo dos elementos `<superflow-qg>` selecionados e o `<script data-superflow-runtime>`. O restante do host é preservado. Não há adaptador específico por painel nem registro persistente de destinos. Para voltar ao online, retire `offline`; a instância volta a consultar `src`.
+`refresh-seconds` é opcional. Sem ele, há uma tentativa HTTP ao carregar. Um valor positivo agenda novas tentativas após cada consulta, com intervalo mínimo de cinco segundos; sessenta segundos é um ponto de partida. Consultas não se sobrepõem. Isso acompanha o feed publicado, não observa os status em tempo real. Snapshot igual não recria o DOM; snapshot novo preserva busca, visão e drawer da spec se ela continuar presente. `offline`, quando explicitamente presente, desativa as consultas HTTP.
 
-Uma exportação offline continua antiga até outra exportação, por definição. Para dezenas de painéis vivos, prefira online. `--refresh` serve para fotografias e distribuição portátil.
+O host escolhe posição e dimensões; o componente mantém o layout oficial e isola CSS/IDs com Shadow DOM. Cada instância tem busca e drawer próprios. A URL do host não muda; o standalone usa `sync-hash` para links diretos.
 
-As gravações são atômicas por arquivo, com conferência de fontes antes de publicar; não existe transação entre arquivos. Falha no meio de um lote pode deixar destinos de gerações diferentes: corrija a falha e repita o comando. O `snapshot_id` permite conferir a coerência; a data aparece na descrição do identificador no QG. Atualizar a release e publicar novamente feed/componente renova o código compartilhado; exports offline recebem o código novo na próxima exportação.
+`qg.js` também está disponível para hosts que deliberadamente preferem runtime externo. Isso cria uma dependência para carregar a página e não oferece a mesma portabilidade do HTML gerado com runtime incorporado.
+
+## Atualizar as fotografias portáteis
+
+```text
+superflow.py --root <repo> qg --refresh
+superflow.py --root <repo> qg --refresh <painel-a.html> <painel-b.html>
+```
+
+Sem caminhos, usa `qg_outputs`. Caminhos explícitos substituem a lista configurada naquela execução. O comando lê um snapshot, publica feed/componente e atualiza os elementos `<superflow-qg>` e o `<script data-superflow-runtime>` dos destinos. Preserva `src`, `ids`, intervalo e o conteúdo do host fora desses pontos. Não descobre HTMLs nem exige um adaptador por painel. Os destinos precisam ter recebido o fragmento ou a marcação do componente uma vez; `--output` cria uma nova página ou fragmento e não preserva um host personalizado.
+
+Por padrão, todos os componentes dos destinos recebem a fotografia de `--root`: a lista de publicação deve pertencer ao projeto. Em um host com componentes de projetos diferentes, use `--source <URL>` para selecionar por igualdade exata do atributo `src`. Essa opção não baixa a URL; os dados vêm de `--root`. Componentes de outras fontes permanecem intactos. A seleção de specs continua exclusivamente no HTML.
+
+As gravações são atômicas por arquivo, com conferência de fontes antes de publicar; não existe transação entre arquivos. Falha no meio de um lote pode deixar destinos de gerações diferentes: corrija a falha e repita o comando. O `snapshot_id` permite conferir a coerência. Atualizar o plugin e publicar as fotografias novamente incorpora também o runtime novo.

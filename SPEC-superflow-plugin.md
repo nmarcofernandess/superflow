@@ -41,6 +41,8 @@ Os manifests Codex, Claude e Cursor descobrem as skills do pacote. As releases s
 
 ## Projeção compartilhada
 
-Status é a autoridade; feed é o consolidado derivado. Feed publica também qg.js, um Web Component gerado do template visual único. O HTML declara fonte e, opcionalmente, uma lista exata de IDs. Online busca o feed por HTTP ao carregar; offline incorpora a mesma fotografia e runtime. IDs removidos saem do recorte sem erro.
+Status é a autoridade; feed é o consolidado derivado. Feed publica também qg.js, um Web Component gerado do template visual único. Todo HTML gerado incorpora runtime e snapshot. A fonte HTTP é opcional e complementa a fotografia portátil; falhas preservam a última leitura válida da sessão, sem cache persistente.
 
-QG publica o feed junto de suas saídas. A exportação `--refresh` atualiza componentes marcados em hosts indicados, sem adaptadores específicos ou registro de destinos. O escopo permanece no HTML. A geração conserva a checagem de fontes e a escrita atômica por arquivo; o lote não promete transação. A documentação de comandos define publicação, CORS e limites.
+O HTML declara fonte, seleção exata de IDs e intervalo opcional. Snapshot igual preserva o DOM; snapshot novo mantém busca, visão e drawer quando a spec continua presente. IDs removidos saem do recorte sem erro. O modo e a data do retrato exibido são explícitos.
+
+QG publica feed junto de suas saídas. `--refresh` atualiza componentes marcados em hosts indicados ou na lista opcional `qg_outputs`, preservando fonte, filtro, intervalo e layout externo. Um snapshot alimenta o lote, mas as gravações são atômicas por arquivo, sem transação global. O contrato de comandos descreve HTTP/CORS, publicação e os limites de um host indisponível.
