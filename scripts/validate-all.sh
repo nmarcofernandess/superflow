@@ -15,4 +15,8 @@ for test_name in test_model.py test_commands.py test_qg.py test_distribution.py;
   python3 -I "$test_path"
 done
 
+for test_name in test_qg_browser.cjs test_qg_portable.cjs; do
+  node "$PLUGIN/scripts/$test_name"
+done
+
 echo "validate-all: passed"
