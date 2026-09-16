@@ -27,6 +27,8 @@ Sem config, a raiz padrão é `specs`. Caminhos de destinos relativos são resol
 
 `feed` publica `.superflow/feed.json` e `.superflow/qg.js`: consolidado derivado e componente. `feed --output <pasta/feed.json>` muda a saída; `qg.js` acompanha o feed na mesma pasta. `qg` também atualiza esse par na localização padrão e usa o mesmo snapshot para suas saídas. Não é preciso rodar feed antes de qg.
 
+`.superflow/` é a localização padrão no disco do projeto. A URL pública é escolhida e mapeada pelo host do consumidor: nestes exemplos, `https://exemplo.org/superflow/feed.json` publica o feed e `https://exemplo.org/superflow/qg.js` publica o runtime externo, se usado. `/superflow/` é apenas um exemplo de URL; não é caminho obrigatório, nova configuração nem a árvore documental `specs/`.
+
 O envelope `superflow.feed.v4` contém `records`, `diagnostics`, `generated_at`, `source_revision` e `snapshot_id`. O hash cobre caminhos e bytes dos status e da configuração, inclusive alterações não commitadas. O SHA informa o HEAD, não prova árvore limpa. Remoções e renomeações entram como estão nas fontes; não há inferência de identidade.
 
 Escolha a raiz que representa o conteúdo a publicar. Para um painel compartilhado, prefira a branch integrada e atualizada do projeto; uma lane é adequada para ensaio identificado. O plugin não escolhe branch, faz pull nem exige um nome de branch.
@@ -40,8 +42,8 @@ Versionar feed, componente e HTMLs é decisão do consumidor: faz sentido para p
 `qg --output <qg.html>` gera uma página autocontida. `qg --embed --output <fragmento.html>` gera o mesmo componente para inserir num host. Todos os HTMLs gerados incorporam snapshot e runtime, inclusive quando têm uma fonte HTTP opcional:
 
 ```text
-superflow.py --root <repo> qg --online https://exemplo.org/specs/feed.json --output <painel.html>
-superflow.py --root <repo> qg --online https://exemplo.org/specs/feed.json --embed --output <fragmento.html>
+superflow.py --root <repo> qg --online https://exemplo.org/superflow/feed.json --output <painel.html>
+superflow.py --root <repo> qg --online https://exemplo.org/superflow/feed.json --embed --output <fragmento.html>
 ```
 
 Nesses exemplos, `superflow.py` representa o comando Python completo. A publicação no servidor pertence ao projeto; o comando não faz upload. A URL de `--online` será o `src` do componente, mas não é consultada durante a geração: a fotografia incorporada vem de `--root`.
@@ -57,7 +59,7 @@ Para abrir um HTML por duplo clique e buscar um feed HTTP, o servidor precisa pe
 Insira o fragmento gerado em uma tab, section ou contêiner do host. Ele contém os seguintes pontos padronizados, preenchidos pelo gerador:
 
 ```html
-<superflow-qg src="https://exemplo.org/specs/feed.json"
+<superflow-qg src="https://exemplo.org/superflow/feed.json"
               ids='["importacao", "categorias"]'
               refresh-seconds="60">
   <script type="application/json" data-superflow-snapshot>…snapshot gerado…</script>
@@ -78,6 +80,7 @@ O host escolhe posição e dimensões; o componente mantém o layout oficial e i
 ```text
 superflow.py --root <repo> qg --refresh
 superflow.py --root <repo> qg --refresh <painel-a.html> <painel-b.html>
+superflow.py --root <repo> qg --refresh --source https://exemplo.org/superflow/feed.json
 ```
 
 Sem caminhos, usa `qg_outputs`. Caminhos explícitos substituem a lista configurada naquela execução. O comando lê um snapshot, publica feed/componente e atualiza os elementos `<superflow-qg>` e o `<script data-superflow-runtime>` dos destinos. Preserva `src`, `ids`, intervalo e o conteúdo do host fora desses pontos. Não descobre HTMLs nem exige um adaptador por painel. Os destinos precisam ter recebido o fragmento ou a marcação do componente uma vez; `--output` cria uma nova página ou fragmento e não preserva um host personalizado.

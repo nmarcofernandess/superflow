@@ -85,7 +85,7 @@ O QG gerado é autocontido: runtime e snapshot incorporados. Abre por duplo cliq
 
 `qg --embed --output fragmento.html` produz o componente para qualquer ponto de outro HTML. O host declara `src` opcional, `ids` opcional e `refresh-seconds` opcional. IDs ausentes deixam de aparecer; Shadow DOM isola CSS e IDs. Atualizações preservam busca e drawer, e não recriam o DOM quando `snapshot_id` não muda.
 
-`feed` publica `.superflow/feed.json` e `.superflow/qg.js`. Atualizar esse feed permite que os leitores HTTP acompanhem a nova fotografia. A leitura pelo navegador não regrava o HTML e não cria cache persistente.
+`feed` publica `.superflow/feed.json` e `.superflow/qg.js`. A URL HTTP é escolhida e mapeada pelo host do consumidor; `/superflow/feed.json` é um exemplo, não um caminho obrigatório. Atualizar esse feed permite que os leitores HTTP acompanhem a nova fotografia. A leitura pelo navegador não regrava o HTML e não cria cache persistente.
 
 `qg --refresh painel-a.html painel-b.html` publica o mesmo snapshot nos componentes indicados, preservando o restante dos hosts e seus filtros. Sem caminhos, lê a lista opcional `qg_outputs` da configuração. Em hosts de vários projetos, `--source <URL>` seleciona os componentes pela fonte declarada. Não há descoberta automática de destinos.
 
