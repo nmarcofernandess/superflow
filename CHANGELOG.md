@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.12.2
+
+- Clarify default local output paths and consumer-defined public feed URLs, with consistent feed/runtime examples.
+
 ## 0.12.1
 
 - Report missing HTML publication destinations without blocking existing outputs or changing configuration.
