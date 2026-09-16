@@ -53,9 +53,8 @@
 </dialog>
 <script type="application/json" id="qg-snapshot">__QG_SNAPSHOT__</script>
 <script>
-((root,syncHash)=>{"use strict";
-root=root||document;syncHash=syncHash!==false;
-const feed=JSON.parse(root.getElementById("qg-snapshot").textContent),records=Array.isArray(feed.records)?feed.records:[];
+((root,feed,ids,syncHash)=>{"use strict";
+const records=feed.records.filter(r=>ids===null||ids.includes(r.id));
 const byId=new Map(records.map(r=>[r.id,r])),children=new Map();records.forEach(r=>{if(r.parent_id){const a=children.get(r.parent_id)||[];a.push(r);children.set(r.parent_id,a)}});
 const roots=records.filter(r=>!r.parent_id||!byId.has(r.parent_id));let view="open",query="";
 const labels={open:["Em aberto","Escolha uma spec. O contexto completo abre ao lado."],done:["Concluídas","Specs que cumpriram o próprio aceite."]};
@@ -106,7 +105,7 @@ function openDrawer(r){
  if(!drawer.open)drawer.showModal();drawer.scrollTop=0;root.getElementById("close").focus();if(syncHash)history.replaceState(null,"","#"+encodeURIComponent(r.id));
 }
 root.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{view=t.dataset.view;root.querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-selected",String(x===t)));render()});root.getElementById("search").oninput=e=>{query=e.target.value.trim().toLocaleLowerCase("pt-BR");render()};root.getElementById("close").onclick=()=>root.getElementById("drawer").close();root.getElementById("drawer").addEventListener("close",()=>{if(syncHash)history.replaceState(null,"",location.pathname+location.search)});
-count();root.getElementById("snapshot").textContent=`${records.length} specs · ${feed.source_revision?String(feed.source_revision).slice(0,10):"sem revisão Git"} · ${String(feed.snapshot_id||"").slice(0,10)}`;const ds=Array.isArray(feed.diagnostics)?feed.diagnostics:[];if(ds.length){root.getElementById("diagnostics").hidden=false;root.getElementById("diagnostic-list").innerHTML=ds.map(d=>`<li><strong>${esc(d.code)}</strong> · ${esc(d.path)} · ${esc(d.message)}</li>`).join("")}render();if(syncHash&&location.hash){const id=decodeURIComponent(location.hash.slice(1)),r=byId.get(id);if(r)openDrawer(r)}
+count();root.getElementById("snapshot").textContent=`${records.length} specs · ${feed.source_revision?String(feed.source_revision).slice(0,10):"sem revisão Git"} · ${String(feed.snapshot_id||"").slice(0,10)}`;root.getElementById("snapshot").title=`Gerado em ${feed.generated_at} · snapshot ${feed.snapshot_id}`;const ds=Array.isArray(feed.diagnostics)?feed.diagnostics:[];if(ds.length){root.getElementById("diagnostics").hidden=false;root.getElementById("diagnostic-list").innerHTML=ds.map(d=>`<li><strong>${esc(d.code)}</strong> · ${esc(d.path)} · ${esc(d.message)}</li>`).join("")}render();if(syncHash&&location.hash){let id;try{id=decodeURIComponent(location.hash.slice(1))}catch{id=""}const r=byId.get(id);if(r)openDrawer(r)}
 })();
 </script>
 </body>

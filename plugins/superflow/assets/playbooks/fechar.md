@@ -5,3 +5,4 @@
 3. Resolva reprovações no escopo autorizado e repita as verificações afetadas. Ajuste o plano ativo quando necessário.
 4. Aplique a fronteira do pacote: remova scripts descartáveis; promova artefatos que continuarão operando ao local canônico do projeto e atualize seus consumidores. HTMLs e receipts autocontidos podem permanecer como histórico.
 5. Atualize a narrativa com condições satisfeitas e rastro útil. Marque o status global `done` somente após o aceite próprio; minispecs e relações não encerram nem reabrem a spec automaticamente.
+6. Confira os diagnósticos de `check spec` e publique feed ou exports QG quando essa projeção fizer parte da entrega, a partir da raiz escolhida pelo projeto.

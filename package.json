@@ -1,6 +1,6 @@
 {
   "name": "@superflow/runtime",
-  "version": "0.10.3",
+  "version": "0.11.0",
   "description": "Portable status-first runtime for Superflow spec creation, diagnostics and QG projection.",
   "private": true,
   "license": "MIT",
@@ -23,6 +23,7 @@
     "plugins/superflow/scripts/superflow_model.py",
     "plugins/superflow/scripts/superflow_qg.py",
     "plugins/superflow/scripts/validate_superflow.py",
-    "plugins/superflow/scripts/vendor/"
+    "plugins/superflow/scripts/vendor/",
+    "plugins/superflow/assets/qg-component.js"
   ]
 }
