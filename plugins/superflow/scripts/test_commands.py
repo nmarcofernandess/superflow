@@ -71,6 +71,45 @@ class CommandTests(unittest.TestCase):
             self.assertIn('src="http://localhost:8000/feed.json"', text)
             self.assertNotIn('<superflow-qg offline', text)
 
+    def test_refresh_skips_missing_outputs_and_preserves_config(self):
+        self.run_cli("new", "alpha", "--title", "Alpha", "--summary", "Importar despesas")
+        present = self.root / "present.html"
+        self.run_cli("qg", "--output", str(present))
+        config = self.root / ".superflow/config.json"
+        config.write_text(json.dumps({"qg_outputs": ["missing.html", "present.html", "gone/panel.html"]}))
+        before = config.read_bytes()
+        result = self.run_cli("qg", "--refresh")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("HTMLs atualizados: 1; destinos não encontrados: 2", result.stdout)
+        for name in ("missing.html", "gone/panel.html"):
+            self.assertIn(str(self.root / name) + ": OUTPUT_NOT_FOUND", result.stderr)
+            self.assertFalse((self.root / name).exists())
+        self.assertEqual(config.read_bytes(), before)
+        feed = json.loads((self.root / ".superflow/feed.json").read_text())
+        self.assertIn(feed["snapshot_id"], present.read_text())
+
+    def test_refresh_all_missing_still_publishes_feed_with_explicit_zero(self):
+        self.run_cli("new", "alpha", "--title", "Alpha", "--summary", "Importar despesas")
+        missing = self.root / "missing.html"
+        result = self.run_cli("qg", "--refresh", str(missing))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("HTMLs atualizados: 0; destinos não encontrados: 1", result.stdout)
+        self.assertIn("OUTPUT_NOT_FOUND", result.stderr)
+        self.assertFalse(missing.exists())
+        feed = json.loads((self.root / ".superflow/feed.json").read_text())
+        self.assertEqual(feed["records"][0]["id"], "alpha")
+        self.assertTrue((self.root / ".superflow/qg.js").is_file())
+
+    def test_refresh_existing_directory_is_an_operational_error(self):
+        self.run_cli("new", "alpha", "--title", "Alpha", "--summary", "Importar despesas")
+        directory = self.root / "panel.html"
+        directory.mkdir()
+        result = self.run_cli("qg", "--refresh", str(directory))
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("operational_error:", result.stderr)
+        self.assertNotIn("OUTPUT_NOT_FOUND", result.stderr)
+        self.assertFalse((self.root / ".superflow/feed.json").exists())
+
     def test_new_creates_only_prd_and_status(self):
         result = self.run_cli("new", "alpha", "--title", "Alpha", "--summary", "Importar despesas de uma planilha")
         self.assertEqual(result.returncode, 0, result.stderr)

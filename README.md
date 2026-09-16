@@ -75,17 +75,17 @@ consumidor, fora do diretório instalado.
 Instale uma release identificada por tag e confira a versão declarada nos
 manifestos antes de usar:
 
-    codex plugin marketplace add nmarcofernandess/superflow --ref v0.12.0
+    codex plugin marketplace add nmarcofernandess/superflow --ref v0.12.1
     codex plugin add superflow@superflow
 
 Em Claude Code:
 
-    claude plugin marketplace add nmarcofernandess/superflow@v0.12.0
+    claude plugin marketplace add nmarcofernandess/superflow@v0.12.1
     claude plugin install superflow@superflow
 
 No Cursor, o marketplace do repositório já declara o plugin. Importe o GitHub e instale `superflow`:
 
-    agent plugin marketplace add https://github.com/nmarcofernandess/superflow --git-ref v0.12.0
+    agent plugin marketplace add https://github.com/nmarcofernandess/superflow --git-ref v0.12.1
 
 Depois, no Agent, abra `/plugin`, escolha Superflow no Marketplace e instale no escopo user. Para teste local, copie o pacote para o diretório que o Cursor lê sem marketplace:
 
