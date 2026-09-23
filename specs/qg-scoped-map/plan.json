@@ -1,0 +1,75 @@
+{
+  "tasks": [
+    {
+      "id": "P01",
+      "task": "Fonte editorial e projeção determinística",
+      "status": "pending",
+      "depends_on": [],
+      "acceptance": [
+        "Parser recusa ambiguidades estruturais; projeção distingue relação, precedência, isolado e ausente.",
+        "test_scope.py demonstra ordem determinística e diagnóstico de ciclo after sem afetar context."
+      ]
+    },
+    {
+      "id": "P02",
+      "task": "CLI opt-in e refresh seguro",
+      "status": "pending",
+      "depends_on": [
+        "P01"
+      ],
+      "acceptance": [
+        "--scope é opt-in; refresh seletivo preserva fontes e host; read-set de scopes é protegido.",
+        "Comandos sem scope preservam a fronteira de leitura e contratos antigos."
+      ]
+    },
+    {
+      "id": "P03",
+      "task": "Mapa e sequência no renderer único",
+      "status": "pending",
+      "depends_on": [
+        "P01"
+      ],
+      "acceptance": [
+        "Conjunto/foco/deseleção, etapas e lista acessível funcionam no QG único.",
+        "Context/evidence não ordenam; nenhum status ou ação de execução nasce no mapa."
+      ]
+    },
+    {
+      "id": "P04",
+      "task": "Identidade de render e atualização viva",
+      "status": "pending",
+      "depends_on": [
+        "P02",
+        "P03"
+      ],
+      "acceptance": [
+        "Mesmo feed com scope diferente atualiza; fonte removida não some silenciosamente.",
+        "Offline/HTTP preservam último feed válido, isolamento e estado volátil relevante."
+      ]
+    },
+    {
+      "id": "P05",
+      "task": "Prova terminal e regressões",
+      "status": "pending",
+      "depends_on": [
+        "P04"
+      ],
+      "acceptance": [
+        "Runner existente cobre integração, portabilidade, segurança e compatibilidade sem falsear oráculos.",
+        "Receipt identifica revisão, comandos e resultados efetivamente executados."
+      ]
+    },
+    {
+      "id": "P06",
+      "task": "Contrato público e entrega em PR",
+      "status": "pending",
+      "depends_on": [
+        "P05"
+      ],
+      "acceptance": [
+        "Contratos e distribuição refletem a exceção opt-in e preservam a lista padrão.",
+        "PR aberta contra main sem merge automático; release não é inferida da conclusão técnica."
+      ]
+    }
+  ]
+}

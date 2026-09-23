@@ -1,0 +1,212 @@
+{
+  "scope": {
+    "schema_version": "superflow.scope.v1",
+    "id": "entrega-coerente",
+    "title": "Uma entrega, várias frentes.",
+    "goal": "Conectar gravação, leitura e experiência sem duplicar o estado das specs.",
+    "groups": [
+      {
+        "id": "base",
+        "title": "Fundação"
+      },
+      {
+        "id": "core",
+        "title": "Capacidades"
+      },
+      {
+        "id": "integration",
+        "title": "Integração"
+      },
+      {
+        "id": "proof",
+        "title": "Evidência"
+      }
+    ],
+    "members": [
+      {
+        "spec_id": "identity",
+        "group": "base",
+        "focus": "Identidade comum dos recursos"
+      },
+      {
+        "spec_id": "audit",
+        "group": "base",
+        "focus": "Verificação de isolamento, sem precedência de execução declarada"
+      },
+      {
+        "spec_id": "writer",
+        "group": "core",
+        "focus": "Contrato de confirmação da gravação"
+      },
+      {
+        "spec_id": "clock",
+        "group": "core",
+        "focus": "Uma referência temporal consistente"
+      },
+      {
+        "spec_id": "editor",
+        "group": "core",
+        "focus": "Preservar o trabalho da sessão"
+      },
+      {
+        "spec_id": "views",
+        "group": "integration",
+        "focus": "Atualizar coleções e detalhes"
+      },
+      {
+        "spec_id": "guide",
+        "group": "integration",
+        "focus": "Guia operacional independente"
+      },
+      {
+        "spec_id": "proof",
+        "group": "proof",
+        "focus": "Provar a jornada inteira"
+      },
+      {
+        "spec_id": "release",
+        "group": "proof",
+        "focus": "Avaliar evidência e limitações"
+      }
+    ],
+    "edges": [
+      {
+        "from": "identity",
+        "to": "writer",
+        "kind": "after",
+        "reason": "A gravação consome a identidade de recurso."
+      },
+      {
+        "from": "writer",
+        "to": "editor",
+        "kind": "after",
+        "reason": "A integração da sessão consome o contrato de confirmação."
+      },
+      {
+        "from": "writer",
+        "to": "views",
+        "kind": "after",
+        "reason": "As projeções consomem os resultados confirmados."
+      },
+      {
+        "from": "clock",
+        "to": "views",
+        "kind": "after",
+        "reason": "A leitura temporal usa a mesma referência de avaliação."
+      },
+      {
+        "from": "editor",
+        "to": "proof",
+        "kind": "after",
+        "reason": "A jornada precisa da sessão integrada."
+      },
+      {
+        "from": "views",
+        "to": "proof",
+        "kind": "after",
+        "reason": "A jornada precisa atravessar as projeções reais."
+      },
+      {
+        "from": "proof",
+        "to": "release",
+        "kind": "after",
+        "reason": "O aceite examina evidência produzida, não só planejamento."
+      },
+      {
+        "from": "audit",
+        "to": "writer",
+        "kind": "context",
+        "reason": "Isolamento e concorrência são responsabilidades relacionadas, não equivalentes."
+      },
+      {
+        "from": "clock",
+        "to": "editor",
+        "kind": "context",
+        "reason": "Relógio e edição coexistem sem uma ordem obrigatória aqui."
+      },
+      {
+        "from": "views",
+        "to": "release",
+        "kind": "evidence",
+        "reason": "A leitura entrega evidência ao aceite; esta seta não adiciona ordem."
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "identity",
+      "title": "Identidade de recurso",
+      "status": "done",
+      "summary": "Cada operação aponta para o mesmo recurso, sem depender do cartão que foi clicado.",
+      "relations": []
+    },
+    {
+      "id": "audit",
+      "title": "Isolamento de acesso",
+      "status": "pending",
+      "summary": "Verificar as fronteiras de autorização. Contexto não é um bloqueio automaticamente herdado.",
+      "relations": []
+    },
+    {
+      "id": "writer",
+      "title": "Gravação confirmada",
+      "status": "pending",
+      "summary": "A interface distingue confirmação, recusa e resposta incerta.",
+      "relations": []
+    },
+    {
+      "id": "clock",
+      "title": "Relógio consistente",
+      "status": "pending",
+      "summary": "A passagem do tempo não depende do fuso acidental da máquina.",
+      "relations": []
+    },
+    {
+      "id": "editor",
+      "title": "Sessão protegida",
+      "status": "pending",
+      "summary": "Uma atualização externa não apaga o que ainda está sendo editado.",
+      "relations": [
+        {
+          "id": "visual-system",
+          "reason": "A sessão usa os componentes do sistema visual, que não foi incluído neste recorte."
+        }
+      ]
+    },
+    {
+      "id": "views",
+      "title": "Listas e detalhes",
+      "status": "pending",
+      "summary": "Uma mudança alcança as leituras relacionadas sem recarregar a página inteira.",
+      "relations": []
+    },
+    {
+      "id": "guide",
+      "title": "Guia de operação",
+      "status": "pending",
+      "summary": "Frente válida, sem ligação declarada neste recorte. Não está perdida nem concluída.",
+      "relations": []
+    },
+    {
+      "id": "proof",
+      "title": "Prova integrada",
+      "status": "pending",
+      "summary": "Confrontar gesto, persistência e outra superfície, em vez de somar testes locais.",
+      "relations": []
+    },
+    {
+      "id": "release",
+      "title": "Aceite da entrega",
+      "status": "pending",
+      "summary": "Decidir com base no que foi provado e nas limitações que permanecem.",
+      "relations": []
+    },
+    {
+      "id": "visual-system",
+      "title": "Sistema visual",
+      "status": "done",
+      "summary": "Referência externa ao recorte; não deve ser puxada automaticamente.",
+      "relations": []
+    }
+  ]
+}
