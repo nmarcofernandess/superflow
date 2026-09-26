@@ -8,6 +8,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 from superflow_model import SourceError
+from superflow_scope import parse_scope
 
 ASSETS = Path(__file__).resolve().parents[1] / "assets"
 TEMPLATE = ASSETS / "qg.html"
@@ -30,7 +31,7 @@ def component_script():
     markup = '<style>:host{display:block;all:initial}' + css + '</style><div class="qg-root">' + markup + '</div>'
     return (ASSETS / "qg-component.js").read_text(encoding="utf-8").replace(
         "__QG_MARKUP__", script_safe_dumps(markup)
-    ).replace("__QG_RENDER__", script)
+    ).replace("__QG_RENDER__", script).replace("__SCOPE_VIEW__", (ASSETS / "scope-view.js").read_text(encoding="utf-8"))
 
 
 def snapshot_element(feed):
@@ -41,19 +42,28 @@ def runtime_element():
     return '<script data-superflow-runtime>\n' + component_script() + '\n</script>'
 
 
-def render_embed(feed, source=None, sync_hash=False):
+def scope_element(scope):
+    if scope is None:
+        return ""
+    normalized = parse_scope(json.dumps(scope))
+    return '<script type="application/json" data-superflow-scope>' + script_safe_dumps(normalized) + "</script>"
+
+
+def render_embed(feed, source=None, sync_hash=False, scope=None, scope_path=None):
     attributes = ' sync-hash' if sync_hash else ''
+    if scope_path is not None:
+        attributes += ' scope-path="' + html.escape(str(scope_path), quote=True) + '"'
     if source is not None:
         attributes += ' src="' + html.escape(source, quote=True) + '"'
     return ('<superflow-qg' + attributes + '>' + snapshot_element(feed)
-            + '</superflow-qg>\n' + runtime_element() + '\n')
+            + scope_element(scope) + '</superflow-qg>\n' + runtime_element() + '\n')
 
 
-def render(feed, root=None, source=None):
+def render(feed, root=None, source=None, scope=None, scope_path=None):
     return ('<!doctype html>\n<html lang="pt-BR"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width,initial-scale=1">'
             '<title>Superflow QG</title><style>body{margin:0}</style></head><body>\n'
-            + render_embed(feed, source, sync_hash=True) + '</body></html>\n')
+            + render_embed(feed, source, sync_hash=True, scope=scope, scope_path=scope_path) + '</body></html>\n')
 
 
 class Slots(HTMLParser):
@@ -94,19 +104,29 @@ class Slots(HTMLParser):
             self.runtime = None
 
 
-def refresh_html(text, feed, source=None):
+def refresh_html(text, feed, source=None, scopes=None):
     """Update portable snapshots, retaining source, scope and refresh settings."""
     slots = Slots(text)
     edits = []
     for start, end, attrs in slots.components:
         if source is not None and dict(attrs).get('src') != source:
             continue
+        scope_path = dict(attrs).get('scope-path')
+        scope = None
+        if scope_path is not None:
+            if scopes is None or scope_path not in scopes:
+                raise SourceError('Escopo do componente não foi resolvido: ' + str(scope_path))
+            scope = scopes[scope_path]
+            if 'ids' in dict(attrs):
+                raise SourceError('ids e scope são mutuamente exclusivos.')
+        elif re.search(r'<script\b[^>]*\bdata-superflow-scope(?:\s|=|>)', text[start:end], re.I):
+            raise SourceError('Componente escopado sem scope-path; regenere pelo CLI.')
         attrs = [(key, value) for key, value in attrs if key != 'data-snapshot-id']
         opening = '<superflow-qg' + ''.join(
             ' ' + key + ('="' + html.escape(value, quote=True) + '"' if value is not None else '')
             for key, value in attrs
         ) + '>'
-        edits.append((start, end, opening + snapshot_element(feed) + '</superflow-qg>'))
+        edits.append((start, end, opening + snapshot_element(feed) + scope_element(scope) + '</superflow-qg>'))
     if not edits:
         raise SourceError("Nenhum componente corresponde à fonte indicada; use --source para componentes com src.")
     # One runtime serves every component on the page, including other online sources.

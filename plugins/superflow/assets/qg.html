@@ -110,7 +110,7 @@ count();root.getElementById("snapshot").textContent=`${records.length} specs · 
 root.getElementById("search").value=previous.query||"";
 root.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",String(t.dataset.view===view)));
 if(previous.drawer && byId.has(previous.drawer)){openDrawer(byId.get(previous.drawer));root.getElementById("drawer").scrollTop=previous.scroll||0}
-return {state:()=>({view,query:root.getElementById("search").value,drawer:root.getElementById("drawer").open?root.getElementById("drawer").dataset.specId:null,scroll:root.getElementById("drawer").scrollTop})};
+return {openDrawer,state:()=>({view,query:root.getElementById("search").value,drawer:root.getElementById("drawer").open?root.getElementById("drawer").dataset.specId:null,scroll:root.getElementById("drawer").scrollTop})};
 })();
 </script>
 </body>

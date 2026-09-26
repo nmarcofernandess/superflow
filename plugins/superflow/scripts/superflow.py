@@ -18,6 +18,8 @@ from superflow_model import (
     validate_spec, yaml,
 )
 
+from superflow_scope import read_scope, ensure_scopes_unchanged
+
 PLUGIN = Path(__file__).resolve().parents[1]
 
 
@@ -26,11 +28,11 @@ def emit_diagnostics(items):
         print("{severity}: {path}: {code}: {message}".format(**item), file=sys.stderr)
 
 
-def atomic_write(path, text, root, sources):
+def atomic_write(path, text, root, sources, scope_sources=None):
     path = Path(path).expanduser().resolve()
     root = Path(root).resolve()
     if path.name in SOURCE_NAMES or path == root / CONFIG_PATH or path in {
-        root / key for key in sources
+        root / key for key in {**sources, **(scope_sources or {})}
     }:
         raise SourceError("Saída não pode sobrescrever uma fonte.")
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -45,6 +47,7 @@ def atomic_write(path, text, root, sources):
             stream.flush()
             os.fsync(stream.fileno())
         ensure_unchanged(root, sources)
+        ensure_scopes_unchanged(root, scope_sources or {})
         os.replace(temporary, path)
     finally:
         if temporary is not None and temporary.exists():
@@ -117,6 +120,7 @@ def build_parser():
         command = commands.add_parser(name)
         command.add_argument("--output", type=Path)
         if name == "qg":
+            command.add_argument("--scope", help="Composição editorial relativa à raiz do projeto.")
             command.add_argument("--online", metavar="FEED_URL", help="Gerar HTML que consulta um feed HTTP(S).")
             command.add_argument("--refresh", type=Path, nargs="*", metavar="HTML", help="Atualizar fotografias portáteis nos HTMLs indicados ou em qg_outputs.")
             command.add_argument("--source", help="Selecionar os componentes pelo src exato durante --refresh.")
@@ -129,8 +133,8 @@ def main(argv=None):
     args = parser.parse_args(argv)
     root = args.root.expanduser().resolve()
     if args.command == "qg":
-        if args.refresh is not None and (args.output or args.embed or args.online):
-            parser.error("--refresh não combina com --output, --embed ou --online.")
+        if args.refresh is not None and (args.output or args.embed or args.online or args.scope):
+            parser.error("--refresh não combina com --output, --embed, --online ou --scope.")
         if args.source is not None and args.refresh is None:
             parser.error("--source seleciona componentes para --refresh.")
     try:
@@ -159,7 +163,8 @@ def main(argv=None):
 
         snapshot, sources = build_snapshot(root)
         if args.command in {"feed", "qg"}:
-            from superflow_qg import component_script, refresh_html, render, render_embed
+            from superflow_qg import Slots, component_script, refresh_html, render, render_embed
+            scope_sources = {}
             feed_path = (args.output if args.command == "feed" else None) or root / ".superflow/feed.json"
             outputs = [(feed_path, json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n"),
                        (feed_path.parent / "qg.js", component_script())]
@@ -179,19 +184,33 @@ def main(argv=None):
                             missing_outputs.append(path)
                             print("warning: {}: OUTPUT_NOT_FOUND: HTML não encontrado; destino mantido na configuração, se declarado.".format(path), file=sys.stderr)
                             continue
-                        outputs.append((path, refresh_html(raw.decode("utf-8"), snapshot, args.source)))
+                        text = raw.decode("utf-8")
+                        scopes = {}
+                        for _, _, attrs in Slots(text).components:
+                            attrs = dict(attrs)
+                            if args.source is not None and attrs.get('src') != args.source:
+                                continue
+                            if 'scope-path' in attrs:
+                                name = attrs['scope-path']
+                                scope, read_set = read_scope(root, name)
+                                scopes[name] = scope
+                                scope_sources.update(read_set)
+                        outputs.append((path, refresh_html(text, snapshot, args.source, scopes)))
                 else:
                     output = args.output or root / ".superflow/qg.html"
                     renderer = render_embed if args.embed else render
-                    outputs.append((output, renderer(snapshot, source=args.online)))
+                    scope = None
+                    if args.scope:
+                        scope, scope_sources = read_scope(root, args.scope)
+                    outputs.append((output, renderer(snapshot, source=args.online, scope=scope, scope_path=args.scope)))
             paths = [path.expanduser().resolve() for path, _ in outputs]
             if len(paths) != len(set(paths)):
                 raise SourceError("Destinos de saída precisam ser distintos.")
             for path in paths:
-                if path.name in SOURCE_NAMES or path == root / CONFIG_PATH or path in {root / key for key in sources}:
+                if path.name in SOURCE_NAMES or path == root / CONFIG_PATH or path in {root / key for key in {**sources, **scope_sources}}:
                     raise SourceError("Saída não pode sobrescrever uma fonte.")
             for path, content in outputs:
-                atomic_write(path, content, root, sources)
+                atomic_write(path, content, root, sources, scope_sources)
                 print("Gerado: " + str(path))
             if args.command == "qg" and args.refresh is not None:
                 print("HTMLs atualizados: {}; destinos não encontrados: {}.".format(

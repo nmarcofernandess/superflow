@@ -39,3 +39,12 @@ Base: `a9c94cd9d338eb1fb6efcdfba9f8fa844e8a9b32`. Alteração restrita ao protó
 - Capturas antes/depois do foco em 1440 px e resultado em 768/390 px inspecionados. JavaScript extraído passou em `node --check`; fixture JSON incorporado permaneceu idêntico.
 
 O ensaio é da demonstração, não do plugin instalado. Nenhum `npm test`, CLI, release, migration ou dado do consumidor foi executado/alterado nesta revisão. A entrega entra em PR, sem merge automático.
+
+
+## Implementação integrada — 26/09/2026
+
+Os relatos anteriores são históricos. Na candidata 0.13.0, npm test executou a validação completa: contratos Python, distribuição, browser, portabilidade e os novos testes de scope. Resultado: validate-all: passed.
+
+test_scope.py cobre parser, projeção, ciclos, fontes ausentes, refresh seletivo, preservação de arquivo em falha e proteção das fontes. test_scope_browser.cjs cobre arquivo offline real, foco, drawer, sequência, troca de scope com mesmo feed, dados hostis inertes, ausência de fonte e larguras 390/768/1440. O asset editorial teve cópia e navegação verificadas.
+
+Validação local não prova instalação nem publicação; essas etapas são verificadas no fechamento da release. O protótipo não é utilizado como substituto dos testes do runtime.

@@ -24,6 +24,12 @@ Use para registrar, preparar, retomar, reconciliar ou fechar uma entrega.
 - Ao criar, atualizar, retomar ou fechar, use a [fronteira do pacote](../../assets/references/state-contract.md#fronteira-do-pacote-da-spec): material da spec é autocontido; implementação permanente tem destino canônico no projeto.
 - O projeto consumidor é dono de testes, provas, CI e ship.
 
+## Orquestração opcional
+
+Para frentes simultâneas e próximos prompts, usar [orquestrar](../orquestrar/SKILL.md).
+A skill prepara e acompanha encaminhamentos; não executa jobs nem altera estados
+por clique. A lista QG permanece padrão; `qg --scope` apresenta recortes editoriais.
+
 ## Playbooks
 
 Leia somente a receita escolhida em `../../assets/playbooks/`: `capture`, `feature`, `retomar`, `fechar` ou `reconciliar`. Para retomar, carregue `retomar.md` e interprete a orientação junto do plano ativo, se houver.
