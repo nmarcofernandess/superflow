@@ -3,7 +3,7 @@
     {
       "id": "P01",
       "task": "Fonte editorial e projeção determinística",
-      "status": "pending",
+      "status": "done",
       "depends_on": [],
       "acceptance": [
         "Parser recusa ambiguidades estruturais; projeção distingue relação, precedência, isolado e ausente.",
@@ -13,7 +13,7 @@
     {
       "id": "P02",
       "task": "CLI opt-in e refresh seguro",
-      "status": "pending",
+      "status": "done",
       "depends_on": [
         "P01"
       ],
@@ -25,7 +25,7 @@
     {
       "id": "P03",
       "task": "Mapa e sequência no renderer único",
-      "status": "pending",
+      "status": "done",
       "depends_on": [
         "P01"
       ],
@@ -37,7 +37,7 @@
     {
       "id": "P04",
       "task": "Identidade de render e atualização viva",
-      "status": "pending",
+      "status": "done",
       "depends_on": [
         "P02",
         "P03"
@@ -50,7 +50,7 @@
     {
       "id": "P05",
       "task": "Prova terminal e regressões",
-      "status": "pending",
+      "status": "done",
       "depends_on": [
         "P04"
       ],
@@ -62,7 +62,7 @@
     {
       "id": "P06",
       "task": "Contrato público e entrega em PR",
-      "status": "pending",
+      "status": "done",
       "depends_on": [
         "P05"
       ],

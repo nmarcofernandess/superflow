@@ -34,6 +34,8 @@ porque há prosa, arquivo arquivado ou mensagem de sucesso.
 - status mantém o retrato completo, a orientação de continuidade e as relações entre specs sem
   inferir sucesso.
 
+- orquestrar prepara encaminhamentos e acompanha retornos, com painel offline opcional.
+
 ## Receitas
 
 | Receita | Use quando | Saída |
@@ -92,3 +94,9 @@ O QG gerado é autocontido: runtime e snapshot incorporados. Abre por duplo cliq
 **Este painel funciona sem servidor com o retrato incorporado. Para acompanhar atualizações publicadas, configure uma URL HTTP do feed. Para atualizar a fotografia portátil, execute o comando de atualização.**
 
 O contrato de comandos explica HTTP/CORS, publicação e limites. Arquivo local buscando feed HTTP depende de CORS; F5 de uma página servida por HTTP depende de o host continuar disponível.
+
+## Orquestração opcional
+
+A [skill orquestrar](skills/orquestrar/SKILL.md) mantém próximos passos e prompts.
+O [contrato de escopos](assets/references/scope-contract.md) define o mapa QG.
+Specs, tasks e encaminhamentos preservam identidades e estados próprios.

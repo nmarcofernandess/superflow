@@ -1,24 +1,22 @@
 ---
 id: qg-scoped-map
 title: Mapa QG por escopo e sprint
-summary: Visão opcional que combina o estado canônico das specs com um recorte editorial para explicar relações, sequência e paralelismo possível sem criar outro board.
-status: pending
+summary: Mapa e sequência opcionais no QG único, com fontes editoriais separadas dos estados canônicos e método de orquestração integrado.
+status: done
 ---
 
-# Retrato — 23/09/2026
-
-## Intenção
-
-Preservar o norte de uma entrega que atravessa specs. O operador precisa ver o conjunto, focar uma frente e voltar a todas as linhas, sem transformar relações em bloqueios ou copiar estados para um sprint.
+# Retrato — 26/09/2026
 
 ## Estado real
 
-PRD, SPEC e plano candidato publicados com um [asset navegável](assets/mapa-sprint.html) e [dados fictícios](assets/example.json). O protótipo demonstra a interação, não é o runtime do QG instalado. A release 0.12.3 permanece inalterada; nenhum comando --scope foi adicionado, nenhum schema público foi alterado e nenhuma versão/tag foi publicada.
+P01–P06 implementados e validados para 0.13.0; candidata publicada na [PR #22](https://github.com/nmarcofernandess/superflow/pull/22). A conclusão técnica não é recibo de instalação. O ajuste visual da PR #21 está incorporado. Mapa, sequência, foco e drawer usam o renderer do QG; a lista sem scope permanece padrão. A skill orquestrar mantém o estado de encaminhamentos separado de status.md.
 
-## Decisão proposta
+## Contrato
 
-Não acrescentar campos a status.md. Manter relações duradouras nele; recorte, agrupamento e precedências editoriais pertencem a um arquivo opcional do projeto, .superflow/scopes/<slug>.json. As etapas são uma leitura da sequência declarada, não autorização, cursor de tarefas, disponibilidade de equipe ou agenda automática.
+O contrato operacional é [scope-contract.md](../../plugins/superflow/assets/references/scope-contract.md). O feed continua v4 e status.md continua a fonte do estado das specs. O arquivo opcional .superflow/scopes/<slug>.json declara membros e relações editoriais, sem autorização de execução ou estado duplicado.
 
-## Próximo trabalho
+PRD, SPEC e IMPLEMENTATION registram a decisão que originou a implementação. O protótipo em assets permanece demonstrativo; o CLI e o componente são a entrega funcional.
 
-Revisar SPEC.md e IMPLEMENTATION.md antes de implementar P01–P06 de plan.json numa PR contra main. Não mergear automaticamente. O aceite precisa provar também lista sem scope, refresh, fontes ausentes, relações cíclicas válidas e isolamento do host. VERIFY.md separa as verificações do exemplo das provas de integração ainda futuras.
+## Verificação
+
+Ver [VERIFY.md](VERIFY.md) para testes executados e limites. Publicação e instalação são etapas distintas da validação local.

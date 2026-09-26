@@ -6,6 +6,7 @@
   if (customElements.get("superflow-qg")) return;
   const markup = __QG_MARKUP__;
   const display = __QG_RENDER__;
+  const scopeTools = __SCOPE_VIEW__;
 
   function validate(feed) {
     if (feed?.schema_version !== "superflow.feed.v4" || !Array.isArray(feed.records)
@@ -31,6 +32,8 @@
     disconnectedCallback() {
       this.controller?.abort();
       clearTimeout(this.poll);
+      this.scopeView?.destroy();
+      this.selection = null;
     }
     schedule() {
       if (document.readyState === "loading") {
@@ -60,15 +63,26 @@
         this.shadowRoot.replaceChildren(label);
       }
       const date = this.current?.generated_at;
-      label.textContent = text + (date ? ` · retrato gerado em ${date}` : "");
+      label.textContent = text + (this.scopeError ? " · " + this.scopeError : "") + (date ? ` · retrato gerado em ${date}` : "");
     }
     accept(feed, kind, ids) {
       validate(feed);
-      const selection = JSON.stringify(ids);
+      const block = this.querySelector('script[type="application/json"][data-superflow-scope]');
+      let scope = null;
+      this.scopeError = null;
+      if (block) {
+        try { scope = scopeTools.validate(JSON.parse(block.textContent)); }
+        catch (error) { this.scopeError = 'Mapa indisponível: ' + error.message; }
+      }
+      if (scope && ids !== null) throw new Error('ids e scope são mutuamente exclusivos.');
+      const selection = JSON.stringify([ids, scope, this.scopeError]);
       if (!this.current || feed.snapshot_id !== this.current.snapshot_id || selection !== this.selection) {
-        const previous = this.view?.state();
+        const previous = {...this.view?.state(), ...this.scopeView?.state()};
+        this.scopeView?.destroy();
+        this.scopeView = null;
         this.shadowRoot.innerHTML = markup;
-        this.view = display(this.shadowRoot, feed, ids, this.hasAttribute("sync-hash"), previous);
+        this.view = display(this.shadowRoot, feed, scope ? scope.members.map(m => m.spec_id) : ids, this.hasAttribute("sync-hash"), previous);
+        if (scope) this.scopeView = scopeTools.mount(this.shadowRoot, feed, scope, this.view.openDrawer, previous);
       }
       this.selection = selection;
       this.current = feed;

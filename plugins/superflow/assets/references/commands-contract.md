@@ -90,3 +90,9 @@ Por padrão, todos os componentes dos destinos recebem a fotografia de `--root`:
 Destinos HTML ausentes são listados no stderr como `warning: <path>: OUTPUT_NOT_FOUND`, sem impedir a publicação dos demais. O comando não recria esses HTMLs nem altera a configuração. Ao concluir, informa quantos HTMLs atualizou e quantos destinos não encontrou; se todos estiverem ausentes, publica feed/runtime e informa zero HTMLs atualizados, com exit 0. A IA relata os caminhos para o operador decidir se corrige ou remove as entradas. Erros de leitura, permissão, estrutura ou escrita continuam sendo falhas operacionais (exit 2).
 
 As gravações são atômicas por arquivo, com conferência de fontes antes de publicar; não existe transação entre arquivos. Falha no meio de um lote pode deixar destinos de gerações diferentes: corrija a falha e repita o comando. O `snapshot_id` permite conferir a coerência. Atualizar o plugin e publicar as fotografias novamente incorpora também o runtime novo.
+
+## Composição opcional
+
+`qg --scope <path-relativo> --output <html>` habilita o mapa editorial no mesmo
+componente. Consulte [scope-contract.md](scope-contract.md) para formato, refresh
+e limites. Sem escopo, o read-set anterior permanece inalterado.

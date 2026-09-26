@@ -10,8 +10,8 @@ situação precisa deles.
       -> execução, review e QA do projeto
       -> aceite e estado factual
 
-O plugin não é um executor, board, campanha, sprint ou sistema paralelo de
-provas. Ele usa fontes do repositório e suas ferramentas nativas.
+O plugin não é um executor ou sistema paralelo de provas. Oferece orquestração
+editorial opcional e mapas de recortes, sem agendamento ou estados duplicados. Ele usa fontes do repositório e suas ferramentas nativas.
 
 ## O que o plugin exporta
 
@@ -23,6 +23,7 @@ provas. Ele usa fontes do repositório e suas ferramentas nativas.
 | build | Fecha arquitetura e reuso em SPEC quando há decisão técnica material. |
 | plan | Cria plan.json quando sequência e dependências justificam. |
 | review | Examina desenho ou diff com evidência e rechecagem. |
+| orquestrar | Prepara próximos prompts, responsáveis e dependências sem confundir envio com conclusão. |
 | status | Mantém o retrato completo, a orientação de continuidade e as relações entre specs. |
 
 As cinco receitas são capture, feature, retomar, fechar e reconciliar. Execute
@@ -63,7 +64,7 @@ proof, ship ou outro comando configurado pelo repositório.
 
 O QG abre em **Em aberto**, com minispecs aninhadas sempre visíveis. O card
 mostra o título e o resumo durável para escolher; o card inteiro abre o drawer com a narrativa completa do
-`status.md`. Não há tarefas, arquivos, progresso ou graph no QG. A busca cobre
+`status.md`. A lista padrão não mistura tasks ou progresso. O modo opcional `qg --scope` apresenta mapa e sequência de specs. A busca cobre
 o conteúdo completo e abre a cadeia até a minispec. **Concluídas** é uma visão
 separada. Uma spec concluída pode aparecer como contexto de filhos abertos.
 
@@ -75,17 +76,17 @@ consumidor, fora do diretório instalado.
 Instale uma release identificada por tag e confira a versão declarada nos
 manifestos antes de usar:
 
-    codex plugin marketplace add nmarcofernandess/superflow --ref v0.12.3
+    codex plugin marketplace add nmarcofernandess/superflow --ref v0.13.0
     codex plugin add superflow@superflow
 
 Em Claude Code:
 
-    claude plugin marketplace add nmarcofernandess/superflow@v0.12.3
+    claude plugin marketplace add nmarcofernandess/superflow@v0.13.0
     claude plugin install superflow@superflow
 
 No Cursor, o marketplace do repositório já declara o plugin. Importe o GitHub e instale `superflow`:
 
-    agent plugin marketplace add https://github.com/nmarcofernandess/superflow --git-ref v0.12.3
+    agent plugin marketplace add https://github.com/nmarcofernandess/superflow --git-ref v0.13.0
 
 Depois, no Agent, abra `/plugin`, escolha Superflow no Marketplace e instale no escopo user. Para teste local, copie o pacote para o diretório que o Cursor lê sem marketplace:
 
@@ -107,7 +108,7 @@ A explicação completa vive no contrato de estado.
 ## Desenvolvimento
 
 A fonte do plugin é plugins/superflow. A validação local existente confere o conjunto
-exato de sete diretórios de skills, referências internas e conteúdo do pacote.
+exato de oito diretórios de skills, referências internas e conteúdo do pacote.
 Leia o [README do plugin](plugins/superflow/README.md) para uso; leia
 a [SPEC atual](SPEC-superflow-plugin.md) para as decisões técnicas.
 
@@ -138,3 +139,15 @@ npm test
 `npm test` executa a suíte Python, a validação da distribuição e os dois testes de integração no Chromium. Playwright é uma dependência de desenvolvimento deste repositório; não é exigido para usar o plugin. A instalação do navegador é uma preparação separada e não ocorre a cada validação.
 
 Os testes verificam comportamento, isolamento e ausência de overflow em diferentes larguras, sem comparar screenshots ou fixar fontes, cores e espaçamentos. O ensaio portátil cobre arquivo local real, HTTP com e sem CORS, queda do host, polling e preservação do último retrato válido. Os ensaios e servidores são temporários. `SUPERFLOW_CHROME=1 node plugins/superflow/scripts/test_qg_portable.cjs` permite repetir o ensaio portátil no Google Chrome local; a validação padrão usa Chromium.
+
+## Orquestração e mapa
+
+Use `superflow:orquestrar` para conferir frentes, preparar próximos prompts e
+manter uma mesa offline. O método preserva o painel existente e seus conteúdos.
+[Contrato de composição](plugins/superflow/assets/references/scope-contract.md) ·
+[Exemplo de mesa de encaminhamentos](plugins/superflow/skills/orquestrar/assets/painel.html).
+
+`qg --scope .superflow/scopes/entrega.json --output mapa.html` combina o feed
+canônico com uma composição editorial. Estado de spec continua vindo do status;
+“enviado” ou “pronto para implementar” qualificam encaminhamentos, não a spec inteira.
+A mesa pode reunir links de vários projetos; cada mapa QG mantém fonte explícita.

@@ -1,0 +1,14 @@
+/* Superflow orchestration host theme. Presentation only; no state or content. */
+:root{--sf-ink:#183b35;--sf-paper:#f4f4ed;--sf-surface:#fffef8;--sf-line:#d5ddd4;--sf-green:#174f43;--sf-muted:#546b64}
+body{background:var(--sf-paper);color:var(--sf-ink)}
+main>header{background:var(--sf-green);color:#fffef8;border:1px solid var(--sf-green);border-bottom:4px solid #ba6d37;border-radius:10px 10px 0 0;padding:28px clamp(18px,3vw,36px);margin-bottom:0}
+main>header p,main>header .meta{color:#d6e0d6}
+main>header .ready-line{background:#fffef8;color:var(--sf-ink);border-left:3px solid #ba6d37;padding:14px 18px;border-radius:4px}
+main>nav{background:var(--sf-surface);border:1px solid var(--sf-line);border-radius:0 0 10px 10px;padding:10px;gap:6px;margin-top:0}
+main>nav button{border-radius:5px;padding:10px 13px}
+main>nav button[aria-selected=true]{background:var(--sf-green);color:white;border-color:var(--sf-green)}
+.card,.road-node-body{background:var(--sf-surface);border-color:var(--sf-line);border-radius:7px}
+.road-stage{min-width:0}.road-node-body{overflow-wrap:anywhere}
+.road-node-body:focus-within{outline:2px solid #ba6d37;outline-offset:3px}
+.panel h2{letter-spacing:-.03em}.prompt-text{line-height:1.7}
+@media(max-width:620px){main>header{padding:21px 18px}main>nav{padding:8px}main>nav button{padding:9px 11px;font-size:13px}}

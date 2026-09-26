@@ -24,7 +24,7 @@ O corpo Markdown guarda o retrato humano completo. A receita da skill `status` o
 
 `## Próximo trabalho` explica direção, autorização e condições relevantes, inclusive o que pode avançar enquanto outra parte espera. Não há campo `next` ou `waiting_for`. Quando existe plano ativo, ele é o único cursor das tasks: o status não repete sua lista nem precisa mudar a cada task concluída. Atualize o retrato quando mudar direção, autorização, espera relevante, relação, divisão de escopo ou handoff.
 
-Feed e QG descobrem e leem exclusivamente arquivos chamados `status.md`. Hierarquia é derivada do path entre specs registradas. Uma mãe concluída pode ter minispec aberta e aparecer como contexto dela. O QG oferece Em aberto, Concluídas, busca, famílias, relações e narrativa integral; relações podem abrir specs fora da visão atual.
+Feed e QG padrão descobrem e leem exclusivamente arquivos chamados `status.md`. O modo `qg --scope` lê também a composição selecionada, conforme [scope-contract.md](scope-contract.md); estado factual permanece no status. Hierarquia é derivada do path entre specs registradas. Uma mãe concluída pode ter minispec aberta e aparecer como contexto dela. O QG oferece Em aberto, Concluídas, busca, famílias, relações e narrativa integral; relações podem abrir specs fora da visão atual.
 
 ## Plano
 

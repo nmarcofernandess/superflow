@@ -26,3 +26,25 @@ Status contém somente os campos canônicos. plan.json tem seis tasks pending co
 ## Não executado
 
 Não foi executado npm test do Superflow, não houve instalação de dependências, implementação de --scope, mudança de feed.v4, publicação de release ou integração do runtime. A próxima entrega funcional é uma PR separada, sem merge automático.
+
+## Verificação do ajuste de foco — 26/09/2026
+
+Base: `a9c94cd9d338eb1fb6efcdfba9f8fa844e8a9b32`. Alteração restrita ao protótipo e à documentação desta demonstração. A integração do QG e as seis tasks do plano continuam pendentes.
+
+- RED observado no HTML anterior: cartão secundário tinha `opacity=0.5`; a superfície inteira não bloqueava a passagem do traço. O teste recusou esse estado antes da alteração.
+- GREEN em Chromium headless via Playwright, contexto offline com `set_content`, em 1440, 768 e 390 px. Zero `pageerror` e zero request HTTP(S) em cada largura.
+- Desktop/tablet: dez relações no conjunto, quatro no foco de writer. No foco, endpoints geométricos ficam sob o centro dos cartões e não há marker-end; SVG tem z-index inferior e `pointer-events:none`. Hit-test numa parte do traço dentro do cartão resolve para o cartão, não para o SVG. Os cartões, incluindo `.dim`, têm opacidade 1.
+- Segundo clique, Mostrar tudo, Escape e área vazia restauram as dez relações e as oito setas de direção do conjunto.
+- Preservadas as cinco etapas calculadas, frentes isoladas, referência fora do recorte, diagnóstico de fonte ausente/ciclo, navegação por teclado e três abas sem overflow horizontal.
+- Capturas antes/depois do foco em 1440 px e resultado em 768/390 px inspecionados. JavaScript extraído passou em `node --check`; fixture JSON incorporado permaneceu idêntico.
+
+O ensaio é da demonstração, não do plugin instalado. Nenhum `npm test`, CLI, release, migration ou dado do consumidor foi executado/alterado nesta revisão. A entrega entra em PR, sem merge automático.
+
+
+## Implementação integrada — 26/09/2026
+
+Os relatos anteriores são históricos. Na candidata 0.13.0, npm test executou a validação completa: contratos Python, distribuição, browser, portabilidade e os novos testes de scope. Resultado: validate-all: passed.
+
+test_scope.py cobre parser, projeção, ciclos, fontes ausentes, refresh seletivo, preservação de arquivo em falha e proteção das fontes. test_scope_browser.cjs cobre arquivo offline real, foco, drawer, sequência, troca de scope com mesmo feed, dados hostis inertes, ausência de fonte e larguras 390/768/1440. O asset editorial teve cópia e navegação verificadas.
+
+Validação local não prova instalação nem publicação; essas etapas são verificadas no fechamento da release. O protótipo não é utilizado como substituto dos testes do runtime.

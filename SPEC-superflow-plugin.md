@@ -6,9 +6,9 @@ Superflow mantém um fluxo proporcional e uma fonte factual de trabalho. PRD des
 
 ## Superfícies públicas
 
-Sete skills: `superflow`, `prd`, `analyst`, `build`, `plan`, `review`, `status`.
+Oito skills: `superflow`, `prd`, `analyst`, `build`, `plan`, `review`, `status`, `orquestrar`.
 Cinco receitas: `capture`, `feature`, `retomar`, `fechar`, `reconciliar`.
-Duas referências: `state-contract` e `commands-contract`.
+Três referências: `state-contract`, `commands-contract` e `scope-contract`.
 Quatro templates: PRD, status, SPEC e plano.
 
 Execute e QA são ações nas receitas e usam as ferramentas do projeto. Rota é um plugin separado.
@@ -27,7 +27,7 @@ Plan.json contém tasks com exatamente `id`, `task`, `status`, `depends_on` e `a
 
 Python 3.9 ou superior, em modo isolado, expõe `new`, `check status`, `check spec`, `feed` e `qg`, com raiz explícita. New exige resumo humano e cria somente PRD e status, preservando proteção contra IDs e destinos já ocupados. Check spec relata diagnósticos nos dois obrigatórios e em SPEC/plano quando presentes, sem inferir prontidão ou controlar CI/ship. Os status da coleção permitem conferir os destinos das relações.
 
-Feed e QG leem exclusivamente status.md. O snapshot `superflow.feed.v4` contém resumo e relações. O parser YAML é seguro, e PyYAML acompanha o pacote. A gravação de feed/QG é atômica por arquivo; a serialização do conteúdo preserva a fronteira entre dados e código do HTML.
+Feed e QG padrão leem exclusivamente status.md; o QG com --scope lê também a composição editorial explicitamente selecionada. O snapshot `superflow.feed.v4` contém resumo e relações. O parser YAML é seguro, e PyYAML acompanha o pacote. A gravação de feed/QG é atômica por arquivo; a serialização do conteúdo preserva a fronteira entre dados e código do HTML.
 
 ## Autoria e verificação
 
@@ -46,3 +46,11 @@ Status é a autoridade; feed é o consolidado derivado. Feed publica também qg.
 O HTML declara fonte, seleção exata de IDs e intervalo opcional. Snapshot igual preserva o DOM; snapshot novo mantém busca, visão e drawer quando a spec continua presente. IDs removidos saem do recorte sem erro. O modo e a data do retrato exibido são explícitos.
 
 QG publica feed junto de suas saídas. `--refresh` atualiza componentes marcados em hosts indicados ou na lista opcional `qg_outputs`, preservando fonte, filtro, intervalo e layout externo. Um snapshot alimenta o lote, mas as gravações são atômicas por arquivo, sem transação global. O contrato de comandos descreve HTTP/CORS, publicação e os limites de um host indisponível.
+
+## Extensão 0.13.0: orquestração e mapa opt-in
+
+O modo padrão permanece lista. A exclusão anterior de graph/sprint aplica-se à
+lista padrão, não ao recorte explicitamente solicitado com `qg --scope`.
+`superflow.scope.v1` compõe IDs do feed com relações editoriais, sem alterar
+status/plan/feed.v4. Orquestrar é a oitava skill e acompanha encaminhamentos,
+não duplica o cursor de tasks. Fonte normativa: `plugins/superflow/assets/references/scope-contract.md`.
