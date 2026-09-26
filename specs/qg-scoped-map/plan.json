@@ -62,7 +62,7 @@
     {
       "id": "P06",
       "task": "Contrato público e entrega em PR",
-      "status": "pending",
+      "status": "done",
       "depends_on": [
         "P05"
       ],

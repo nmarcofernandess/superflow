@@ -2,14 +2,14 @@
 id: qg-scoped-map
 title: Mapa QG por escopo e sprint
 summary: Mapa e sequência opcionais no QG único, com fontes editoriais separadas dos estados canônicos e método de orquestração integrado.
-status: pending
+status: done
 ---
 
 # Retrato — 26/09/2026
 
 ## Estado real
 
-P01–P05 implementados e validados para 0.13.0. P06 aguarda publicação da candidata. O ajuste visual da PR #21 está incorporado. Mapa, sequência, foco e drawer usam o renderer do QG; a lista sem scope permanece padrão. A skill orquestrar mantém o estado de encaminhamentos separado de status.md.
+P01–P06 implementados e validados para 0.13.0; candidata publicada na [PR #22](https://github.com/nmarcofernandess/superflow/pull/22). A conclusão técnica não é recibo de instalação. O ajuste visual da PR #21 está incorporado. Mapa, sequência, foco e drawer usam o renderer do QG; a lista sem scope permanece padrão. A skill orquestrar mantém o estado de encaminhamentos separado de status.md.
 
 ## Contrato
 
