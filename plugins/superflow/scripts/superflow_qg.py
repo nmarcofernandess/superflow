@@ -31,7 +31,8 @@ def component_script():
     markup = '<style>:host{display:block;all:initial}' + css + '</style><div class="qg-root">' + markup + '</div>'
     return (ASSETS / "qg-component.js").read_text(encoding="utf-8").replace(
         "__QG_MARKUP__", script_safe_dumps(markup)
-    ).replace("__QG_RENDER__", script).replace("__SCOPE_VIEW__", (ASSETS / "scope-view.js").read_text(encoding="utf-8"))
+    ).replace("__QG_RENDER__", script).replace("__SCOPE_VIEW__", (ASSETS / "scope-view.js").read_text(encoding="utf-8")).replace(
+        "__DETAIL_VIEW__", (ASSETS / "qg-detail.js").read_text(encoding="utf-8"))
 
 
 def snapshot_element(feed):
