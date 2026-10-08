@@ -1,47 +1,18 @@
 ---
 name: status
-description: Cria e mantém o resumo durável, o retrato humano completo e as relações que alimentam o QG.
+description: Use quando mudar direção, autorização, limite, handoff ou aceite global de uma entrega, ou quando for necessário publicar sua orientação no QG.
 ---
 
-# Status
+# Status e continuidade
 
-`status.md` permite compreender e retomar a spec. Leia o [contrato de estado](../../assets/references/state-contract.md) ao criar ou atualizar o pacote.
+Preserve o [contrato de estado](../../assets/references/state-contract.md). Frontmatter exige `id`, `title`, `summary`, `status`; `relations` é opcional. Estado global só `pending | done`. Summary é a descrição durável da entrega, não contador de tasks.
 
-## Frontmatter
+O corpo mantém **Intenção, Estado real, Rastro, Próximo trabalho e Limites**, adaptados ao conteúdo útil. `## Execução` referencia Plano/Método/Registro conforme [execution-contract](../../assets/references/execution-contract.md), sem duplicar o ledger. `## Documentos` declara anexos opcionais do detalhe. Não adicionar progress/handbook obrigatório.
 
-Obrigatórios: `id`, `title`, `summary`, `status`. `status` aceita `pending | done`. `relations` é a lista opcional de objetos `id` e `reason`.
+Resultado de task pertence ao ledger nativo ou ao plan.json legado selecionado. Atualize status quando mudar direção, autorização, espera relevante, relação, recorte ou handoff, não a cada checkbox. Nenhum conjunto de tasks encerradas com ressalvas concede automaticamente o aceite global do PRD.
 
-Escreva `summary` para alguém que não lembra do assunto: qual entrega esta spec representa e para quem ela serve. Prefira uma ou duas frases, aproximadamente 120–240 caracteres, explicando jargões necessários. A extensão é sugestão editorial. O tema permanece mesmo depois da conclusão; o andamento pertence ao corpo.
+Antes de limpar a execução, preserve ledger/reports úteis uma vez em `execution/<run>/`, transfira o apontador Registro e promova rulings arquiteturais à SPEC. Não apague fontes históricas úteis nem copie todo o scratch. O arquivo terminal não recebe novas tasks.
 
-## Receita para o corpo
+O drawer padrão publica o corpo inteiro do status. Não esconda segredos em seção “meta” esperando que CSS a proteja. Detalhe opt-in publica os documentos selecionados; fonte ausente é diagnóstico, não “nenhum trabalho”.
 
-Use este Markdown como ponto de partida quando não houver orientação específica. Adapte as seções ao conteúdo disponível e preserve a narrativa útil completa.
-
-```markdown
-## Intenção
-
-Explique a entrega e por que ela importa, com contexto suficiente para retomar.
-
-## Estado real
-
-Descreva o que existe e o que foi conferido, distinguindo entrega de intenção.
-
-## Rastro
-
-Registre decisões e evidências que explicam como chegamos aqui.
-
-## Próximo trabalho
-
-Explique a próxima direção, a autorização necessária ou a condição ainda vigente.
-Se apenas uma parte espera, diga o que pode continuar.
-
-## Limites
-
-Registre restrições de escopo e condições de exceções temporárias relevantes.
-```
-
-Uma spec com cadastro e resumo já pode ser apresentada; o corpo cresce conforme houver contexto útil. Relações guardam memória e não determinam bloqueios. Se existir plano ativo, ele guarda o cursor das tasks; o corpo orienta a retomada sem duplicá-lo.
-
-Atualize o status quando mudar direção, autorização, espera relevante, relação, divisão de escopo ou handoff. Concluir uma task comum altera somente o plano aplicável. Exceções temporárias da fronteira do pacote cabem em `Próximo trabalho` ou `Limites`, com condição de encerramento.
-
-Após editar, use `check status` para ler e tratar os diagnósticos no escopo do trabalho. Se houver painel a publicar, siga o [contrato de comandos](../../assets/references/commands-contract.md): `feed` atualiza os painéis online no próximo carregamento; `qg` gera ou atualiza exports offline. Para uma visão compartilhada, prefira uma raiz integrada e atualizada; ensaios podem usar a lane. A publicação segue a escolha e as ferramentas do projeto.
+Após editar, confira diagnósticos de `check status` no escopo pertinente. Se a projeção faz parte da entrega, publique feed/QG pelo [contrato de comandos](../../assets/references/commands-contract.md), da raiz identificada. Fonte de worktree não prova integração. Não crie watcher ou servidor por conta própria.

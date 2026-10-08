@@ -1,22 +1,16 @@
 ---
 name: prd
-description: Cria ou atualiza a promessa, o problema, o escopo e o aceite de produto de uma spec.
+description: Use para registrar ou amadurecer a promessa, o problema, o escopo e o aceite de produto de uma entrega.
 ---
 
 # PRD
 
-Use `PRD.md` para responder o que será resolvido e como saberemos que o produto cumpriu a promessa.
+`PRD.md` responde para quem, o que será resolvido, o que não prometemos e como reconhecer o aceite.
 
-## Ao criar
+Ao criar, registre a ideia conhecida e as lacunas reais. O PRD inicial não precisa fingir maturidade anterior ao research. Não acrescente arquitetura extensa, tarefas ou andamento operacional.
 
-- Escreva um documento curto com problema, promessa, escopo, fora de escopo e critérios de aceite conhecidos.
-- Declare lacunas reais; não fabrique decisão.
-- Não escreva estado operacional, arquitetura detalhada ou tasks.
+Durante Analyst, incorpore conclusões aceitas que mudem o produto. Se Build revelar restrição material, reconcilie promessa/escopo/aceite antes de planejar por uma interpretação diferente. Não esconda uma escolha de política em uma atualização documental.
 
-## Ao atualizar
+PRD é norte de produto, não orquestrador de pesquisas. A discussão técnica fica no Analyst; arquitetura consolidada na SPEC; sequência no plano; autorização e retomada no status.
 
-- Incorpore conclusões de Analyst que mudem produto.
-- Se Build revelar uma restrição material, reconcilie promessa, escopo e aceite antes de continuar.
-- Uma mudança relevante no PRD pode exigir atualizar SPEC, plano e retrato, mas não cria fase.
-
-O QG nunca lê ou oferece o PRD.
+O QG padrão não lê PRD. O detalhe opt-in pode apresentá-lo integralmente; habilitar esse modo é consentimento para publicar os documentos selecionados, não sanitização automática de conteúdo confidencial.

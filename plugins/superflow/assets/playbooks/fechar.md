@@ -1,8 +1,8 @@
 # Fechar
 
-1. Confira os aceites do PRD e, quando houver plano aplicável, os aceites, tasks e predecessoras concluídas.
-2. Use Review. Testes, provas e publicação seguem as ferramentas, regras, autorização e ambiente do projeto; a evidência permanece nessas fontes.
-3. Resolva reprovações no escopo autorizado e repita as verificações afetadas. Ajuste o plano ativo quando necessário.
-4. Aplique a fronteira do pacote: remova scripts descartáveis; promova artefatos que continuarão operando ao local canônico do projeto e atualize seus consumidores. HTMLs e receipts autocontidos podem permanecer como histórico.
-5. Atualize a narrativa com condições satisfeitas e rastro útil. Marque o status global `done` somente após o aceite próprio; minispecs e relações não encerram nem reabrem a spec automaticamente.
-6. Confira os diagnósticos de `check spec` e publique feed ou exports QG quando essa projeção fizer parte da entrega, a partir da raiz escolhida pelo projeto.
+1. Confira aceite do PRD, arquitetura da SPEC e unidades do plano selecionado. Ledger terminal com ressalvas não equivale a aceite global.
+2. Use revisão/provas do método e do projeto sem duplicação por nome de skill. Corrija achados no escopo e repita verificações materialmente afetadas. Produto, proof, PR, merge e release são fatos distintos.
+3. Antes do cleanup do Superpowers, preserve o mesmo ledger e reports/reviews indispensáveis em `execution/<run>/progress.md` e arquivos associados. Atualize Registro no status. Não mantenha dois registros ativos nem apague história útil.
+4. Promova rulings arquiteturais à SPEC e decisões de produto aceitas ao PRD. Remova scripts descartáveis ou promova o que continuará operando a seu owner fora da spec.
+5. Integre/publice somente com autorização e fluxo do consumidor. Registre comandos, revisão, evidências e limites reais. Sem ferramenta/revisor disponível, diga isso, não fabrique validação.
+6. Marque status global done somente após o aceite próprio. Confira check spec e regenere feed/QG quando a projeção fizer parte da entrega. Ausência de detalhe ou erro editorial não controla o CI do produto.
