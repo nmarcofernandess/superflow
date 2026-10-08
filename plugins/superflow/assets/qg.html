@@ -53,8 +53,9 @@
 </dialog>
 <script type="application/json" id="qg-snapshot">__QG_SNAPSHOT__</script>
 <script>
-((root,feed,ids,syncHash,previous)=>{"use strict";
+((root,feed,ids,syncHash,previous,detailTools)=>{"use strict";
 previous=previous||{};
+const detailTabs={...(previous.detailTabs||{})};
 const records=feed.records.filter(r=>ids===null||ids.includes(r.id));
 const byId=new Map(records.map(r=>[r.id,r])),children=new Map();records.forEach(r=>{if(r.parent_id){const a=children.get(r.parent_id)||[];a.push(r);children.set(r.parent_id,a)}});
 const roots=records.filter(r=>!r.parent_id||!byId.has(r.parent_id));let view=previous.view||"open",query=(previous.query||"").trim().toLocaleLowerCase("pt-BR");
@@ -102,7 +103,10 @@ function openDrawer(r){
  const addRelations=(title,links)=>{if(!links.length)return;const heading=document.createElement("h3");heading.textContent=title;context.appendChild(heading);links.forEach(d=>{const target=byId.get(d.id),button=document.createElement("button");button.className="relation";button.innerHTML=`<strong>${esc(d.id)}${target?" · "+esc(target.title):""}</strong><span>${esc(d.reason)}</span>`;button.disabled=!target;if(target)button.onclick=()=>openDrawer(target);context.appendChild(button)})};
  addRelations("Relações",r.relations||[]);
  addRelations("Referenciada por",records.flatMap(source=>(source.relations||[]).filter(d=>d.id===r.id).map(d=>({id:source.id,reason:d.reason}))));
- root.getElementById("drawer-content").innerHTML=r.body_md.trim()?markdown(r.body_md):'<div class="no-body">Esta spec ainda não possui narrativa no status.</div>';
+ const target=root.getElementById("drawer-content");
+ drawer.classList.toggle("has-detail",!!(r.detail&&detailTools));
+ if(r.detail&&detailTools)detailTools.mount(root,target,r,markdown,detailTabs[r.id],tab=>{detailTabs[r.id]=tab;});
+ else target.innerHTML=r.body_md.trim()?markdown(r.body_md):'<div class="no-body">Esta spec ainda não possui narrativa no status.</div>';
  if(!drawer.open)drawer.showModal();drawer.scrollTop=0;root.getElementById("close").focus();if(syncHash)history.replaceState(null,"","#"+encodeURIComponent(r.id));
 }
 root.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{view=t.dataset.view;root.querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-selected",String(x===t)));render()});root.getElementById("search").oninput=e=>{query=e.target.value.trim().toLocaleLowerCase("pt-BR");render()};root.getElementById("close").onclick=()=>root.getElementById("drawer").close();root.getElementById("drawer").addEventListener("close",()=>{if(syncHash)history.replaceState(null,"",location.pathname+location.search)});
@@ -110,7 +114,7 @@ count();root.getElementById("snapshot").textContent=`${records.length} specs · 
 root.getElementById("search").value=previous.query||"";
 root.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",String(t.dataset.view===view)));
 if(previous.drawer && byId.has(previous.drawer)){openDrawer(byId.get(previous.drawer));root.getElementById("drawer").scrollTop=previous.scroll||0}
-return {openDrawer,state:()=>({view,query:root.getElementById("search").value,drawer:root.getElementById("drawer").open?root.getElementById("drawer").dataset.specId:null,scroll:root.getElementById("drawer").scrollTop})};
+return {openDrawer,state:()=>({view,detailTabs:{...detailTabs},query:root.getElementById("search").value,drawer:root.getElementById("drawer").open?root.getElementById("drawer").dataset.specId:null,scroll:root.getElementById("drawer").scrollTop})};
 })();
 </script>
 </body>
