@@ -7,6 +7,7 @@
   const markup = __QG_MARKUP__;
   const display = __QG_RENDER__;
   const scopeTools = __SCOPE_VIEW__;
+  const detailTools = __DETAIL_VIEW__;
 
   function validate(feed) {
     if (feed?.schema_version !== "superflow.feed.v4" || !Array.isArray(feed.records)
@@ -19,6 +20,7 @@
           || r.relations.some(d => !d || typeof d.id !== "string" || typeof d.reason !== "string"))) {
       throw new Error("Formato de feed incompatível; regenere com a versão atual do plugin.");
     }
+    for (const record of feed.records) if (record.detail !== undefined) detailTools.validate(record.detail);
   }
 
   class SuperflowQG extends HTMLElement {
@@ -81,7 +83,7 @@
         this.scopeView?.destroy();
         this.scopeView = null;
         this.shadowRoot.innerHTML = markup;
-        this.view = display(this.shadowRoot, feed, scope ? scope.members.map(m => m.spec_id) : ids, this.hasAttribute("sync-hash"), previous);
+        this.view = display(this.shadowRoot, feed, scope ? scope.members.map(m => m.spec_id) : ids, this.hasAttribute("sync-hash"), previous, detailTools);
         if (scope) this.scopeView = scopeTools.mount(this.shadowRoot, feed, scope, this.view.openDrawer, previous);
       }
       this.selection = selection;

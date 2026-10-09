@@ -1,25 +1,26 @@
 ---
 name: plan
-description: Decompõe uma execução aceita em tasks verificáveis quando a sequência precisa persistir.
+description: Use quando a arquitetura aceita precisa virar uma sequência verificável de implementação, ou quando um retrofit exige reconciliar o futuro de um plano ativo.
 ---
 
-# Plan
+# Plan — entrada para planejamento nativo
 
-Crie `plan.json` quando sequência e dependências justificarem um cursor persistido. SPEC e plano são independentes: uma sequência pode precisar de plano sem exigir nova arquitetura.
+Para uma nova entrega ativa, use **superpowers:writing-plans**, com a SPEC aceita, e salve o plano nativo em `<spec>/PLAN.md`. Preserve o pacote Superflow. Não invoque novamente brainstorming para decisões já aprovadas, não mova a SPEC e não gere plan.json espelho.
 
-```json
-{"tasks":[{"id":"T01","task":"Resultado operacional","status":"pending","depends_on":[],"acceptance":["Comportamento verificável"]}]}
-```
+Carregue a skill real disponível e confira seu formato. Se o método solicitado não estiver disponível, informe a limitação e preserve o material; não finja uso do plugin ou troque executor silenciosamente. Superpowers não é dependência do reader/QG.
 
-Cada task contém exatamente `id`, `task`, `status`, `depends_on` e `acceptance`.
+## Contrato do plano
 
-- `status`: `pending | done`.
-- `depends_on`: IDs de tasks do mesmo plano; dependências são acíclicas.
-- `acceptance`: comportamento e QA necessários para concluir a unidade.
-- Marque `done` depois de conferir o aceite e as predecessoras.
+Cada `### Task N: título` é uma unidade verificável com arquivos, interfaces consome/produz, requisitos locais, passos, comandos/Expected e critério de conclusão. Use números positivos únicos. A ordem textual é a sequência; não escolher livremente qualquer pendência. O quadro de baldes explica dependências, não autoriza implementadores concorrentes.
 
-Um plano com task pendente está ativo e é o único cursor da sequência. Concluir uma task comum atualiza somente o plano. Plano totalmente concluído permanece registro encerrado: novo trabalho precisa de decisão explícita de escopo e registro.
+Metadados opcionais na própria task: `**Balde:**`, `**Por que agora:**` e `**Depends on:** 1, 9`. Dependências numéricas devem apontar para tasks anteriores na ordem textual. Não crie outro arquivo resumindo as mesmas tasks para o painel.
 
-Para artefato executável temporário, use os campos existentes `task` e `acceptance`: explique por que é temporário, quem pode executá-lo, que nenhum consumidor permanente aponta para a spec e quando será removido. Se for promovido, declare o destino canônico e a atualização dos consumidores. Consulte a [fronteira do pacote](../../assets/references/state-contract.md#fronteira-do-pacote-da-spec).
+Se o Plan precisa decidir política, entidade, composição ou protocolo material ainda abertos, reconcilie SPEC/Analyst em vez de inventar arquitetura escondida. Profundidade adequada não é transcrever todo o código nem omitir valores/interfaces necessários.
 
-Mudou a execução: ajuste o plano ativo. Mudou produto ou arquitetura: reconcilie PRD ou SPEC. Mudou direção, autorização ou condição relevante: atualize `Próximo trabalho` no status.
+## Handoff, legado e retrofit
+
+Registre método escolhido e plano/ledger na continuidade conforme [execution-contract](../../assets/references/execution-contract.md). SDD e inline têm custos e revisões diferentes. Apresente o plano e execute somente com a autorização aplicável; não repita um GO já concedido para esse recorte.
+
+`plan.json` existente continua válido no contrato legado de cinco campos. Se os dois formatos coexistirem, selecione um explicitamente no status. Nenhuma migração em massa ou conversão bidirecional. Pacotes encerrados permanecem encerrados.
+
+Retrofit recebe Task N nova e mapeamento para o requisito anterior, colocada antes dos consumidores futuros. Não renumere nem amplie silenciosamente o aceite de uma task com conclusão no ledger. Registre ruling, ajuste a região da SPEC quando material e preserve evidência anterior com seu alcance real.

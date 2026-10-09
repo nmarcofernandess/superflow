@@ -1,8 +1,8 @@
 # Superflow plugin
 
 Este pacote oferece uma fonte pequena de trabalho vivo: PRD para promessa,
-status.md para cadastro factual e plan.json quando a sequência precisa ser
-controlada. O projeto continua dono de suas ferramentas, testes, CI, ship e
+status.md para cadastro factual e PLAN.md Superpowers para novas entregas
+ativas. O plan.json segue como formato legado selecionável. O projeto continua dono de suas ferramentas, testes, CI, ship e
 evidências.
 
 ## Fluxo
@@ -12,24 +12,25 @@ O resumo explica o tema, e o corpo descreve o retrato e o próximo trabalho.
 Relações guardam contexto, sem controlar execução; o plano com tasks pendentes
 é o único cursor da sequência quando existir.
 
-    pedido -> PRD
-                 -> analyst para dúvida material
-                 -> build para arquitetura necessária
-                 -> plan para sequência necessária
-                 -> execução -> review -> QA ou proof -> done
+    ideia estacionada -> PRD/status -> parar
+    entrega ativa -> PRD -> Analyst vivo -> Build/SPEC -> PLAN.md
+                  -> SDD ou inline autorizado -> review/proof -> aceite
+    execução aprovada -> PLAN + ledger -> retomar sem reiniciar design
 
-Nenhuma fase é obrigatória por formato. Uma correção simples pode usar PRD
-conciso, execução direta e uma verificação útil. Uma entrega não vira done só
+A entrega ativa segue o lifecycle acima com profundidade proporcional. Uma
+correção avulsa delimitada fora desse fluxo pode executar diretamente com
+a autorização e verificação adequadas. Uma entrega não vira done só
 porque há prosa, arquivo arquivado ou mensagem de sucesso.
 
 ## Skills
 
 - superflow escolhe a receita adequada.
 - prd escreve a promessa, escopo e aceite verificável.
-- analyst faz recon, examina facetas relevantes e decide reuso, adaptação ou
-  criação com evidência.
-- build fecha uma SPEC quando decisões de arquitetura são necessárias.
-- plan escreve plan.json para unidades verificáveis e dependências locais.
+- analyst mantém ANALYST.md vivo e integra pesquisa, componentes e decisões
+  com comunicação ativa ao operador.
+- build passa a limpo a arquitetura em SPEC.md, incluindo interfaces, estados,
+  componentes e falhas pertinentes.
+- plan chama writing-plans para PLAN.md, respeitando o legado plan.json.
 - review confronta desenho ou diff com fontes e efeitos reais.
 - status mantém o retrato completo, a orientação de continuidade e as relações entre specs sem
   inferir sucesso.
@@ -53,12 +54,14 @@ playbooks.
 
 | Recurso | Consulta |
 |---|---|
-| [state contract](assets/references/state-contract.md) | Ao editar status.md, relações ou plan.json. |
+| [state contract](assets/references/state-contract.md) | Ao editar status.md e relações. |
+| [execution contract](assets/references/execution-contract.md) | Plano nativo, ledger, retrofit, retenção e migração. |
+| [ANALYST](assets/templates/ANALYST.md) | Lousa de análise persistente. |
 | [commands contract](assets/references/commands-contract.md) | Ao usar new, check, feed ou qg. |
 | [PRD](assets/templates/PRD.md) | Ao criar ou amadurecer PRD. |
 | [status](assets/templates/status.md) | Como exemplo de cadastro manual. New emite status programaticamente. |
 | [SPEC](assets/templates/SPEC.md) | Quando arquitetura precisa ficar explícita. |
-| [plan](assets/templates/plan.json) | Quando a sequência requer tasks. |
+| [plan legado](assets/templates/plan.json) | Pacotes antigos; novos planos usam writing-plans. |
 
 ## Uso da CLI
 
@@ -100,3 +103,11 @@ O contrato de comandos explica HTTP/CORS, publicação e limites. Arquivo local 
 A [skill orquestrar](skills/orquestrar/SKILL.md) mantém próximos passos e prompts.
 O [contrato de escopos](assets/references/scope-contract.md) define o mapa QG.
 Specs, tasks e encaminhamentos preservam identidades e estados próprios.
+
+## Detalhe QG opt-in (0.14.0)
+
+Declare `qg_details` com IDs exatos em `.superflow/config.json` quando for seguro
+publicar os documentos e o ledger da spec. O drawer apresenta Resumo, Decisões,
+Trabalho, Documentos e Evidências sem manter estado duplicado. O QG padrão não
+lê PLAN, Analyst nem reports; ausência de fonte aparece como diagnóstico.
+Sem scripts de execução no leitor, sem novo backend ou alterações em consumidores.

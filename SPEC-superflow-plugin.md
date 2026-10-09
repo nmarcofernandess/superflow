@@ -2,7 +2,7 @@
 
 ## Intenção
 
-Superflow mantém um fluxo proporcional e uma fonte factual de trabalho. PRD descreve a promessa; status.md reúne cadastro, resumo durável e retrato; SPEC registra decisões técnicas materiais; plan.json registra uma sequência quando necessário. SPEC e plano são independentes e condicionais.
+Superflow mantém um fluxo proporcional e uma fonte factual de trabalho. PRD descreve a promessa; status.md reúne cadastro, resumo durável e retrato; SPEC registra decisões técnicas materiais; PLAN.md nativo governa a execução de novas entregas ativas. Plan.json permanece como legado selecionado explicitamente; ideias estacionadas não exigem análise e um plano aprovado não repete design.
 
 ## Superfícies públicas
 
@@ -54,3 +54,15 @@ lista padrão, não ao recorte explicitamente solicitado com `qg --scope`.
 `superflow.scope.v1` compõe IDs do feed com relações editoriais, sem alterar
 status/plan/feed.v4. Orquestrar é a oitava skill e acompanha encaminhamentos,
 não duplica o cursor de tasks. Fonte normativa: `plugins/superflow/assets/references/scope-contract.md`.
+
+## Extensão 0.14.0 — autoria viva e plano nativo
+
+Para novas entregas ativas: Analyst persistente com debate e decisões abertas;
+Build/SPEC completa quanto à arquitetura; writing-plans produz PLAN.md dentro
+do pacote. A ordem textual e o ledger Superpowers governam execução/retomada;
+plan.json legado permanece legível, sem espelho ou migração automática.
+
+QG padrão segue status-only. A configuração `qg_details` habilita leitura de
+fontes declaradas e cinco abas no drawer, preservando feed v4 e controles de
+portabilidade/segurança. Nenhuma operação de análise executa código de produto,
+controle de CI ou publicação externa. Contrato: `assets/references/execution-contract.md`.

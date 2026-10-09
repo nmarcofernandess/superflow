@@ -12,9 +12,14 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent / "vendor"))
 import yaml
 
+from superflow_work import (
+    WorkError, choose_plan, collect_detail_sources, execution_references,
+    parse_plan as parse_native_plan, parse_ledger, project_detail, safe_path,
+)
+
 CONFIG_PATH = ".superflow/config.json"
 PROJECTION_SOURCE_NAMES = {"status.md"}
-SPEC_SOURCE_NAMES = {"status.md", "PRD.md", "SPEC.md", "plan.json"}
+SPEC_SOURCE_NAMES = {"status.md", "PRD.md", "SPEC.md", "plan.json", "PLAN.md"}
 SOURCE_NAMES = PROJECTION_SOURCE_NAMES | SPEC_SOURCE_NAMES
 STATUS_FIELDS = {"id", "title", "summary", "status", "relations"}
 TASK_FIELDS = {"id", "task", "status", "depends_on", "acceptance"}
@@ -130,13 +135,17 @@ def resolve_specs_root(root):
             config = parse_json(config_file.read_text(encoding="utf-8"))
         except (OSError, UnicodeError, ContentError) as exc:
             raise SourceError("Configuração inválida: " + str(exc)) from exc
-        if not isinstance(config, dict) or set(config) - {"specs_root", "qg_outputs"}:
+        if not isinstance(config, dict) or set(config) - {"specs_root", "qg_outputs", "qg_details"}:
             raise SourceError("Configuração possui campos desconhecidos ou não é objeto.")
         if "specs_root" in config:
             try:
                 text_value(config["specs_root"], "specs_root")
             except ContentError as exc:
                 raise SourceError("Configuração inválida: " + str(exc)) from exc
+        try:
+            config["qg_details"] = string_list(config.get("qg_details", []), "qg_details")
+        except ContentError as exc:
+            raise SourceError("Configuração inválida: " + str(exc)) from exc
         destinations = config.get("qg_outputs", [])
         if not isinstance(destinations, list) or any(
             not isinstance(item, str) or not item.strip() or "\x00" in item for item in destinations
@@ -159,7 +168,7 @@ def resolve_specs_root(root):
 
 def read_sources(root):
     """Read the projection boundary: config plus files named exactly status.md."""
-    root, specs, _ = resolve_specs_root(root)
+    root, specs, config = resolve_specs_root(root)
     sources = {}
     config_file = root / CONFIG_PATH
     if config_file.exists():
@@ -177,6 +186,22 @@ def read_sources(root):
             sources[path.relative_to(root).as_posix()] = path.read_bytes()
     except (OSError, UnicodeError) as exc:
         raise SourceError("Não foi possível ler os status: " + str(exc)) from exc
+    if config.get("qg_details"):
+        records = []
+        for path, raw in sources.items():
+            if not path.endswith("/status.md"):
+                continue
+            try:
+                data, body = parse_status(raw.decode("utf-8"))
+                records.append(validate_status(data, body, path))
+            except (ContentError, UnicodeError):
+                continue
+        try:
+            counts = status_id_counts(sources)
+            records = [r for r in records if counts.get(r["id"]) == 1]
+            sources.update(collect_detail_sources(root, records, config["qg_details"]))
+        except WorkError as exc:
+            raise SourceError(str(exc)) from exc
     return sources
 
 
@@ -200,13 +225,14 @@ def status_id_counts(sources):
 def fingerprint(sources):
     digest = hashlib.sha256()
     for path, value in sorted(sources.items()):
-        digest.update(path.encode("utf-8") + b"\0" + hashlib.sha256(value).digest())
+        digest.update(path.encode("utf-8") + b"\0")
+        digest.update(b"M" if value is None else b"P" + hashlib.sha256(value).digest())
     return digest.hexdigest()
 
 
 def ensure_unchanged(root, sources):
     if fingerprint(read_sources(root)) != fingerprint(sources):
-        raise SourceError("SOURCE_CHANGED: status alterados durante a leitura; gere novamente.")
+        raise SourceError("SOURCE_CHANGED: fontes alteradas durante a leitura; gere novamente.")
 
 
 def validate_status(data, body, path):
@@ -311,7 +337,7 @@ def validate_spec(root, spec_reference):
     contents = {}
     for name in sorted(SPEC_SOURCE_NAMES):
         path = target / name
-        if not path.exists() and not path.is_symlink() and name in {"SPEC.md", "plan.json"}:
+        if not path.exists() and not path.is_symlink() and name in {"SPEC.md", "plan.json", "PLAN.md"}:
             continue
         if not path.is_file() or path.is_symlink():
             raise ContentError("Arquivo obrigatório ausente ou inválido: " + name + ".")
@@ -333,8 +359,27 @@ def validate_spec(root, spec_reference):
             raise ContentError("Destino da relação ambíguo: " + relation["id"])
         if relation["id"] not in by_id:
             raise ContentError("Destino da relação ausente: " + relation["id"])
-    if "plan.json" in contents:
-        validate_plan(parse_json(contents["plan.json"]))
+    try:
+        spec_path = target.relative_to(root).as_posix()
+        selected = choose_plan(root, spec_path, body)
+        if selected:
+            selected_path = safe_path(root, selected, spec_path, "document")
+            if not selected_path.is_file():
+                raise WorkError("PLAN_MISSING: plano declarado indisponível.")
+            plan_text = selected_path.read_text(encoding="utf-8")
+            if selected.endswith("/plan.json"):
+                validate_plan(parse_json(plan_text))
+            else:
+                tasks = parse_native_plan(plan_text)
+                ledger_ref = execution_references(body).get("ledger")
+                if ledger_ref:
+                    ledger = safe_path(root, ledger_ref, spec_path, "ledger")
+                    if ledger.exists():
+                        parse_ledger(ledger.read_text(encoding="utf-8"), selected, tasks, root)
+    except WorkError as exc:
+        raise ContentError(str(exc)) from exc
+    except (OSError, UnicodeError) as exc:
+        raise SourceError("Não foi possível ler a execução declarada: " + str(exc)) from exc
     return target
 
 
@@ -368,6 +413,17 @@ def build_snapshot(root, sources=None):
                     record["path"], "INVALID_RELATION",
                     "Destino da relação ausente: " + relation["id"],
                 ))
+
+    config = parse_json(sources[CONFIG_PATH].decode("utf-8")) if CONFIG_PATH in sources else {}
+    for identifier in string_list(config.get("qg_details", []), "qg_details"):
+        matching = [r for r in records if r["id"] == identifier]
+        if len(matching) != 1 or status_id_counts(sources).get(identifier) != 1:
+            diagnostics.append(diagnostic(CONFIG_PATH, "DETAIL_ID", "Spec do detalhe ausente ou ambígua: " + identifier))
+            continue
+        record = matching[0]
+        record["detail"] = project_detail(root, record, sources, lambda text: validate_plan(parse_json(text)))
+        for issue in record["detail"]["issues"]:
+            diagnostics.append(diagnostic(record["path"], "DETAIL_SOURCE", issue))
 
     result = subprocess.run(
         ["git", "-C", str(root), "rev-parse", "HEAD"],

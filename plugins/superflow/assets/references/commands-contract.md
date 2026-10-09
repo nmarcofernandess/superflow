@@ -8,7 +8,9 @@ python3 -I <plugin>/scripts/superflow.py --root <repo> feed
 python3 -I <plugin>/scripts/superflow.py --root <repo> qg --output <qg.html>
 ```
 
-`new` exige um resumo humano e cria apenas PRD e status. Um diagnóstico em outra spec não impede a criação; o comando ainda recusa entrada inválida, ID conhecido ou destino físico já ocupado. `check status`, feed e QG leem somente status. `check spec` confere PRD e status obrigatórios e SPEC/plano quando presentes na spec-alvo. A integridade dos destinos de `relations` é conferida pelos status da coleção. Inspecionar os arquivos não decide prontidão, autorização nem necessidade de artefatos condicionais.
+`new` exige um resumo humano e cria apenas PRD e status. Um diagnóstico em outra spec não impede a criação; o comando ainda recusa entrada inválida, ID conhecido ou destino físico já ocupado. `check status`, feed e QG leem somente status por padrão. Quando `qg_details`
+seleciona IDs explícitos, feed/QG incluem somente as fontes permitidas daquelas
+specs, também protegidas pelo snapshot_id e conferência antes da escrita. `check spec` confere PRD e status obrigatórios e SPEC/PLAN.md/plan.json quando presentes na spec-alvo. A integridade dos destinos de `relations` é conferida pelos status da coleção. Inspecionar os arquivos não decide prontidão, autorização nem necessidade de artefatos condicionais.
 
 Os comandos nunca executam proof, teste, CI ou ship. `check`, feed e QG relatam conteúdo incompleto ou inválido como `warning` e terminam com exit 0; esses diagnósticos não afirmam validade nem bloqueiam a operação do projeto. Exit 1 indica que `new` recusou a entrada ou uma colisão antes de escrever. Exit 2 indica falha operacional. Status inválido pode ficar fora dos registros; seu diagnóstico permanece na projeção.
 
@@ -19,7 +21,8 @@ Os comandos nunca executam proof, teste, CI ou ship. `check`, feed e QG relatam 
 ```json
 {
   "specs_root": "specs",
-  "qg_outputs": ["painel.html", "docs/entregas.html", "/caminho/absoluto/painel.html"]
+  "qg_outputs": ["painel.html", "docs/entregas.html", "/caminho/absoluto/painel.html"],
+  "qg_details": ["minha-entrega"]
 }
 ```
 
@@ -29,7 +32,7 @@ Sem config, a raiz padrão é `specs`. Caminhos de destinos relativos são resol
 
 `.superflow/` é a localização padrão no disco do projeto. A URL pública é escolhida e mapeada pelo host do consumidor: nestes exemplos, `https://exemplo.org/superflow/feed.json` publica o feed e `https://exemplo.org/superflow/qg.js` publica o runtime externo, se usado. `/superflow/` é apenas um exemplo de URL; não é caminho obrigatório, nova configuração nem a árvore documental `specs/`.
 
-O envelope `superflow.feed.v4` contém `records`, `diagnostics`, `generated_at`, `source_revision` e `snapshot_id`. O hash cobre caminhos e bytes dos status e da configuração, inclusive alterações não commitadas. O SHA informa o HEAD, não prova árvore limpa. Remoções e renomeações entram como estão nas fontes; não há inferência de identidade.
+O envelope `superflow.feed.v4` contém `records`, `diagnostics`, `generated_at`, `source_revision` e `snapshot_id`. O modo opt-in inclui `record.detail` apenas nas specs selecionadas, sem executar os documentos. O hash cobre caminhos e bytes dos status e da configuração, inclusive alterações não commitadas. O SHA informa o HEAD, não prova árvore limpa. Remoções e renomeações entram como estão nas fontes; não há inferência de identidade.
 
 Escolha a raiz que representa o conteúdo a publicar. Para um painel compartilhado, prefira a branch integrada e atualizada do projeto; uma lane é adequada para ensaio identificado. O plugin não escolhe branch, faz pull nem exige um nome de branch.
 
@@ -96,3 +99,13 @@ As gravações são atômicas por arquivo, com conferência de fontes antes de p
 `qg --scope <path-relativo> --output <html>` habilita o mapa editorial no mesmo
 componente. Consulte [scope-contract.md](scope-contract.md) para formato, refresh
 e limites. Sem escopo, o read-set anterior permanece inalterado.
+
+## Publicação de detalhe opt-in (0.14.0)
+
+`qg_details` é uma lista de IDs de specs para publicar detalhes de fontes declaradas.
+Antes de habilitar, confira privacidade. O reader limita paths à spec, recusa
+symlink, lê até 2 MiB por fonte e até 32 arquivos, e somente o ledger selecionado
+pode vir do scratch nativo. Fonte ausente, conflito de plano e identidade de ledger
+geram diagnóstico, não conclusão artificial. Cinco abas: Resumo, Decisões,
+Trabalho, Documentos e Evidências. Check spec aceita PLAN.md e plan.json; ambos
+juntos exigem uma escolha explícita em `## Execução`.

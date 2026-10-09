@@ -1,13 +1,16 @@
 # Superflow
 
 Superflow ajuda a registrar e conduzir trabalho de forma proporcional. A fonte
-da promessa é o PRD; análise, arquitetura e plano entram somente quando a
-situação precisa deles.
+da promessa é o PRD. Na nova entrega ativa, Analyst vivo, Build e PLAN.md
+nativo formam um caminho previsível; ideias estacionadas e execuções retomadas
+não repetem etapas desnecessárias.
 
     pedido
       -> PRD
-      -> analyst, build ou plan quando necessário
-      -> execução, review e QA do projeto
+      -> Analyst vivo: pesquisa, debate, decisões
+      -> Build: SPEC arquitetural completa
+      -> writing-plans: PLAN.md nativo na spec
+      -> SDD ou inline autorizado, review e QA do projeto
       -> aceite e estado factual
 
 O plugin não é um executor ou sistema paralelo de provas. Oferece orquestração
@@ -19,9 +22,9 @@ editorial opcional e mapas de recortes, sem agendamento ou estados duplicados. E
 |---|---|
 | superflow | Escolhe uma receita curta sem pré-carregar toda a biblioteca. |
 | prd | Cria ou amadurece a promessa, escopo e aceite. |
-| analyst | Faz recon, examina facetas relevantes e devolve o PRD corrigido. |
-| build | Fecha arquitetura e reuso em SPEC quando há decisão técnica material. |
-| plan | Cria plan.json quando sequência e dependências justificam. |
+| analyst | Mantém lousa persistente, investiga e comunica questões reais. |
+| build | Fecha interfaces, componentes e lifecycle em SPEC.md autocontida quanto às decisões. |
+| plan | Encaminha ao writing-plans para PLAN.md nativo; preserva plan.json legado. |
 | review | Examina desenho ou diff com evidência e rechecagem. |
 | orquestrar | Prepara próximos prompts, responsáveis e dependências sem confundir envio com conclusão. |
 | status | Mantém o retrato completo, a orientação de continuidade e as relações entre specs. |
@@ -32,17 +35,21 @@ sem skills separadas.
 
 ## Estado e arquivos
 
-Toda spec tem PRD e status; arquitetura e plano são condicionais e independentes.
-O plano com task pendente é o cursor da execução; `Próximo trabalho` no status
-orienta a continuidade. `relations` preserva vínculos sem decidir bloqueios.
+Toda spec tem PRD e status. Nova entrega ativa percorre Analyst, Build/SPEC
+e PLAN.md com profundidade proporcional. Para histórico, plan.json continua
+legível, mas dois formatos exigem seleção explícita. O ledger registra tarefas;
+`Próximo trabalho` no status orienta a continuidade. `relations` preserva vínculos sem decidir bloqueios.
 
 Um pacote pode conter:
 
     specs/<id-ou-slug>/
       status.md
       PRD.md
-      SPEC.md
-      plan.json
+      ANALYST.md      # lousa ativa
+      SPEC.md         # arquitetura consolidada
+      PLAN.md         # plano nativo Superpowers
+      execution/...   # ledger terminal retido
+      plan.json       # somente legado
 
 Somente status.md e PRD.md surgem no comando new. Os demais são condicionais.
 Os [contratos](plugins/superflow/assets/references/) de estado e comandos acompanham o pacote.
@@ -64,7 +71,9 @@ proof, ship ou outro comando configurado pelo repositório.
 
 O QG abre em **Em aberto**, com minispecs aninhadas sempre visíveis. O card
 mostra o título e o resumo durável para escolher; o card inteiro abre o drawer com a narrativa completa do
-`status.md`. A lista padrão não mistura tasks ou progresso. O modo opcional `qg --scope` apresenta mapa e sequência de specs. A busca cobre
+`status.md`. A lista padrão não mistura tasks ou progresso. O detalhe opt-in via
+`qg_details` expõe cinco abas das fontes explicitamente selecionadas,
+sem alegar execução ao vivo. O modo opcional `qg --scope` apresenta mapa e sequência de specs. A busca cobre
 o conteúdo completo e abre a cadeia até a minispec. **Concluídas** é uma visão
 separada. Uma spec concluída pode aparecer como contexto de filhos abertos.
 
@@ -76,17 +85,17 @@ consumidor, fora do diretório instalado.
 Instale uma release identificada por tag e confira a versão declarada nos
 manifestos antes de usar:
 
-    codex plugin marketplace add nmarcofernandess/superflow --ref v0.13.0
+    codex plugin marketplace add nmarcofernandess/superflow --ref v0.14.0
     codex plugin add superflow@superflow
 
 Em Claude Code:
 
-    claude plugin marketplace add nmarcofernandess/superflow@v0.13.0
+    claude plugin marketplace add nmarcofernandess/superflow@v0.14.0
     claude plugin install superflow@superflow
 
 No Cursor, o marketplace do repositório já declara o plugin. Importe o GitHub e instale `superflow`:
 
-    agent plugin marketplace add https://github.com/nmarcofernandess/superflow --git-ref v0.13.0
+    agent plugin marketplace add https://github.com/nmarcofernandess/superflow --git-ref v0.14.0
 
 Depois, no Agent, abra `/plugin`, escolha Superflow no Marketplace e instale no escopo user. Para teste local, copie o pacote para o diretório que o Cursor lê sem marketplace:
 

@@ -6,7 +6,7 @@ readonly PLUGIN="$ROOT/plugins/superflow"
 
 python3 -I "$PLUGIN/scripts/validate_superflow.py" "$PLUGIN"
 
-for test_name in test_model.py test_commands.py test_qg.py test_scope.py test_distribution.py; do
+for test_name in test_model.py test_work.py test_commands.py test_qg.py test_scope.py test_distribution.py; do
   test_path="$PLUGIN/scripts/$test_name"
   if [[ ! -f "$test_path" ]]; then
     echo "missing required test: $test_path" >&2
@@ -15,7 +15,7 @@ for test_name in test_model.py test_commands.py test_qg.py test_scope.py test_di
   python3 -I "$test_path"
 done
 
-for test_name in test_qg_browser.cjs test_qg_portable.cjs test_scope_browser.cjs; do
+for test_name in test_qg_browser.cjs test_qg_detail.cjs test_qg_portable.cjs test_scope_browser.cjs; do
   node "$PLUGIN/scripts/$test_name"
 done
 

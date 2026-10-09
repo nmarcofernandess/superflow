@@ -1,37 +1,32 @@
 ---
 name: superflow
-description: Roteia trabalho por uma spec mínima, escolhendo capacidades e playbooks conforme os contratos existentes.
+description: Use para registrar uma ideia, iniciar ou retomar uma entrega, reconciliar suas fontes e acompanhar seu fechamento.
 ---
 
 # Superflow
 
-Use para registrar, preparar, retomar, reconciliar ou fechar uma entrega.
+Comece pela intenção e pelo `status.md` da entrega. Leia só a receita e os contratos pertinentes; não pré-carregue a biblioteca inteira.
 
-## Leitura inicial
+## Três entradas claras
 
-1. Localize a spec e leia `status.md` primeiro.
-2. Escolha a intenção: capturar, preparar/executar, retomar, reconciliar ou fechar.
-3. Abra somente a receita e os contratos necessários à intenção escolhida.
+- **Guardar ideia para depois:** criar/atualizar PRD e status e parar. Nenhuma pesquisa ou implementação implícita.
+- **Criar a spec e trabalhar na entrega:** PRD inicial honesto → Analyst vivo → Build/SPEC consolidada → PLAN nativo Superpowers → execução autorizada → revisão/provas/integração do projeto. A profundidade varia, não a autoridade de cada arquivo.
+- **Executar/retomar plano aprovado:** conferir estado, fontes e autorização e continuar do ledger/plano. Não repetir design por haver chat novo ou compactação.
 
-## Regras
+Uma correção avulsa delimitada fora de nova spec pode seguir diretamente o aceite autorizado do projeto. Não estimar antecipadamente a complexidade para pular análise necessária; também não lançar agentes, criar alternativas falsas ou exigir HTML para toda entrega.
 
-- Ideia nova: `PRD.md` e `status.md`, com resumo humano do tema.
-- SPEC e plano são independentes e condicionais: arquitetura material pede Build; sequência coordenada pede Plan.
-- `superflow check spec <spec>` relata diagnósticos do pacote existente; autorização e próximo trabalho dependem do contexto.
-- Estado global e de task usam `pending | done`. Analyst, Build, Plan, Execute, Review e QA são capacidades ou ações.
-- Relações preservam memória; condições e direção ficam em `Próximo trabalho`. Plano com task pendente é o único cursor de tasks.
-- Atualize PRD quando mudar produto; SPEC quando mudar arquitetura; plano quando mudar execução; status quando mudar direção, autorização, espera relevante, relação, divisão de escopo ou handoff.
-- Ao criar, atualizar, retomar ou fechar, use a [fronteira do pacote](../../assets/references/state-contract.md#fronteira-do-pacote-da-spec): material da spec é autocontido; implementação permanente tem destino canônico no projeto.
-- O projeto consumidor é dono de testes, provas, CI e ship.
+## Autoridades
 
-## Orquestração opcional
+PRD guarda promessa; Analyst mantém exploração/diálogo; SPEC fecha arquitetura; PLAN.md declara sequência; ledger registra execução; status orienta retomada/aceite global. HTML/QG apresenta as fontes, sem segunda lista de tasks. O [contrato de execução](../../assets/references/execution-contract.md) define seleção de plano, método, retrofit e retenção.
 
-Para frentes simultâneas e próximos prompts, usar [orquestrar](../orquestrar/SKILL.md).
-A skill prepara e acompanha encaminhamentos; não executa jobs nem altera estados
-por clique. A lista QG permanece padrão; `qg --scope` apresenta recortes editoriais.
+Estado global continua `pending | done`; relações são contexto, não bloqueio automático. Legado plan.json permanece legível e explicitamente selecionado quando coexistir com PLAN.md. Não reabra pacote concluído silenciosamente.
 
-## Playbooks
+Uma pergunta material deve chegar ao usuário com recomendação. Persistir arquivo é parte da preparação autorizada, não precisa esperar um GO reservado à implementação. Não ampliar autorização: planos, testes, push, merge, release e instalação são atos distintos.
 
-Leia somente a receita escolhida em `../../assets/playbooks/`: `capture`, `feature`, `retomar`, `fechar` ou `reconciliar`. Para retomar, carregue `retomar.md` e interprete a orientação junto do plano ativo, se houver.
+## Projeção e orquestração
 
-Os comandos `new`, `feed`, `qg` e `check` são determinísticos e não autorizam ações externas.
+`new`, `check`, `feed` e `qg` são ferramentas determinísticas; não executam código de produto nem autorizam ações externas. QG padrão lê status; detalhe exige `qg_details` com IDs explícitos. Confirme conteúdo publicável antes de habilitar fontes.
+
+Para encaminhamentos entre frentes, use [orquestrar](../orquestrar/SKILL.md). Ela não é scheduler de tasks. Não crie lane lateral por reflexo; uma transferência identifica sucessor editorial, fontes integradas e próximo movimento, não apenas remoção de worktree.
+
+Preserve a [fronteira do pacote](../../assets/references/state-contract.md#fronteira-do-pacote-da-spec). O consumidor continua dono de testes, proofs, CI e ship. As receitas em `../../assets/playbooks/` são capture, feature, retomar, reconciliar e fechar.

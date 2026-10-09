@@ -110,3 +110,10 @@ Começar a devolutiva do painel com:
 **Cada frente tem estado comprovado, próximo passo e responsável — ou há algo faltando ou parado?**
 
 Responder à pergunta com fatos, indicar os arquivos e o pequeno conjunto de próximos envios. Declarar separadamente edição, validação, commit/push/integração quando ocorrerem. Terminar quando a próxima ação autorizada estiver entregue; não prolongar com revisão recursiva.
+
+## PLAN nativo em frentes orquestradas
+
+O encaminhamento referencia o plano ativo, ledger, owner/sucessor e próximo
+checkpoint. A sequência declarada pertence ao PLAN.md, não a um segundo
+scheduler. Retrofit que afeta futuro reconcilia SPEC/PLAN; não fica somente em
+mensagem. Último registro não prova agente ativo.

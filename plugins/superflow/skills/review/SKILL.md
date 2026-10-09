@@ -1,19 +1,18 @@
 ---
 name: review
-description: Compara produto, arquitetura, plano ou implementação com seus contratos e resolve achados dentro do escopo autorizado.
+description: Use para confrontar produto, arquitetura, plano ou implementação com suas fontes e efeitos reais, sem confundir uma lacuna de evidência com uma regressão demonstrada.
 ---
 
 # Review
 
-Escolha o objeto e os contratos que o governam:
+Escolha o objeto: PRD (promessa/aceite), Analyst (fatos/opções/questões comunicadas), SPEC (integração/interfaces/lifecycle), PLAN (decomposição/ordem/verificação), implementação (comportamento e provas).
 
-- PRD: promessa, escopo e aceite;
-- SPEC, quando existir: arquitetura, interfaces e fronteiras;
-- plano, quando existir: cobertura, dependências e verificabilidade;
-- implementação: comportamento, integração e provas do projeto.
+Procure bugs, regressões, falhas silenciosas e decisões materiais omitidas. Uma arquitetura não está fechada se o planejador precisa reconstruí-la em pesquisas. Um plano não está fechado se o executor precisa escolher novamente a feature ou ignorar uma predecessora pendente.
 
-Procure bugs, regressões, falhas silenciosas, leitura/escrita excessiva e afirmações importantes sem verificação proporcional ao risco. Mudança de comportamento pede uma verificação relevante antes e depois; documentos podem ser conferidos por leitura, links ou renderização. Use os mecanismos reais do projeto.
+Use evidência proporcional e mecanismos reais do projeto. Testes escritos não são testes executados; foco é escopo, não executor. Documentos pedem conteúdo/links/renderização pertinentes, não TDD artificial.
 
-Confira se algum consumidor operacional permanente passou a depender de arquivo da spec. A [fronteira do pacote](../../assets/references/state-contract.md#fronteira-do-pacote-da-spec) orienta a remoção do descartável ou promoção do que permanece.
+Quando SDD/inline já é dono da revisão de implementação, esta skill não impõe uma segunda revisão genérica da mesma task. Preserve o review correspondente ao método. Não multiplique reviewer/fixer por reflexo.
 
-Corrija achados autorizados e repita a verificação afetada. Review não cria fase nem log obrigatório. Em plano ativo, ajuste as tasks afetadas; em trabalho já encerrado, explicite o novo recorte antes de registrar sua execução. Atualize status quando o achado mudar a orientação de retomada.
+Corrija achados autorizados e confira o delta. Mudança de arquitetura atualiza SPEC, de execução atualiza PLAN, de produto requer a decisão correspondente; resultado fica no ledger. No legado, preserve o plano ativo selecionado. Findings estacionados não viram aceite clínico/global.
+
+Confira a [fronteira do pacote](../../assets/references/state-contract.md#fronteira-do-pacote-da-spec), a retenção do registro antes de cleanup e o sucessor de responsabilidades editoriais. Não crie novo gate para provar que agentes leram instruções.
