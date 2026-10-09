@@ -6,7 +6,7 @@ status: pending
 ---
 
 ## Estado real
-Desenho aprovado; implementação em preparação na branch codex/superflow-014-analyst-plan-qg. Nenhuma validação ou release é declarada por este registro.
+Implementação e pacote candidato 0.14.0 publicados na PR Draft #23. Runtime Python/JS, Analyst/Build, PLAN.md, QG opt-in, testes e manifestos estão versionados; testes Python/Chromium e npm test ainda não foram executados contra o HEAD final. Sem merge ou release.
 
 ## Execução
 - Plano: specs/014-analyst-plan-qg/PLAN.md
@@ -14,7 +14,7 @@ Desenho aprovado; implementação em preparação na branch codex/superflow-014-
 - Registro: specs/014-analyst-plan-qg/execution/progress.md
 
 ## Próximo trabalho
-Executar o PLAN autorizado, publicar checkpoints na branch e uma PR Draft para main. Preservar main e instalações. O ambiente desta execução não dispõe de ferramenta de subagents; não declarar SDD.
+Executar em checkout isolado as verificações nomeadas em execution/validacao.md, corrigir falhas causais, registrar recibo e fazer review final. Manter a PR Draft até a verificação real. Sem subagents nesta sessão; não declarar SDD.
 
 ## Limites
-Não copiar o dossiê privado para o repositório público. Sem merge, tag, release ou alteração de consumidores nesta entrega.
+Não copiar o dossiê privado para o repositório público. Sem merge, tag, release ou alteração de consumidores nesta entrega. A ausência de ledger nativo não comprova execução concluída.
