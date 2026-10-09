@@ -17,8 +17,9 @@ Relações guardam contexto, sem controlar execução; o plano com tasks pendent
                   -> SDD ou inline autorizado -> review/proof -> aceite
     execução aprovada -> PLAN + ledger -> retomar sem reiniciar design
 
-Nenhuma fase é obrigatória por formato. Uma correção simples pode usar PRD
-conciso, execução direta e uma verificação útil. Uma entrega não vira done só
+A entrega ativa segue o lifecycle acima com profundidade proporcional. Uma
+correção avulsa delimitada fora desse fluxo pode executar diretamente com
+a autorização e verificação adequadas. Uma entrega não vira done só
 porque há prosa, arquivo arquivado ou mensagem de sucesso.
 
 ## Skills
