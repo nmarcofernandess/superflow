@@ -33,6 +33,7 @@ CONTRACTS = {
     "state-contract.md",
     "commands-contract.md",
     "scope-contract.md",
+    "execution-contract.md",
 }
 TEMPLATES = {
     "PRD.md",
