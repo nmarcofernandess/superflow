@@ -19,8 +19,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Superflow",
-    "shortDescription": "Organize a entrega com PRD, status vivo e plano quando necessário.",
-    "longDescription": "Superflow registra a promessa em PRD.md, mantém o retrato completo em status.md e usa análise, decisão técnica, plano e revisão somente quando ajudam. O runtime cria, inspeciona e projeta specs sem executar comandos do projeto.",
+    "shortDescription": "Debata a entrega no Analyst, consolide SPEC e planeje com Superpowers.",
+    "longDescription": "Entrega ativa: Analyst conversacional persistente, Build/SPEC fechada e PLAN.md nativo Superpowers. Compatibilidade plan.json legado e QG status-only com detalhe opt-in. Runtime não executa comandos do consumidor.",
     "developerName": "Marco Antonio",
     "category": "Productivity",
     "capabilities": [
@@ -32,9 +32,9 @@
       "offline-spec-diagnostics"
     ],
     "defaultPrompt": [
-      "Use Superflow para registrar este pedido em um PRD.",
-      "Analise o terreno e atualize este PRD quando necessário.",
-      "Crie um plano verificável para esta entrega."
+      "Registre esta ideia em PRD e status para trabalhar depois.",
+      "Inicie o Analyst vivo desta entrega e apresente decisões reais com recomendação.",
+      "Consolide a arquitetura em SPEC.md e crie PLAN.md nativo com writing-plans."
     ]
   }
 }
