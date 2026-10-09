@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.14.0 — candidata (não publicada)
+
+- Analyst vivo, pesquisa integrada e perguntas materiais visíveis na conversa.
+- Build/SPEC consolidada, sem omitir decisões de composição, estado e lifecycle.
+- PLAN.md nativo Superpowers com sequência textual, baldes e identidade estável para retrofit.
+- Ledger e método identificados; plan.json legado preservado com seleção explícita.
+- QG detalhado opt-in, cinco abas, mantendo feed v4 e status-only padrão.
+- Fontes adicionais entram no fingerprint e recebem fronteiras de paths, tamanho e privacidade.
+- Nenhum scheduler, CI ou executor novo no consumidor. Release/tag e instalações ainda não publicados.
+
+
 ## 0.12.3
 
 - Include Chromium integration tests in local release validation, with repository-owned Playwright development setup.

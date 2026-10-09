@@ -1,6 +1,9 @@
 # Contrato mínimo
 
-Toda spec possui `PRD.md` e `status.md`. `SPEC.md` registra arquitetura quando há decisões técnicas que precisam persistir; `plan.json` registra uma sequência quando ela precisa ser coordenada. Os dois são independentes e condicionais.
+Toda spec possui `PRD.md` e `status.md`. Nova entrega ativa segue Analyst vivo,
+Build/SPEC consolidada e PLAN.md nativo do Superpowers. A captura de ideia não
+obriga essa cadeia. Plan.json é legado preservado; consulte o
+[contrato de execução](execution-contract.md) para seleção, ledger e retrofit.
 
 ## Status
 
@@ -26,7 +29,7 @@ O corpo Markdown guarda o retrato humano completo. A receita da skill `status` o
 
 Feed e QG padrão descobrem e leem exclusivamente arquivos chamados `status.md`. O modo `qg --scope` lê também a composição selecionada, conforme [scope-contract.md](scope-contract.md); estado factual permanece no status. Hierarquia é derivada do path entre specs registradas. Uma mãe concluída pode ter minispec aberta e aparecer como contexto dela. O QG oferece Em aberto, Concluídas, busca, famílias, relações e narrativa integral; relações podem abrir specs fora da visão atual.
 
-## Plano
+## Plano legado (`plan.json`)
 
 ```json
 {"tasks":[{"id":"T01","task":"Resultado operacional","status":"pending","depends_on":[],"acceptance":["Comportamento verificável"]}]}
@@ -34,7 +37,7 @@ Feed e QG padrão descobrem e leem exclusivamente arquivos chamados `status.md`.
 
 Cada task contém exatamente cinco campos. Status aceita somente `pending | done`. Dependências são locais e acíclicas; uma task é concluída após conferir o aceite e suas predecessoras. `acceptance` inclui a QA da unidade. Provas permanecem nos mecanismos do projeto.
 
-Um plano está ativo quando existe e possui ao menos uma task `pending`. Para continuar, leia a orientação do status e escolha uma task pendente com predecessoras concluídas. Um plano totalmente concluído permanece registro da execução encerrada; novo trabalho exige decisão explícita de escopo e de como registrá-lo, sem reabertura silenciosa.
+Um plano está ativo quando existe e possui ao menos uma task `pending`. Para continuar no plano JSON legado selecionado, leia a orientação do status e escolha uma task pendente com predecessoras concluídas. Um plano totalmente concluído permanece registro da execução encerrada; novo trabalho exige decisão explícita de escopo e de como registrá-lo, sem reabertura silenciosa.
 
 ## Fronteira do pacote da spec
 
@@ -47,3 +50,10 @@ HTMLs, receipts e proofs históricos podem permanecer na spec quando nenhum cons
 Scripts descartáveis usados durante a própria execução são removidos antes de `done`. Se precisarem permanecer para reprodução contínua, passam a compor o harness permanente do projeto e recebem um destino canônico.
 
 Quando uma task precisar de artefato executável temporário, descreva em `task` e `acceptance` por que é temporário, quem o executa, a ausência de consumidores permanentes e sua condição de remoção ou promoção, incluindo o destino e a atualização dos consumidores. Isso é orientação de autoria e revisão proporcional ao trabalho.
+
+## PLAN.md nativo e QG opt-in
+
+O plano nativo ordena por headings `Task N` e ordem textual. O ledger do
+Superpowers informa eventos verificáveis, não altera o status global. Com os dois
+formatos, declare `Plano:` na seção Execução do status. QG padrão continua
+status-only; `qg_details` permite a seleção explícita de fontes adicionais.
