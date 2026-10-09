@@ -38,6 +38,7 @@ TEMPLATES = {
     "PRD.md",
     "status.md",
     "SPEC.md",
+    "ANALYST.md",
     "plan.json",
 }
 RUNTIME_FILES = {
@@ -46,6 +47,8 @@ RUNTIME_FILES = {
     "scripts/superflow_qg.py",
     "scripts/superflow_scope.py",
     "assets/scope-view.js",
+    "assets/qg-detail.js",
+    "scripts/superflow_work.py",
     "assets/orchestration/theme.css",
     "scripts/validate_superflow.py",
     "scripts/vendor/PyYAML-LICENSE",
@@ -108,8 +111,8 @@ def validate_manifest(plugin: Path, errors: List[str]) -> None:
             continue
         if manifest.get("name") != "superflow":
             errors.append("{} deve declarar name superflow".format(path.relative_to(plugin)))
-        if manifest.get("version") != "0.13.0":
-            errors.append("{} deve declarar version 0.13.0".format(path.relative_to(plugin)))
+        if manifest.get("version") != "0.14.0":
+            errors.append("{} deve declarar version 0.14.0".format(path.relative_to(plugin)))
         if manifest.get("skills") != "./skills/":
             errors.append("{} deve apontar skills para ./skills/".format(path.relative_to(plugin)))
 
