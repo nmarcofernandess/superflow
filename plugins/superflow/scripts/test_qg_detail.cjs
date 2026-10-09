@@ -51,12 +51,22 @@ const plan='# Plan\n### Task 1: Persist\n**Balde:** Base\n**Por que agora:** Pre
     await shell.getByRole('button',{name:'Fechar'}).click();
     await shell.locator('.spec-card').click();
     assert.equal(await shell.getByRole('tab',{name:'Trabalho'}).getAttribute('aria-selected'),'true');
+    // A new published snapshot must preserve the open drawer and selected tab.
+    write('specs/demo/execution/run/progress.md','# SDD ledger — plan: specs/demo/PLAN.md\nTask 1: complete (commits abc1234..def5678, review clean)\nTask 9: complete (commits def5678..abc9876, review clean)\n');
+    run('feed');
+    const refreshed=JSON.parse(fs.readFileSync(path.join(root,'.superflow/feed.json'),'utf8'));
+    await page.route('https://superflow.test/feed.json',route=>route.fulfill({json:refreshed,headers:{'Access-Control-Allow-Origin':'*'}}));
+    await shell.evaluate(el=>el.setAttribute('src','https://superflow.test/feed.json'));
+    await page.waitForFunction(id=>document.querySelector('superflow-qg').dataset.snapshotId===id,refreshed.snapshot_id);
+    assert.equal(await shell.locator('#drawer').evaluate(el=>el.open),true);
+    assert.equal(await shell.getByRole('tab',{name:'Trabalho'}).getAttribute('aria-selected'),'true');
+    assert.match(await shell.locator('.work-next').innerText(),/Task 2/);
     for(const width of [390,768,1440]){
       await page.setViewportSize({width,height:850});
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
     }
     assert.deepEqual(errors,[]);
-    console.log('qg-detail: five tabs, retroactive ordering, evidence, inert HTML, tab retention, responsive widths passed');
+    console.log('qg-detail: five tabs, retroactive ordering, evidence, inert HTML, tab retention across refresh, responsive widths passed');
   }finally{
     if(browser)await browser.close();
     fs.rmSync(root,{recursive:true,force:true});

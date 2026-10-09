@@ -102,7 +102,7 @@ class WorkTests(unittest.TestCase):
             (root/'specs/demo').mkdir(parents=True)
             (root/'specs/demo/ANALYST.md').write_text('safe')
             (root/'specs/demo/link.md').symlink_to(root/'specs/demo/ANALYST.md')
-            self.assertEqual(safe_path(root, 'specs/demo/ANALYST.md', 'specs/demo', 'document'), root/'specs/demo/ANALYST.md')
+            self.assertEqual(safe_path(root, 'specs/demo/ANALYST.md', 'specs/demo', 'document'), (root/'specs/demo/ANALYST.md').resolve())
             for name in ('../secret', '/etc/passwd', 'specs/demo/../other/SPEC.md',
                          'specs/demo/link.md', 'specs/demo/.env', 'specs/other/PRD.md',
                          r'specs\demo\PLAN.md'):
@@ -112,7 +112,7 @@ class WorkTests(unittest.TestCase):
                          'specs/demo/PRD.md'):
                 with self.subTest(ledger=name), self.assertRaises(WorkError):
                     safe_path(root, name, 'specs/demo', 'ledger')
-            self.assertEqual(safe_path(root,'.superpowers/sdd/PLAN/progress.md','specs/demo','ledger'), root/'.superpowers/sdd/PLAN/progress.md')
+            self.assertEqual(safe_path(root,'.superpowers/sdd/PLAN/progress.md','specs/demo','ledger'), (root/'.superpowers/sdd/PLAN/progress.md').resolve())
 
 
 
@@ -206,7 +206,7 @@ class DetailSourceTests(unittest.TestCase):
         with self.assertRaisesRegex(ContentError, 'AMBIGUOUS'):
             validate_spec(self.root, 'demo')
         (self.spec/'status.md').write_text(self.status)
-        self.assertEqual(validate_spec(self.root, 'demo'), self.spec)
+        self.assertEqual(validate_spec(self.root, 'demo'), self.spec.resolve())
 
     def test_native_plan_is_validated_without_enabling_details(self):
         from superflow_model import validate_spec, ContentError

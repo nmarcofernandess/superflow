@@ -2,19 +2,18 @@
 id: superflow-014
 title: Analyst vivo, plano nativo e QG detalhado
 summary: Autoria conversacional persistente e acompanhamento de planos Superpowers no mesmo pacote de entrega.
-status: pending
+status: done
 ---
 
 ## Estado real
-Implementação e pacote candidato 0.14.0 publicados na PR Draft #23. Runtime Python/JS, Analyst/Build, PLAN.md, QG opt-in, testes e manifestos estão versionados; testes Python/Chromium e npm test ainda não foram executados contra o HEAD final. Sem merge ou release.
+Implementação 0.14.0 concluída e validada localmente: 76 testes Python, distribuição instalada em consumidor temporário e quatro ensaios Chromium aprovados. Correção de portabilidade das expectativas de paths no macOS e regressão adicional de refresh do detalhe aprovadas. Evidências e limites em execution/validacao.md.
 
 ## Execução
 - Plano: specs/014-analyst-plan-qg/PLAN.md
 - Método: inline
-- Registro: specs/014-analyst-plan-qg/execution/progress.md
 
 ## Próximo trabalho
-Executar em checkout isolado as verificações nomeadas em execution/validacao.md, corrigir falhas causais, registrar recibo e fazer review final. Manter a PR Draft até a verificação real. Sem subagents nesta sessão; não declarar SDD.
+Integração da PR #23 em main autorizada por Marco em 08/10/2026. Tag, release pública e instalação de consumidores permanecem operações separadas.
 
 ## Limites
-Não copiar o dossiê privado para o repositório público. Sem merge, tag, release ou alteração de consumidores nesta entrega. A ausência de ledger nativo não comprova execução concluída.
+Sem dispatch de subagents ou ledger nativo desta implementação; fixtures de ledger não comprovam execução SDD. Sem aceite visual humano. Nenhum dossiê privado incorporado ao repositório público.
