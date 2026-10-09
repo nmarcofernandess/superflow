@@ -2,7 +2,7 @@
 
 ## Intenção
 
-Superflow mantém um fluxo proporcional e uma fonte factual de trabalho. PRD descreve a promessa; status.md reúne cadastro, resumo durável e retrato; SPEC registra decisões técnicas materiais; plan.json registra uma sequência quando necessário. SPEC e plano são independentes e condicionais.
+Superflow mantém um fluxo proporcional e uma fonte factual de trabalho. PRD descreve a promessa; status.md reúne cadastro, resumo durável e retrato; SPEC registra decisões técnicas materiais; PLAN.md nativo governa a execução de novas entregas ativas. Plan.json permanece como legado selecionado explicitamente; ideias estacionadas não exigem análise e um plano aprovado não repete design.
 
 ## Superfícies públicas
 
