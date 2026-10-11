@@ -9,9 +9,9 @@ Preserve o [contrato de estado](../../assets/references/state-contract.md). Fron
 
 O corpo mantém **Intenção, Estado real, Rastro, Próximo trabalho e Limites**, adaptados ao conteúdo útil. `## Execução` referencia Plano/Método/Registro conforme [execution-contract](../../assets/references/execution-contract.md), sem duplicar o ledger. `## Documentos` declara anexos opcionais do detalhe. Não adicionar progress/handbook obrigatório.
 
-Resultado de task pertence ao ledger nativo ou ao plan.json legado selecionado. Atualize status quando mudar direção, autorização, espera relevante, relação, recorte ou handoff, não a cada checkbox. Nenhum conjunto de tasks encerradas com ressalvas concede automaticamente o aceite global do PRD.
+Resultado de task pertence ao ledger nativo ou ao plan.json legado selecionado. Atualize status quando mudar fase, direção, autorização, bloqueio, integração/deploy, relação, recorte ou handoff, não a cada checkbox. Ao encerrar a autoria, siga [Registro do fechamento](../../assets/references/execution-contract.md#registro-do-fechamento-de-ci-e-integração): causas/correções/tickets/resultados permanecem no Registro apontado; status preserva retrato e próximo passo atuais. Tasks encerradas não concedem automaticamente integração, deploy ou aceite global do PRD.
 
-Antes de limpar a execução, preserve ledger/reports úteis uma vez em `execution/<run>/`, transfira o apontador Registro e promova rulings arquiteturais à SPEC. Não apague fontes históricas úteis nem copie todo o scratch. O arquivo terminal não recebe novas tasks.
+Antes de limpar a execução, preserve ledger/reports úteis uma vez em `execution/<run>/`, transfira o apontador Registro e promova rulings arquiteturais à SPEC. Siga a retenção do execution-contract: resumos e referências duráveis, sem logs brutos ou cópia de todo o scratch; proofs formais conservam seu contrato próprio. O arquivo terminal não recebe novas tasks.
 
 O drawer padrão publica o corpo inteiro do status. Não esconda segredos em seção “meta” esperando que CSS a proteja. Detalhe opt-in publica os documentos selecionados; fonte ausente é diagnóstico, não “nenhum trabalho”.
 

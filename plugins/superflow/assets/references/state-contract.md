@@ -29,6 +29,14 @@ O corpo Markdown guarda o retrato humano completo. A receita da skill `status` o
 
 Feed e QG padrão descobrem e leem exclusivamente arquivos chamados `status.md`. O modo `qg --scope` lê também a composição selecionada, conforme [scope-contract.md](scope-contract.md); estado factual permanece no status. Hierarquia é derivada do path entre specs registradas. Uma mãe concluída pode ter minispec aberta e aparecer como contexto dela. O QG oferece Em aberto, Concluídas, busca, famílias, relações e narrativa integral; relações podem abrir specs fora da visão atual.
 
+O fim das tasks/reviews muda a fase de autoria para fechamento, conforme
+[execution-contract](execution-contract.md#registro-do-fechamento-de-ci-e-integração).
+Estado real e Próximo trabalho devem refletir essa passagem e os bloqueios ou
+recibos materiais seguintes. O Registro selecionado recebe causas, correções,
+tickets e resultados; o status não os duplica nem mantém uma orientação de
+autoria já encerrada. `done` global continua dependendo do aceite do recorte:
+tasks completas não comprovam CI elegível, integração ou deploy.
+
 ## Plano legado (`plan.json`)
 
 ```json

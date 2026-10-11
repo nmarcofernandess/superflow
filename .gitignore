@@ -3,6 +3,10 @@ node_modules/
 .claude/settings.local.json
 .codex/
 .tmp/
+*.log
+*.stdout
+*.stderr
+*.tmp
 __pycache__/
 *.pyc
 .superflow/

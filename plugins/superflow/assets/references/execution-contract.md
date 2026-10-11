@@ -31,7 +31,7 @@ Com apenas um formato convencional, a seleção é inequívoca. Com ambos, Plano
 
 A primeira linha nativa identifica o plano: `# SDD ledger — plan: specs/minha-entrega/PLAN.md`. O leitor admite identidade absoluta apenas quando ela corresponde à raiz em leitura; uma cópia de outra máquina precisa de reconciliação explícita, não correspondência por basename.
 
-O leitor considera linhas `Task N:` fora de cercas Markdown. Conclusão exige a forma nativa com intervalo de commits e revisão/teste. Fix posterior retira a atribuição de conclusão anterior até novo encerramento. Ressalvas/parked permanecem visíveis. Task desconhecida ou predecessora sem conclusão torna a atribuição indisponível. Exemplos em cercas e checkboxes não são evidência.
+O leitor considera linhas `Task N:` fora de cercas Markdown. Conclusão exige a forma nativa com intervalo de commits e revisão/teste. Fix de autoria registrado para uma task retira sua atribuição de conclusão anterior até novo encerramento. Isso não descreve falhas da fase de CI/integração: registre-as como eventos do fechamento, sem fabricar linhas `Task N:` ou reabrir automaticamente o método. Ressalvas/parked permanecem visíveis. Task desconhecida ou predecessora sem conclusão torna a atribuição indisponível. Exemplos em cercas e checkboxes não são evidência.
 
 O QG mostra último checkpoint, nunca “agente ativo” por inferência. O ledger é um registro do executor, não um veredito criptográfico nem substituto das evidências originais. Um registro completo não marca status global done.
 
@@ -43,9 +43,43 @@ Um bug local usa correção/verificação focal. Falha de integração pode reve
 
 Execute checkpoints internos sem pedir novo GO a cada task. Pausa do usuário prevalece: preservar WIP e fontes, não esperar review/Smoke/merge para poder pausar. Não existe supervisor autônomo criado por esta documentação.
 
+## Registro do fechamento de CI e integração
+
+A passagem de fase segue as instruções do projeto: tasks e reviews previstos
+encerram a autoria planejada, enquanto o agente da integração assume diagnóstico,
+correções, verificações e ship/deploy dentro da autorização existente. Isso vale
+para qualquer método; não acrescenta um ciclo de implementação/review Superflow.
+O consumidor é dono da sequência de CI, catálogo, preflight e elegibilidade.
+
+Continue no **mesmo Registro** apontado em `## Execução` do status. Preserve a
+identidade do plano, o método usado na autoria e as conclusões recebidas. Acrescente
+uma seção de fechamento com a fase e o responsável, autorização vigente,
+candidata/HEAD/base, causas, correções/commits, tickets, seleções/resultados e
+pendências. Distinga diagnóstico, prova elegível, merge e deploy. Atualize-a nos
+checkpoints úteis; não abra outro ledger, plano espelho ou task por falha de CI.
+
+Os eventos de fechamento são narrativa de execução, fora da sintaxe `Task N:`.
+Um ticket vermelho conserva sua identidade e seu resultado; a correção aponta
+para nova revisão e verificação pertinente, sem reescrever o passado. Delegação
+delimitada de CI, quando útil e autorizada, permanece sob o responsável da
+integração e fica registrada aqui, sem retomar automaticamente o método encerrado.
+
+Reconcile **Estado real, Próximo trabalho e Limites** no status quando mudar a
+fase, bloqueio, owner, integração ou deploy. O status aponta ao Registro para
+detalhes, sem copiar causas/tickets a cada tentativa nem manter um cursor de
+autoria depois que o fechamento começou. Tasks completas não marcam integração,
+deploy ou aceite global; o reader/QG continua sem inferir essas operações.
+
 ## Retenção e transferência
 
 Antes de apagar scratch/worktree, preserve uma cópia final do mesmo ledger em `specs/minha-entrega/execution/<run>/progress.md`, sem sobrescrever outra execução. Retenha reports/reviews referenciados necessários e promova decisões arquiteturais à SPEC. Atualize Registro para o arquivo preservado. Somente depois remova o workspace próprio.
+
+Versione resumos duráveis e referências aos tickets, não logs brutos, stdout/stderr
+inteiros, saídas temporárias ou artefatos descartáveis. Eles permanecem no state
+do executor ou no scratch ignorado. Antes de retirar arquivos já rastreados,
+confira consumidores, referências e o resumo necessário à continuidade. Proofs
+formais seguem o contrato próprio de publicação/retenção do projeto; manifests,
+digests e fontes exigidas não são classificados como logs descartáveis pelo nome.
 
 Isso é transferência terminal, não dois ledgers ativos. Uma execução nova recebe seu registro próprio e mapeia o trabalho já entregue. Compactação, perda do host e remoção de worktree são eventos diferentes. Handoff precisa transferir também quem pensa copy, mantém descriptor e revisa provas; remover uma worktree não faz isso automaticamente.
 
