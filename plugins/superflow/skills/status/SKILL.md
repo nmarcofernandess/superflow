@@ -15,4 +15,4 @@ Antes de limpar a execução, preserve ledger/reports úteis uma vez em `executi
 
 O drawer padrão publica o corpo inteiro do status. Não esconda segredos em seção “meta” esperando que CSS a proteja. Detalhe opt-in publica os documentos selecionados; fonte ausente é diagnóstico, não “nenhum trabalho”.
 
-Após editar, confira diagnósticos de `check status` no escopo pertinente. Se a projeção faz parte da entrega, publique feed/QG pelo [contrato de comandos](../../assets/references/commands-contract.md), da raiz identificada. Fonte de worktree não prova integração. Não crie watcher ou servidor por conta própria.
+Após editar, confira diagnósticos de `check status` no escopo pertinente. Se a projeção faz parte da entrega, gere feed/QG da raiz identificada e siga [geração local e publicação](../../assets/references/commands-contract.md#geração-local-e-publicação). Projeções rastreadas pelo Git entram no fechamento autorizado; geração local não comprova publicação. Confira o status Git dos destinos e identifique qualquer gerado que precise permanecer local. Fonte de worktree não prova integração. Não crie watcher ou servidor por conta própria.

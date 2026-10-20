@@ -38,6 +38,34 @@ Escolha a raiz que representa o conteúdo a publicar. Para um painel compartilha
 
 Versionar feed, componente e HTMLs é decisão do consumidor: faz sentido para publicar um site estático ou preservar uma fotografia. São recriáveis e não devem ser editados à mão. Não há observação automática dos status: o script precisa publicar o feed.
 
+## Geração local e publicação
+
+`feed` e `qg` geram arquivos locais. A mensagem `Gerado` não comprova commit,
+push, merge ou atualização de um site. O CLI não executa essas operações Git.
+
+Antes de gerar, confira raiz, branch e WIP existente. Para uma consulta ou
+ensaio que não deve alterar o checkout, use `feed --output` em scratch ou
+`qg --output` no destino temporário pedido; `qg` também gera o par padrão
+feed/componente na raiz. Para isolar todas as saídas de um ensaio QG, use uma
+raiz de ensaio, sem copiar credenciais ou estado privado.
+
+Se o projeto versiona as projeções e sua publicação está autorizada, inclua
+os gerados alterados no fechamento dessa entrega. Havendo `qg_outputs`, use
+`qg --refresh` para atualizar feed, componente e fotografias configuradas com
+o mesmo snapshot. Confira os destinos realmente escritos e o diff antes de
+commitar; não inclua WIP alheio nem peça novo GO para a publicação já autorizada.
+
+Ao publicar após integração ou avanço da base, gere a partir das fontes
+integradas atuais. Não resolva conflitos editando o JSON, preserve as fontes
+e regenere os derivados pertinentes. `source_revision` identifica o HEAD lido
+na geração; não precisa apontar ao commit posterior dos próprios gerados.
+
+Encerre conferindo o status Git dos destinos. Declare geração local, commit,
+push e integração separadamente. Se algo gerado precisar permanecer local,
+informe arquivo, owner, motivo e próximo passo. Sem autorização de publicação,
+preserve o material e explicite esse limite. Essa orientação depende do executor;
+o plugin não cria hook, gate, watcher ou garantia de publicação automática.
+
 ## Painel portátil com atualização opcional
 
 **Este painel funciona sem servidor com o retrato incorporado. Para acompanhar atualizações publicadas, configure uma URL HTTP do feed. Para atualizar a fotografia portátil, execute o comando de atualização.**
