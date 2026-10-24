@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.15.0
+
+- `new` numera specs de primeiro nível quando o projeto declara `"numbered_specs": true` em `.superflow/config.json`: próximo número de três dígitos, contando contêineres como `archived/`; número já usado é recusado; minispecs aninhadas ficam sem número.
+- `new` informa o ID final em `ID:`.
+- Sem a chave, o slug continua livre e nada muda para quem não numera.
+
 ## 0.14.0 — candidata (não publicada)
 
 - Analyst vivo, pesquisa integrada e perguntas materiais visíveis na conversa.

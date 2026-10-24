@@ -64,7 +64,9 @@ O runtime é Python 3.9 ou superior e usa modo isolado:
     python3 -I <plugin>/scripts/superflow.py --root <repo> feed --output <feed.json>
     python3 -I <plugin>/scripts/superflow.py --root <repo> qg --output <qg.html>
 
-New exige um resumo humano do tema e cria o cadastro inicial. Check é somente
+New exige um resumo humano do tema e cria o cadastro inicial. Com
+`"numbered_specs": true` em `.superflow/config.json`, ele acrescenta ao slug o
+próximo número de três dígitos e informa o ID final. Check é somente
 leitura e relata conteúdo incompleto ou inválido como diagnóstico editorial;
 feed e QG preservam esses diagnósticos na mesma fotografia. Eles nunca executam
 proof, ship ou outro comando configurado pelo repositório.
@@ -85,17 +87,17 @@ consumidor, fora do diretório instalado.
 Instale uma release identificada por tag e confira a versão declarada nos
 manifestos antes de usar:
 
-    codex plugin marketplace add nmarcofernandess/superflow --ref v0.14.1
+    codex plugin marketplace add nmarcofernandess/superflow --ref v0.15.0
     codex plugin add superflow@superflow
 
 Em Claude Code:
 
-    claude plugin marketplace add nmarcofernandess/superflow@v0.14.1
+    claude plugin marketplace add nmarcofernandess/superflow@v0.15.0
     claude plugin install superflow@superflow
 
 No Cursor, o marketplace do repositório já declara o plugin. Importe o GitHub e instale `superflow`:
 
-    agent plugin marketplace add https://github.com/nmarcofernandess/superflow --git-ref v0.14.1
+    agent plugin marketplace add https://github.com/nmarcofernandess/superflow --git-ref v0.15.0
 
 Depois, no Agent, abra `/plugin`, escolha Superflow no Marketplace e instale no escopo user. Para teste local, copie o pacote para o diretório que o Cursor lê sem marketplace:
 

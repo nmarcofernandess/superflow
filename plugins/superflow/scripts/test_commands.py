@@ -119,6 +119,41 @@ class CommandTests(unittest.TestCase):
         self.assertIn("status: pending", status)
         self.assertNotIn("phase:", status)
 
+    def test_new_numbers_specs_when_the_project_enables_it(self):
+        (self.root / ".superflow").mkdir()
+        (self.root / ".superflow/config.json").write_text('{"numbered_specs": true}', encoding="utf-8")
+        (self.root / "specs/007-antiga").mkdir(parents=True)
+        (self.root / "specs/archived/012-arquivada").mkdir(parents=True)
+        (self.root / "specs/sem-numero").mkdir()
+        (self.root / "specs/sem-numero/status.md").write_text(
+            "---\nid: sem-numero\ntitle: Sem número\nsummary: Antiga\nstatus: done\n---\n", encoding="utf-8")
+        (self.root / "specs/sem-numero/900-interna").mkdir()
+        created = self.run_cli("new", "alpha", "--title", "Alpha", "--summary", "Importar despesas")
+        self.assertEqual(created.returncode, 0, created.stderr)
+        self.assertIn("ID: 013-alpha", created.stdout)
+        self.assertIn("id: 013-alpha", (self.root / "specs/013-alpha/status.md").read_text())
+        explicit = self.run_cli("new", "020-beta", "--title", "Beta", "--summary", "Outro cadastro")
+        self.assertEqual(explicit.returncode, 0, explicit.stderr)
+        self.assertTrue((self.root / "specs/020-beta/status.md").is_file())
+        taken = self.run_cli("new", "012-gamma", "--title", "Gamma", "--summary", "Outro cadastro")
+        self.assertEqual(taken.returncode, 1)
+        self.assertIn("Número já usado: 012 em archived/012-arquivada", taken.stderr)
+        self.assertFalse((self.root / "specs/012-gamma").exists())
+        nested = self.run_cli("new", "020-beta/filha", "--title", "Filha", "--summary", "Minispec")
+        self.assertEqual(nested.returncode, 0, nested.stderr)
+        self.assertIn("ID: 020-beta/filha", nested.stdout)
+
+    def test_new_keeps_free_slugs_without_numbering_and_rejects_invalid_flag(self):
+        created = self.run_cli("new", "alpha", "--title", "Alpha", "--summary", "Importar despesas")
+        self.assertEqual(created.returncode, 0, created.stderr)
+        self.assertIn("ID: alpha", created.stdout)
+        (self.root / ".superflow").mkdir()
+        (self.root / ".superflow/config.json").write_text('{"numbered_specs": "sim"}', encoding="utf-8")
+        invalid = self.run_cli("new", "beta", "--title", "Beta", "--summary", "Outro cadastro")
+        self.assertEqual(invalid.returncode, 2)
+        self.assertIn("numbered_specs deve ser true ou false", invalid.stderr)
+        self.assertFalse((self.root / "specs/beta").exists())
+
     def test_new_requires_human_summary_before_writing(self):
         result = self.run_cli("new", "alpha", "--title", "Alpha")
         self.assertNotEqual(result.returncode, 0)

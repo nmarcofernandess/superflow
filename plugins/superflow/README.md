@@ -104,6 +104,14 @@ A [skill orquestrar](skills/orquestrar/SKILL.md) mantém próximos passos e prom
 O [contrato de escopos](assets/references/scope-contract.md) define o mapa QG.
 Specs, tasks e encaminhamentos preservam identidades e estados próprios.
 
+## Numeração de specs (0.15.0)
+
+Projetos que numeram specs declaram `"numbered_specs": true` em
+`.superflow/config.json`. `new` acrescenta ao slug o próximo número de três
+dígitos, contando também contêineres como `archived/`, recusa um número já usado
+e informa o ID final. Minispecs aninhadas não recebem número. Sem a chave, o slug
+continua livre.
+
 ## Detalhe QG opt-in (0.14.0)
 
 Declare `qg_details` com IDs exatos em `.superflow/config.json` quando for seguro
