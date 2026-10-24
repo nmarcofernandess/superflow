@@ -135,8 +135,10 @@ def resolve_specs_root(root):
             config = parse_json(config_file.read_text(encoding="utf-8"))
         except (OSError, UnicodeError, ContentError) as exc:
             raise SourceError("Configuração inválida: " + str(exc)) from exc
-        if not isinstance(config, dict) or set(config) - {"specs_root", "qg_outputs", "qg_details"}:
+        if not isinstance(config, dict) or set(config) - {"specs_root", "qg_outputs", "qg_details", "numbered_specs"}:
             raise SourceError("Configuração possui campos desconhecidos ou não é objeto.")
+        if not isinstance(config.get("numbered_specs", False), bool):
+            raise SourceError("numbered_specs deve ser true ou false.")
         if "specs_root" in config:
             try:
                 text_value(config["specs_root"], "specs_root")

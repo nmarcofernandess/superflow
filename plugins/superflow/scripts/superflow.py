@@ -54,6 +54,42 @@ def atomic_write(path, text, root, sources, scope_sources=None):
             temporary.unlink()
 
 
+NUMBERED_NAME = re.compile(r"(\d{3,})-.+")
+
+
+def spec_numbers(specs):
+    """Numbers already taken by top-level specs, including those inside unnumbered containers such as archived/."""
+    taken = {}
+    if not specs.is_dir():
+        return taken
+    for child in sorted(specs.iterdir()):
+        if not child.is_dir() or child.is_symlink():
+            continue
+        match = NUMBERED_NAME.fullmatch(child.name)
+        if match:
+            taken.setdefault(int(match.group(1)), child)
+            continue
+        if (child / "status.md").exists():
+            continue
+        for grandchild in sorted(child.iterdir()):
+            match = NUMBERED_NAME.fullmatch(grandchild.name)
+            if match and grandchild.is_dir() and not grandchild.is_symlink():
+                taken.setdefault(int(match.group(1)), grandchild)
+    return taken
+
+
+def numbered_slug(specs, slug):
+    taken = spec_numbers(specs)
+    match = NUMBERED_NAME.fullmatch(slug)
+    if match:
+        number = int(match.group(1))
+        if number in taken:
+            raise ContentError("Número já usado: {} em {}".format(
+                match.group(1), taken[number].relative_to(specs).as_posix()))
+        return slug
+    return "{:03d}-{}".format(max(taken, default=0) + 1, slug)
+
+
 def create_spec(root, slug, title, summary):
     if not re.fullmatch(r"[a-z0-9][a-z0-9._/-]*", slug) or any(
         part in {"", ".", ".."} or part.startswith(".") for part in slug.split("/")
@@ -63,7 +99,9 @@ def create_spec(root, slug, title, summary):
         raise ContentError("Título não pode ser vazio.")
     if not summary.strip():
         raise ContentError("Resumo não pode ser vazio.")
-    root, specs, _ = resolve_specs_root(root)
+    root, specs, config = resolve_specs_root(root)
+    if config.get("numbered_specs") and "/" not in slug:
+        slug = numbered_slug(specs, slug)
     snapshot, sources = build_snapshot(root)
     if slug in status_id_counts(sources):
         raise ContentError("ID já cadastrado: " + slug)
@@ -94,7 +132,7 @@ def create_spec(root, slug, title, summary):
         except OSError:
             target.rmdir()
             raise
-    return target, snapshot["diagnostics"]
+    return target, slug, snapshot["diagnostics"]
 
 
 def build_parser():
@@ -139,9 +177,10 @@ def main(argv=None):
             parser.error("--source seleciona componentes para --refresh.")
     try:
         if args.command == "new":
-            target, diagnostics = create_spec(root, args.slug, args.title, args.summary)
+            target, spec_id, diagnostics = create_spec(root, args.slug, args.title, args.summary)
             emit_diagnostics(diagnostics)
             print("Criado: " + str(target))
+            print("ID: " + spec_id)
             if diagnostics:
                 print("{} diagnóstico{} existente{}".format(
                     len(diagnostics), "" if len(diagnostics) == 1 else "s",

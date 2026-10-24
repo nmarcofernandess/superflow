@@ -16,15 +16,18 @@ Os comandos nunca executam proof, teste, CI ou ship. `check`, feed e QG relatam 
 
 ## Fonte e publicação
 
-`specs/**/status.md` é a fonte editável. `.superflow/config.json` configura a raiz e pode listar destinos HTML:
+`specs/**/status.md` é a fonte editável. `.superflow/config.json` configura a raiz, pode listar destinos HTML e pode ligar a numeração das specs:
 
 ```json
 {
   "specs_root": "specs",
   "qg_outputs": ["painel.html", "docs/entregas.html", "/caminho/absoluto/painel.html"],
-  "qg_details": ["minha-entrega"]
+  "qg_details": ["minha-entrega"],
+  "numbered_specs": true
 }
 ```
+
+`"numbered_specs": true` faz `new` numerar specs de primeiro nível: o slug recebe o próximo número de três dígitos, um a mais que o maior `NNN-` entre as pastas de `specs_root` e as pastas dentro de contêineres sem `status.md`, como `archived/`. Um slug já numerado é aceito se o número estiver livre e recusado se outra pasta o usar. Minispecs aninhadas (`pai/filha`) não recebem número. `new` informa o ID final em `ID:`; use esse ID nas relações e referências. O número vem da árvore local: duas frentes criadas em paralelo podem escolher o mesmo número, e quem integra depois confere.
 
 Sem config, a raiz padrão é `specs`. Caminhos de destinos relativos são resolvidos a partir da raiz do projeto, não do diretório do terminal; caminhos absolutos também são permitidos. O plugin não instala scripts, hooks, CI ou servidor no consumidor.
 
