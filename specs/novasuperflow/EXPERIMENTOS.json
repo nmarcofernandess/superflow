@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-27T16:26:36.328727+00:00",
+  "resolver_sha256": "4fd9770e7a49b6bde488c0e92bac1b3bd01fcbdaf8f06b6c4efbe3a1abd99f86",
+  "fresh": {
+    "first": "PLAN",
+    "second": "PLAN-beta",
+    "distinct": true,
+    "markers": [
+      "specs/alpha/PLAN.md",
+      "specs/beta/PLAN.md"
+    ]
+  },
+  "markerless_legacy": {
+    "adopted": true,
+    "marker": "specs/new/PLAN.md",
+    "old_report_preserved": true
+  },
+  "limitation": "Ensaio do mecanismo, sem reproduzir a sessão cloud original; paths normalizados com resolve()."
+}

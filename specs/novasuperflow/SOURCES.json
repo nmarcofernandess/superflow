@@ -1,0 +1,390 @@
+{
+  "observed_at_utc": "2026-10-27T16:26:36.329208+00:00",
+  "owner_repository": "nmarcofernandess/superflow",
+  "base_branch": "main",
+  "base_sha": "78b62b64e05a9b3b975e0bb5f91d9af78e7b8438",
+  "branch": "novasuperflow",
+  "local_sources": [
+    {
+      "path": "/Users/marcoantonio/superflow/plugins/superflow/skills/superflow/SKILL.md",
+      "repository": "/Users/marcoantonio/superflow",
+      "observed_repository_head": "78b62b64e05a9b3b975e0bb5f91d9af78e7b8438",
+      "git_tracked": true,
+      "bytes": 2883,
+      "lines": 32,
+      "sha256": "9b70aa6aa5883963e0629ca49073858158022dca7df672a437c6e61a6cddecbb",
+      "git_blob_sha": "748d62c1429a5cf82cc93b0db211c7a882ef8f97"
+    },
+    {
+      "path": "/Users/marcoantonio/superflow/plugins/superflow/skills/analyst/SKILL.md",
+      "repository": "/Users/marcoantonio/superflow",
+      "observed_repository_head": "78b62b64e05a9b3b975e0bb5f91d9af78e7b8438",
+      "git_tracked": true,
+      "bytes": 3670,
+      "lines": 36,
+      "sha256": "2914ff45a96d17bc6e7c2938f5acc1a64f9491babeccdc9be757934e9a9440ac",
+      "git_blob_sha": "8c4393318d9085d72dccd0fcb75af5aaf6c0d19e"
+    },
+    {
+      "path": "/Users/marcoantonio/superflow/plugins/superflow/skills/prd/SKILL.md",
+      "repository": "/Users/marcoantonio/superflow",
+      "observed_repository_head": "78b62b64e05a9b3b975e0bb5f91d9af78e7b8438",
+      "git_tracked": true,
+      "bytes": 1110,
+      "lines": 16,
+      "sha256": "d245c866ef846bf6e341bc8d6e37153bd020d6aad9c57e75597c72492179b50a",
+      "git_blob_sha": "a598717a610491c3cf47fa4a08279421b8e135d3"
+    },
+    {
+      "path": "/Users/marcoantonio/superflow/plugins/superflow/skills/build/SKILL.md",
+      "repository": "/Users/marcoantonio/superflow",
+      "observed_repository_head": "78b62b64e05a9b3b975e0bb5f91d9af78e7b8438",
+      "git_tracked": true,
+      "bytes": 2848,
+      "lines": 28,
+      "sha256": "18638ebe23be470cbda554e0357c7cf8e4ac1bc07560c7266aea100ad58417ac",
+      "git_blob_sha": "2e148dd1640211000a6756180ced093412bd255f"
+    },
+    {
+      "path": "/Users/marcoantonio/superflow/plugins/superflow/skills/plan/SKILL.md",
+      "repository": "/Users/marcoantonio/superflow",
+      "observed_repository_head": "78b62b64e05a9b3b975e0bb5f91d9af78e7b8438",
+      "git_tracked": true,
+      "bytes": 2560,
+      "lines": 26,
+      "sha256": "bf41a18dadee50ad5eabbf33c876c5d868945c12d43aa67cd667521f67c73b94",
+      "git_blob_sha": "1bee71b78becb8c6ba90f0459ec0e63ee6563d8d"
+    },
+    {
+      "path": "/Users/marcoantonio/superflow/plugins/superflow/skills/status/SKILL.md",
+      "repository": "/Users/marcoantonio/superflow",
+      "observed_repository_head": "78b62b64e05a9b3b975e0bb5f91d9af78e7b8438",
+      "git_tracked": true,
+      "bytes": 2596,
+      "lines": 18,
+      "sha256": "db9b078376a496ddb289183c317d86ac206e628d13f842ee8090a668a7589cef",
+      "git_blob_sha": "2d80633b50d21d93d3890332cc122931376173e4"
+    },
+    {
+      "path": "/Users/marcoantonio/superflow/plugins/superflow/skills/orquestrar/SKILL.md",
+      "repository": "/Users/marcoantonio/superflow",
+      "observed_repository_head": "78b62b64e05a9b3b975e0bb5f91d9af78e7b8438",
+      "git_tracked": true,
+      "bytes": 11186,
+      "lines": 119,
+      "sha256": "1387b4866f1cc782246eb07144627f851b94a9b70448bcd7d9d8ca233a47d3c8",
+      "git_blob_sha": "81200b3958bd44811f9a6b8fe73603aef0c6591c"
+    },
+    {
+      "path": "/Users/marcoantonio/superflow/plugins/superflow/skills/review/SKILL.md",
+      "repository": "/Users/marcoantonio/superflow",
+      "observed_repository_head": "78b62b64e05a9b3b975e0bb5f91d9af78e7b8438",
+      "git_tracked": true,
+      "bytes": 1704,
+      "lines": 18,
+      "sha256": "7cdbf62eb09e630712aad876e3aee4304516e277ecd79fc6164490087f3c731f",
+      "git_blob_sha": "b305d770596ddd2aa2b73dc1070bad8256b137dc"
+    },
+    {
+      "path": "/Users/marcoantonio/superflow/plugins/superflow/assets/references/execution-contract.md",
+      "repository": "/Users/marcoantonio/superflow",
+      "observed_repository_head": "78b62b64e05a9b3b975e0bb5f91d9af78e7b8438",
+      "git_tracked": true,
+      "bytes": 7627,
+      "lines": 88,
+      "sha256": "b75f93cfe859420f16b6bcbd94180c231c46efed595ecc957f8df5519404e6fa",
+      "git_blob_sha": "3f730c7f8d530645341273024366696ad3fe8e1c"
+    },
+    {
+      "path": "/Users/marcoantonio/superflow/plugins/superflow/assets/references/state-contract.md",
+      "repository": "/Users/marcoantonio/superflow",
+      "observed_repository_head": "78b62b64e05a9b3b975e0bb5f91d9af78e7b8438",
+      "git_tracked": true,
+      "bytes": 5673,
+      "lines": 67,
+      "sha256": "f77ea74f5aef1eda894f4da2b4689fcd2a43e2402d7e206990895549290ed35d",
+      "git_blob_sha": "82260baeb69c545f9b47c2f60c485e7e9a5f2ef0"
+    },
+    {
+      "path": "/Users/marcoantonio/superflow/plugins/superflow/assets/references/scope-contract.md",
+      "repository": "/Users/marcoantonio/superflow",
+      "observed_repository_head": "78b62b64e05a9b3b975e0bb5f91d9af78e7b8438",
+      "git_tracked": true,
+      "bytes": 3982,
+      "lines": 75,
+      "sha256": "ff316518116dddeeffad089858e05c5827b6a45890869544d923c45d4377b914",
+      "git_blob_sha": "1bc33a6087b35569b1f80e9dc4dcffb27c248edd"
+    },
+    {
+      "path": "/Users/marcoantonio/superflow/plugins/superflow/scripts/superflow_model.py",
+      "repository": "/Users/marcoantonio/superflow",
+      "observed_repository_head": "78b62b64e05a9b3b975e0bb5f91d9af78e7b8438",
+      "git_tracked": true,
+      "bytes": 19066,
+      "lines": 443,
+      "sha256": "e3c50c54daf345f08ce74619d396dd36dd5451d9428ed3947caaede24f94ba37",
+      "git_blob_sha": "27f6a4b99750b7be7632599567320bc7f5a2ea10"
+    },
+    {
+      "path": "/Users/marcoantonio/superflow/plugins/superflow/scripts/superflow_work.py",
+      "repository": "/Users/marcoantonio/superflow",
+      "observed_repository_head": "78b62b64e05a9b3b975e0bb5f91d9af78e7b8438",
+      "git_tracked": true,
+      "bytes": 14362,
+      "lines": 292,
+      "sha256": "3181a620f4776317a6333a07a1e72c1ee854f6e82dd93e892c3720a00dfe7336",
+      "git_blob_sha": "477fb7ee900319e9d9ae7f7014342245aec2a360"
+    },
+    {
+      "path": "/Users/marcoantonio/superflow/plugins/superflow/scripts/superflow_scope.py",
+      "repository": "/Users/marcoantonio/superflow",
+      "observed_repository_head": "78b62b64e05a9b3b975e0bb5f91d9af78e7b8438",
+      "git_tracked": true,
+      "bytes": 6235,
+      "lines": 138,
+      "sha256": "0013a2a346c27dd311287b3c0a4c9ac142ce5464c3218f18848db0041fbabd9d",
+      "git_blob_sha": "3a88a8624e8af714ae12df29b80a2f2fd58aa9b8"
+    },
+    {
+      "path": "/Users/marcoantonio/superflow/plugins/superflow/assets/orchestration/theme.css",
+      "repository": "/Users/marcoantonio/superflow",
+      "observed_repository_head": "78b62b64e05a9b3b975e0bb5f91d9af78e7b8438",
+      "git_tracked": true,
+      "bytes": 1344,
+      "lines": 14,
+      "sha256": "1a0f70eda9ec5d92ee78140a021292705983da31cd7893b1c123d5f7ee771941",
+      "git_blob_sha": "c287dbaa794ffbb589a87dba6cb2c01ceae74c3a"
+    },
+    {
+      "path": "/Users/marcoantonio/devkit/.Docsdietflow/Doc/03_ROADMAP_DESENVOLVIMENTO.md",
+      "repository": "/Users/marcoantonio/devkit",
+      "observed_repository_head": "40221ec2de18f26acde23f5ff7334a162da9ea66",
+      "git_tracked": true,
+      "bytes": 32859,
+      "lines": 792,
+      "sha256": "1c2104da88db906dd99d5bbe1d237259602f07f0d6010ae9a75fb0f8b3071a84",
+      "git_blob_sha": "bb8ce4841d454caeaf617c661d1e62a9d4133adb"
+    },
+    {
+      "path": "/Users/marcoantonio/devkit/.Docsdietflow/Doc/Sprints/SPRINT6_STATUS.md",
+      "repository": "/Users/marcoantonio/devkit",
+      "observed_repository_head": "40221ec2de18f26acde23f5ff7334a162da9ea66",
+      "git_tracked": true,
+      "bytes": 14580,
+      "lines": 524,
+      "sha256": "33ce941a04ec47d3cd444bf50626e3b9b439e61a65c5e40b54790a30cf08fc6b",
+      "git_blob_sha": "7df86ef0ff2b086dd9afe26b54825c82325b6bea"
+    },
+    {
+      "path": "/Users/marcoantonio/devkit/contextodietflow/ROADMAP_VISAO_GERAL.md",
+      "repository": "/Users/marcoantonio/devkit",
+      "observed_repository_head": "40221ec2de18f26acde23f5ff7334a162da9ea66",
+      "git_tracked": true,
+      "bytes": 50981,
+      "lines": 1328,
+      "sha256": "24c2868ebe5a22e20ec38db092f5b3cb3bf38f958795bbf6910b6cc131b1755c",
+      "git_blob_sha": "692c267c29ae3512fa3e41fe3882895ff7270b32"
+    },
+    {
+      "path": "/Users/marcoantonio/devkit/appdietflow/02_ROADMAP_INTERNO_DIETFLOW.md",
+      "repository": "/Users/marcoantonio/devkit",
+      "observed_repository_head": "40221ec2de18f26acde23f5ff7334a162da9ea66",
+      "git_tracked": true,
+      "bytes": 29830,
+      "lines": 520,
+      "sha256": "7a69e7438661002008c6b86b89b9990924fc70e64deb9c1e7a67b46bfc2bee94",
+      "git_blob_sha": "6969897f6e0cc7eb920ac6e53d53c043d80ec3b1"
+    },
+    {
+      "path": "/Users/marcoantonio/devkit/docs/orquestracao/kanban/README.md",
+      "repository": "/Users/marcoantonio/devkit",
+      "observed_repository_head": "40221ec2de18f26acde23f5ff7334a162da9ea66",
+      "git_tracked": false,
+      "bytes": 1509,
+      "lines": 15,
+      "sha256": "15b5168738a0d353f292a19d1b2b60d28d3b478c82f8f34438dffbd1e9a70da1",
+      "git_blob_sha": "aeb8bd40df98291c0cc3d4f200d1e98b8450696b"
+    },
+    {
+      "path": "/Users/marcoantonio/devkit/docs/orquestracao/kanban/server.py",
+      "repository": "/Users/marcoantonio/devkit",
+      "observed_repository_head": "40221ec2de18f26acde23f5ff7334a162da9ea66",
+      "git_tracked": false,
+      "bytes": 7648,
+      "lines": 159,
+      "sha256": "ec67333be5208bd1bb321f3148ba6e7ddec777414ffc8cc5ccdc9a27a2ffe18c",
+      "git_blob_sha": "5d9a23388792143b716955ba5ac21012bd77d77f"
+    },
+    {
+      "path": "/Users/marcoantonio/dietflow-app/specs/132-responsividade-minima/minispecs/02-componentizacao/PLAN.md",
+      "repository": "/Users/marcoantonio/dietflow-app",
+      "observed_repository_head": "2e21aaea4ddc327ad73bb9ced21f87c320759483",
+      "git_tracked": true,
+      "bytes": 71735,
+      "lines": 1266,
+      "sha256": "c979c5ac564f9c303b97a992466c3f35c4d9e94e1918160c87ef7a8518503184",
+      "git_blob_sha": "b82582696c9100cec7d856e445e86a546d3d7317"
+    },
+    {
+      "path": "/Users/marcoantonio/dietflow-app/specs/132-responsividade-minima/minispecs/02-componentizacao/status.md",
+      "repository": "/Users/marcoantonio/dietflow-app",
+      "observed_repository_head": "2e21aaea4ddc327ad73bb9ced21f87c320759483",
+      "git_tracked": true,
+      "bytes": 23976,
+      "lines": 207,
+      "sha256": "f535514c5a3529943b01d2f48b1182936896d04ae18fdc6f91e8b292cb64dc20",
+      "git_blob_sha": "9681594760b500c334de1535b766ebb8cce56477"
+    },
+    {
+      "path": "/Users/marcoantonio/dietflow-app/specs/132-responsividade-minima/minispecs/02-componentizacao/SPEC.md",
+      "repository": "/Users/marcoantonio/dietflow-app",
+      "observed_repository_head": "2e21aaea4ddc327ad73bb9ced21f87c320759483",
+      "git_tracked": true,
+      "bytes": 70832,
+      "lines": 1049,
+      "sha256": "ba291b7b60914f7f4258012dd8f9a33155fa1254297d5540e119a5f754c64392",
+      "git_blob_sha": "971600360e64bc26e5e1fa093e9a5ff6d292f431"
+    },
+    {
+      "path": "/Users/marcoantonio/dietflow-app/specs/132-responsividade-minima/minispecs/02-componentizacao/ANALYST.md",
+      "repository": "/Users/marcoantonio/dietflow-app",
+      "observed_repository_head": "2e21aaea4ddc327ad73bb9ced21f87c320759483",
+      "git_tracked": true,
+      "bytes": 29450,
+      "lines": 230,
+      "sha256": "54f11630b9dcb82aa61ba5ea68db77f9524323a74a526ccf6d8b3e0b7bff2593",
+      "git_blob_sha": "cb71e5fcad86d4637f1818e9a3aeee99c56ae950"
+    },
+    {
+      "path": "/Users/marcoantonio/dietflow-app/specs/132-responsividade-minima/minispecs/02-componentizacao/PRD.md",
+      "repository": "/Users/marcoantonio/dietflow-app",
+      "observed_repository_head": "2e21aaea4ddc327ad73bb9ced21f87c320759483",
+      "git_tracked": true,
+      "bytes": 7396,
+      "lines": 56,
+      "sha256": "f13db86c7f86db2d77e39ccffada75ef433544ec6829ce0b3efa54defad60d83",
+      "git_blob_sha": "58f86602479f8bc3bbf9f4e4eb9c41da9dc7b4e9"
+    },
+    {
+      "path": "/Users/marcoantonio/dietflow-app/.superpowers/sdd/PLAN/task-25-report.md",
+      "repository": "/Users/marcoantonio/dietflow-app",
+      "observed_repository_head": "2e21aaea4ddc327ad73bb9ced21f87c320759483",
+      "git_tracked": true,
+      "bytes": 16100,
+      "lines": 93,
+      "sha256": "fbbf42ddc0c9c2d46ccb57fd8701ee054bf4e1e15d3c03ddd6c3fd83ec42addc",
+      "git_blob_sha": "6a3baa5ef87214cda7808de8880c8ce0de2c69dc"
+    }
+  ],
+  "superpowers": {
+    "installed_version": "7.0.1",
+    "upstream_sha": "2ce8aa15d05bd57213e6f746f953aafb7ded7a8b",
+    "primary_url": "https://github.com/obra/superpowers/commit/2ce8aa15d05bd57213e6f746f953aafb7ded7a8b",
+    "byte_comparison": [
+      "skills/writing-plans/SKILL.md",
+      "skills/finishing-a-development-branch/SKILL.md",
+      "skills/subagent-driven-development/scripts/sdd-workspace"
+    ],
+    "files": [
+      {
+        "path": "/Users/marcoantonio/.codex/plugins/cache/openai-curated-remote/superpowers/7.0.1/skills/brainstorming/SKILL.md",
+        "sha256": "61a7ef918652108c76a3fd01e02dd92d39996c6b46d4cb2819cbd03f6c45e46a",
+        "git_blob_sha": "7f5eef02f894c4f24cea313660c0465ce9c084ed"
+      },
+      {
+        "path": "/Users/marcoantonio/.codex/plugins/cache/openai-curated-remote/superpowers/7.0.1/skills/writing-plans/SKILL.md",
+        "sha256": "a6c67c1900064347c2a329990dd3c555657c51c3ec53b259a08aa01a2c26139a",
+        "git_blob_sha": "4cf0275d88d67aa4ef09f4bbca9970ed6ff74a00"
+      },
+      {
+        "path": "/Users/marcoantonio/.codex/plugins/cache/openai-curated-remote/superpowers/7.0.1/skills/subagent-driven-development/SKILL.md",
+        "sha256": "ba41f697136cba88a7962d60c8e2f97488ba04a8688b1d0fbeb27f6953808e75",
+        "git_blob_sha": "ea170ed101d61a52fdee0ade8368ec0723980a5c"
+      },
+      {
+        "path": "/Users/marcoantonio/.codex/plugins/cache/openai-curated-remote/superpowers/7.0.1/skills/executing-plans/SKILL.md",
+        "sha256": "e4649e59880ef2643d1da128e3d607e87e3f969410d72095a5bf65811b6036dc",
+        "git_blob_sha": "ac77129d7c695734105004b6da10169de8d13df3"
+      },
+      {
+        "path": "/Users/marcoantonio/.codex/plugins/cache/openai-curated-remote/superpowers/7.0.1/skills/finishing-a-development-branch/SKILL.md",
+        "sha256": "8db5a922b242dd4e1bf824cb91c13b3e8d8e8a86d6ceaf7f0774eb9cce909d65",
+        "git_blob_sha": "fa8aecaf8813f1b19d19996f7957d1b0121f2d9c"
+      },
+      {
+        "path": "/Users/marcoantonio/.codex/plugins/cache/openai-curated-remote/superpowers/7.0.1/skills/subagent-driven-development/scripts/sdd-workspace",
+        "sha256": "4fd9770e7a49b6bde488c0e92bac1b3bd01fcbdaf8f06b6c4efbe3a1abd99f86",
+        "git_blob_sha": "b4661eb6ef646dae804c6b7932ccdbe942520a55"
+      },
+      {
+        "path": "/Users/marcoantonio/.codex/plugins/cache/openai-curated-remote/superpowers/7.0.1/skills/subagent-driven-development/references/final-review.md",
+        "sha256": "2fd999d86e5dd0b9b32aaf93f2a41663ef30b3e3cb78fb2fd5cb450eb59eb9de",
+        "git_blob_sha": "851a5c5520cbb377b823229cbfdf441dcd79ac27"
+      }
+    ]
+  },
+  "agora": {
+    "site_id": "appgprj_6ad96f52b6848191b2c14d6ee5bf3228",
+    "version": 2,
+    "source_commit_declared_by_sites": "14bc6edc47f29a65f3559646df47a44744b3aacc",
+    "plugin_version": "1.0.0",
+    "tables": [
+      "board_cards",
+      "board_meta",
+      "board_access_attempts"
+    ],
+    "board_cards_columns": [
+      "id",
+      "data",
+      "col",
+      "ord",
+      "updated_at",
+      "deleted_at"
+    ],
+    "read_only": true,
+    "source_code_inspected": false
+  },
+  "case_132": {
+    "task_count": 48,
+    "operational_buckets": {
+      "E0": 10,
+      "E1": 2,
+      "E7a": 2,
+      "E4": 18,
+      "E2": 2,
+      "E3": 2,
+      "E5": 5,
+      "E6": 4,
+      "E7b": 1,
+      "E8": 2
+    },
+    "numeric_dependency_declarations": 26,
+    "merged_pull_requests_observed": [
+      1774,
+      1777,
+      1784,
+      1798
+    ],
+    "active_ledger_recovered": false
+  },
+  "limitations": [
+    {
+      "action": "Library materialize",
+      "target": "Agora v2 source archive",
+      "status": "not_executed",
+      "reason": "HTTP404: Library file ownership could not be verified. No alternate route attempted."
+    },
+    {
+      "action": "Read active ledger",
+      "target": "Dietflow-app .superpowers/sdd/PLAN/progress.md at claude/charming-hypatia-3gw9y8",
+      "status": "not_found",
+      "reason": "Absent in local snapshot; GitHub404."
+    },
+    {
+      "action": "Open in local automated browser",
+      "target": "file:///Users/marcoantonio/Documents/Codex/2026-10-27/task-2/novasuperflow/specs/novasuperflow/ANALISE.html",
+      "status": "denied",
+      "reason": "Browser URL policy permits only http/https; file protocol denied with explicit no-workaround instruction."
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "checked_at_utc": "2026-10-27T16:27:52.032843+00:00",
+  "valid_balanced_html_structure": true,
+  "h1_count": 1,
+  "native_details_count": 9,
+  "duplicate_ids": [],
+  "missing_fragments": [],
+  "missing_local_files": [],
+  "external_runtime_dependencies": [],
+  "external_source_links": 26,
+  "visual_browser_verification": "not_performed: Browser URL policy denied file://; no workaround attempted"
+}
